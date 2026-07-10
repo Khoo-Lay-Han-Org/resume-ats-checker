@@ -20,10 +20,12 @@ export default defineConfig({
       PUBLIC_SENTRY_DSN: envField.string({
         access: "public",
         context: "client",
+        optional: true,
       }),
       SENTRY_SERVER_DSN: envField.string({
         access: "public",
         context: "server",
+        optional: true,
       })
     },
   },
