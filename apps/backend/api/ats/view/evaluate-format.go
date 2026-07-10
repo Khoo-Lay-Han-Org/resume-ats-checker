@@ -599,7 +599,7 @@ func FormattingCheck() gin.HandlerFunc {
 
 		var total_score int
 		if line_count > 0 {
-			total_score = (error_count / line_count) * 100
+			total_score = (error_count * 100) / line_count
 		}
 
 		c.Set("format_score", total_score)
