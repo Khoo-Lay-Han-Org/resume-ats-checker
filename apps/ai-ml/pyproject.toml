@@ -1,0 +1,30 @@
+[project]
+name = "ai-ml"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "basedpyright>=1.39.3",
+    "bs4>=0.0.2",
+    "datasets>=4.8.4",
+    "docpluck>=2.4.17",
+    "fastapi>=0.135.3",
+    "langdetect>=1.0.9",
+    "lightning>=2.6.1",
+    "matplotlib>=3.10.8",
+    "pandas>=3.0.2",
+    "playwright>=1.60.0",
+    "pymilvus[milvus-lite]>=3.0.0",
+    "pyrefly>=0.62.0",
+    "requests>=2.34.0",
+    "ruff>=0.15.12",
+    "scikit-learn>=1.8.0",
+    "sentence-transformers>=5.5.0",
+    "spacy>=3.8.14",
+    "tensorflow>=2.21.0",
+    "torch>=2.12.0",
+    "transformers>=5.5.4",
+    "ty>=0.0.32",
+    "uvicorn>=0.44.0",
+]
