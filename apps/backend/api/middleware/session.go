@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	util "resuming/api/middleware/util"
+	systemconfig "resuming/system-config"
 )
 
 func SessionCheck() gin.HandlerFunc {
@@ -17,7 +18,7 @@ func SessionCheck() gin.HandlerFunc {
 
 		user_public_id, err := util.CheckSession(session_cookie)
 		if err != nil {
-			c.SetCookie("session", "deleting cookie", -1, "/", "", false, true)
+			c.SetCookie("session", "deleting cookie", -1, "/", "", systemconfig.ApplicationHosted, true)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid or expired session."})
 			return
 		}

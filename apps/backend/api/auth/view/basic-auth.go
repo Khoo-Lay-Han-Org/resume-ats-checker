@@ -70,7 +70,7 @@ func PrepareRegistration() gin.HandlerFunc {
 		}
 
 		// send cookie
-		c.SetCookie("email_for_otp", validated_request.Email, int(systemconfig.OtpExpiryDuration.Seconds()), "/", "", false, true)
+		c.SetCookie("email_for_otp", validated_request.Email, int(systemconfig.OtpExpiryDuration.Seconds()), "/", "", systemconfig.ApplicationHosted, true)
 	}
 }
 
@@ -207,7 +207,7 @@ func PrepareLogin() gin.HandlerFunc {
 		}
 
 		// set cookie
-		c.SetCookie("email_for_otp", validated_request.Email, int(systemconfig.OtpExpiryDuration.Seconds()), "/", "", false, true)
+		c.SetCookie("email_for_otp", validated_request.Email, int(systemconfig.OtpExpiryDuration.Seconds()), "/", "", systemconfig.ApplicationHosted, true)
 	}
 }
 

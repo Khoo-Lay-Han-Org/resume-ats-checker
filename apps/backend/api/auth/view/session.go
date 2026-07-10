@@ -76,6 +76,6 @@ func SetSession() gin.HandlerFunc {
 		c.Set("session_key", session_key)
 		c.Set("signing_key", signing_key)
 		c.Set("user", &user)
-		c.SetCookie("session", string(session_json), int(systemconfig.SessionExpiryDuration.Seconds()), "/", "", false, true)
+		c.SetCookie("session", string(session_json), int(systemconfig.SessionExpiryDuration.Seconds()), "/", "", systemconfig.ApplicationHosted, true)
 	}
 }
