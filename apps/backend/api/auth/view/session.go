@@ -3,7 +3,6 @@ package auth_view
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -60,12 +59,6 @@ func SetSession() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("public_user_id", public_user_id)
-		c.Set("session_key", session_key)
-		c.Set("signing_key", signing_key)
-		c.Set("user", &user)
-		c.SetCookie("session", string(session_json), int(systemconfig.SessionExpiryDuration.Seconds()), "/", "", false, true)
-
 		psid := public_user_id
 		ctx := context.Background()
 		session_store_data, _ := json.Marshal(map[string]string{"session_key": session_key})
@@ -75,7 +68,14 @@ func SetSession() gin.HandlerFunc {
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
 		).Error(); err != nil {
-			log.Printf("Failed to write session to Valkey: %v", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to create session."})
+			return
 		}
+
+		c.Set("public_user_id", public_user_id)
+		c.Set("session_key", session_key)
+		c.Set("signing_key", signing_key)
+		c.Set("user", &user)
+		c.SetCookie("session", string(session_json), int(systemconfig.SessionExpiryDuration.Seconds()), "/", "", false, true)
 	}
 }
