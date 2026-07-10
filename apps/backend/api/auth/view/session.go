@@ -34,15 +34,15 @@ func SetSession() gin.HandlerFunc {
 		user := *user_pointer
 
 		session_key := ksuid.New().String()
+		signing_key := ksuid.New().String()
 		public_user_id := user.PublicId.String()
 
 		claim := jwt.MapClaims{
 			"user_public_id": public_user_id,
-			"session_key":    session_key,
 			"exp":            time.Now().Add(systemconfig.SessionExpiryDuration).Unix(),
 		}
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-		token_string, err := token.SignedString([]byte(session_key))
+		token_string, err := token.SignedString([]byte(signing_key))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate JWT."})
 			return
@@ -62,6 +62,7 @@ func SetSession() gin.HandlerFunc {
 
 		c.Set("public_user_id", public_user_id)
 		c.Set("session_key", session_key)
+		c.Set("signing_key", signing_key)
 		c.Set("user", &user)
 		c.SetCookie("session", string(session_json), int(systemconfig.SessionExpiryDuration.Seconds()), "/", "", false, true)
 

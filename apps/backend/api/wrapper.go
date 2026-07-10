@@ -103,14 +103,17 @@ func LoginFlow(c *gin.Context) {
 	if private_id, exists := c.Get("private_id"); exists {
 		if public_user_id, exists2 := c.Get("public_user_id"); exists2 {
 			if session_key, exists3 := c.Get("session_key"); exists3 {
-				if user, exists4 := c.Get("user"); exists4 {
-					if err := database.SyncIndividualLoginDataToSessionStore(
-						public_user_id.(string),
-						session_key.(string),
-						private_id.(int),
-						user.(*database.User),
-					); err != nil {
-						log.Printf("Failed to sync login data: %v", err)
+				if signing_key, exists4 := c.Get("signing_key"); exists4 {
+					if user, exists5 := c.Get("user"); exists5 {
+						if err := database.SyncIndividualLoginDataToSessionStore(
+							public_user_id.(string),
+							session_key.(string),
+							signing_key.(string),
+							private_id.(int),
+							user.(*database.User),
+						); err != nil {
+							log.Printf("Failed to sync login data: %v", err)
+						}
 					}
 				}
 			}

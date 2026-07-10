@@ -2,7 +2,6 @@ package middleware_util
 
 import (
 	"context"
-	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -85,13 +84,9 @@ func CheckSession(cookie string) (string, error) {
 	if !ok {
 		return "", errors.New("invalid session: missing user_public_id claim")
 	}
-	session_key, ok := parsed_token["session_key"].(string)
-	if !ok {
-		return "", errors.New("invalid session: missing session_key claim")
-	}
 
 	ctx := context.Background()
-	retrieved_data, err := tool.Valkey.Do(
+	_, err := tool.Valkey.Do(
 		ctx,
 		tool.Valkey.B().Get().
 			Key(jwt_user_id+":session_data").
@@ -102,21 +97,6 @@ func CheckSession(cookie string) (string, error) {
 			return "", errors.New("session expired or not found in store")
 		}
 		return "", fmt.Errorf("failed to read session from Valkey: %w", err)
-	}
-
-	var data map[string]any
-	err = json.Unmarshal([]byte(retrieved_data), &data)
-	if err != nil {
-		return "", err
-	}
-
-	session_key2, ok := data["session_key"].(string)
-	if !ok {
-		return "", errors.New("invalid session: missing session_key in data")
-	}
-
-	if subtle.ConstantTimeCompare([]byte(session_key2), []byte(session_key)) == 0 {
-		return "", errors.New("invalid session")
 	}
 
 	return jwt_user_id, nil

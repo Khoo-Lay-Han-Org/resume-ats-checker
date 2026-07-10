@@ -196,7 +196,7 @@ func SyncIndividualUserSessionMapping(upid string, psid string) error {
 	).Error()
 }
 
-func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, privateId int, user *User) error {
+func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signingKey string, privateId int, user *User) error {
 	if err := SyncIndividualUserDataSessionStore(psid, user); err != nil {
 		return err
 	}
@@ -206,7 +206,7 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, priva
 	new_jwt_key := JwtKey{
 		PublicId: uuid.New(),
 		UserId:   privateId,
-		Key:      sessionKey,
+		Key:      signingKey,
 	}
 	if err := SyncIndividualJWTDataSessionStore(psid, &new_jwt_key); err != nil {
 		return err
