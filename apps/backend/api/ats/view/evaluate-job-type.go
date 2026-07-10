@@ -35,7 +35,7 @@ func ResumeJobTypeCheck() gin.HandlerFunc {
 			return
 		}
 
-		req, err := http.NewRequest("POST", systemconfig.AiModelsUri+"job_type_model_predict", bytes.NewBuffer(ai_request_content_bytes))
+		req, err := http.NewRequest("POST", systemconfig.AiModelsUri+"job-type-model-predict", bytes.NewBuffer(ai_request_content_bytes))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to prepare request data."})
 			return
@@ -153,13 +153,13 @@ func JobTypeRelevanceCheck() gin.HandlerFunc {
 		}
 		defer func() { _ = resp.Body.Close() }()
 
-		var score int
+		var score float64
 		if err := json.NewDecoder(resp.Body).Decode(&score); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode response."})
 			return
 		}
 
-		c.Set("job_type_score", score)
+		c.Set("job_type_score", int(score*100))
 		c.Next()
 	}
 }

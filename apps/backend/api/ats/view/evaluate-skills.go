@@ -188,13 +188,13 @@ func OverallSkillsCheck() gin.HandlerFunc {
 				}
 				defer func() { _ = resp.Body.Close() }()
 
-				var score int
+				var score float64
 				if err := json.NewDecoder(resp.Body).Decode(&score); err != nil {
 					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode response."})
 					return
 				}
 
-				if score > 70 {
+				if score > 0.7 {
 					total_matched += 1
 				}
 			}
