@@ -20,13 +20,3 @@ const links = [{ to: "/", label: "Home" }];
   </div>
   <hr class="border-neutral-800" />
 </div>
-
-<button id="error-button">Throw test error</button>
-<script>
-  function handleClick() {
-    throw new Error("This is a test error");
-  }
-  document
-    .querySelector("#error-button")!
-    .addEventListener("click", handleClick);
-</script>
