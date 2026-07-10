@@ -206,7 +206,7 @@ func OverallSkillsCheck() gin.HandlerFunc {
 
 		var finalScore int
 		if total_requirements > 0 {
-			finalScore = (total_matched / total_requirements) * 100
+			finalScore = (total_matched * 100) / total_requirements
 		}
 
 		c.Set("skills_score", finalScore)
