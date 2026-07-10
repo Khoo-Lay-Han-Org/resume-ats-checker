@@ -21,14 +21,6 @@ export default defineConfig({
         access: "public",
         context: "client",
       }),
-      SENTRY_PROJECT_NAME: envField.string({
-        access: "public",
-        context: "server",
-      }),
-      SENTRY_PROJECT_ORG: envField.string({
-        access: "public",
-        context: "server",
-      }),
       SENTRY_SERVER_DSN: envField.string({
         access: "public",
         context: "server",
