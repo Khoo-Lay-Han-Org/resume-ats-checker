@@ -18,7 +18,7 @@ def job_type_model_predict(request: TextRequest):
         truncation=True,
         padding="max_length",
         max_length=350,
-        return_tensor="pt",
+        return_tensors="pt",
     )
     attention_mask = tokenised_data["attention_mask"]
     tokenised_description = tokenised_data["input_ids"]
