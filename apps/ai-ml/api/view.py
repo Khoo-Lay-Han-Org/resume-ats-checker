@@ -3,12 +3,11 @@ from langdetect import detect
 import torch
 from sentence_transformers import util
 
-from config import app
-from api.typing import *
-from api.model_and_tool import *
+from .config import *
+from .typing import *
 
 
-@app.get("/job-type-model-predict")
+@app.post("/job-type-model-predict")
 def job_type_model_predict(request: TextRequest):
     JobTypeModel.eval()
 
@@ -32,7 +31,7 @@ def job_type_model_predict(request: TextRequest):
     return job_type
 
 
-@app.get("/resume-sections-model-predict")
+@app.post("/resume-sections-model-predict")
 def resume_sections_model_predict(request: TextRequest):
     ResumeSectionModel.eval()
 
@@ -49,7 +48,7 @@ def resume_sections_model_predict(request: TextRequest):
     feature = tokenised_data["input_ids"]
 
     entity_per_word = ResumeSectionModel(feature)
-    entity_per_word = entity_per_word.squeeze(1)
+    entity_per_word = entity_per_word.squeeze(0)
     entity_per_word = torch.argmax(entity_per_word, dim=-1)
 
     personal_info_section = []
@@ -62,7 +61,8 @@ def resume_sections_model_predict(request: TextRequest):
 
     splitted_raw_data = raw_feature.split()
     previous_class = ""
-    for i, prediction in enumerate(entity_per_word):
+    for i in range(min(len(entity_per_word), len(splitted_raw_data))):
+        prediction = entity_per_word[i]
         prediction_item = prediction.item()
 
         if prediction_item != -100:
