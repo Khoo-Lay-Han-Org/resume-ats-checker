@@ -25,7 +25,6 @@ dependencies = [
     "scikit-learn>=1.8.0",
     "sentence-transformers>=5.5.0",
     "spacy>=3.8.14",
-    "tensorflow>=2.21.0",
     "torch>=2.12.0",
     "transformers>=5.5.4",
     "ty>=0.0.32",
