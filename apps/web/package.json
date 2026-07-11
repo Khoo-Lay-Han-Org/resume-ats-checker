@@ -23,6 +23,6 @@
     "@resuming/config": "workspace:*",
     "@tailwindcss/vite": "^4.3.2",
     "tailwindcss": "^4.3.2",
-    "typescript": "catelog:"
+    "typescript": "catalog:"
   }
 }
