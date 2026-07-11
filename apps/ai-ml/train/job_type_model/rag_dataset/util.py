@@ -201,9 +201,10 @@ def insert_to_vector_store(contents, deduplicate=True):
                     )
                     continue
 
+                escaped = text.replace("\\", "\\\\").replace('"', '\\"')
                 existing = client.query(
                     collection_name="data",
-                    filter=f'text == "{text}"',
+                    filter=f'text == "{escaped}"',
                     output_fields=["id"],
                     limit=1,
                 )
@@ -220,7 +221,8 @@ def insert_to_vector_store(contents, deduplicate=True):
                 f"\n\nStored the following embedded data (insert to vector store): \n{content}"
             )
         return True
-    except:
+    except Exception as e:
+        print(f"\n\ninsert_to_vector_store error: {e}")
         return False
 
 
