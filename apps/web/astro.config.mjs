@@ -1,9 +1,8 @@
 import node from "@astrojs/node";
-// @ts-check
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, envField } from "astro/config";
-
 import sentry from "@sentry/astro";
+import svelte from "@astrojs/svelte";
 
 // https://astro.build/config
 export default defineConfig({
@@ -34,9 +33,12 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  integrations: [sentry({
-    project: process.env.SENTRY_PROJECT_NAME,
-    org: process.env.SENTRY_PROJECT_ORG,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-  })],
+  integrations: [
+    sentry({
+      project: process.env.SENTRY_PROJECT_NAME,
+      org: process.env.SENTRY_PROJECT_ORG,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
+    svelte(),
+  ],
 });
