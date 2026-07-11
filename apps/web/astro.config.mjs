@@ -38,7 +38,7 @@ export default defineConfig({
       project: process.env.SENTRY_PROJECT_NAME,
       org: process.env.SENTRY_PROJECT_ORG,
       authToken: process.env.SENTRY_AUTH_TOKEN,
-    }), 
+    }),
     svelte(),
   ],
 });
