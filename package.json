@@ -18,6 +18,8 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "check-types": "turbo run check-types",
+    "deploy": "turbo run deploy",
+    "dry-deploy": "turbo run dry-deploy",
     "dev:web": "turbo run dev -F web",
     "check": "ultracite check",
     "fix": "ultracite fix"
