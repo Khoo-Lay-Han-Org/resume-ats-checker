@@ -2,8 +2,13 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "generate-types": {
+      "inputs": ["wrangler.toml"],
+      "outputs": ["worker-configuration.d.ts"],
+      "cache": true
+    },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "generate-types"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".astro/**"]
     },
@@ -20,6 +25,12 @@
     "deploy": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "astro.config.mjs", "package.json"],
+      "outputs": ["dist/**", ".astro/**"],
+      "cache": false
+    },
+    "dry-deploy": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "astro.config.mjs", "package.json", "wrangler.toml"],
       "outputs": ["dist/**", ".astro/**"],
       "cache": false
     }
