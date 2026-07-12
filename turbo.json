@@ -18,7 +18,9 @@
       "persistent": true
     },
     "deploy": {
-      
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "astro.config.mjs", "package.json"],
+      "outputs": ["dist/**", ".astro/**"]
     }
   }
 }
