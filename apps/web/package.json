@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && wrangler dev",
+    "build": "astro build",
+    "dev-build": "astro build && wrangler dev",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
     "dry-deploy": "astro build && wrangler versions upload",
