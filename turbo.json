@@ -20,7 +20,8 @@
     "deploy": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "astro.config.mjs", "package.json"],
-      "outputs": ["dist/**", ".astro/**"]
+      "outputs": ["dist/**", ".astro/**"],
+      "cache": false
     }
   }
 }
