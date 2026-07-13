@@ -687,21 +687,21 @@ func RemoveAllClientSessionFlow(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully deleted sessions."})
 }
 
-// GetClientCommunicationLogsFlow retrieves all client communication logs
-// @Summary Get client communication logs
-// @Description Retrieves all client communication logs for admin review
+// GetSupportMessagesFlow retrieves all support messages between clients and admins
+// @Summary Get support messages
+// @Description Retrieves all client support messages for admin review
 // @Tags Admin
 // @Produce json
 // @Success 200 {object} map[string]any
 // @Failure 401,404,500 {object} ErrorResponse
 // @Router /client_comm_log [get]
-func GetClientCommunicationLogsFlow(c *gin.Context) {
-	administrator_view.GetClientCommunicationLogs()(c)
+func GetSupportMessagesFlow(c *gin.Context) {
+	administrator_view.GetSupportMessages()(c)
 	if c.IsAborted() {
 		return
 	}
 	data, _ := c.Get("response_data")
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully retrieved the client communications data.", "data": data})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully retrieved support messages.", "data": data})
 }
 
 // ClientCommunicationReplyFlow sends a reply to client communication

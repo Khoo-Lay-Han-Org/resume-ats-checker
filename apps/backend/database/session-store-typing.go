@@ -23,17 +23,12 @@ type ClientReportLogDTO struct {
 	Type                  string `json:"type"`
 }
 
-type ClientCommDTO struct {
-	UserId       int    `json:"user_id"`
-	PublicId     string `json:"public_id"`
-	PublicUserId string `json:"public_user_id"`
-	Type         string `json:"type"`
-	Message      string `json:"message"`
-}
-
-type AdminCommDTO struct {
-	AdminCommPublicId     string `json:"admin_comm_public_id"`
-	AdminUserPublicId     string `json:"admin_user_public_id"`
-	ClientCommLogPublicId string `json:"client_comm_log_public_id"`
-	Message               string `json:"message"`
+type ClientSupportMessageDTO struct {
+	PublicId              string    `json:"public_id"`
+	UserId                string    `json:"user_id"`
+	Type                  string    `json:"type"`
+	Message               string    `json:"message"`
+	SenderType            string    `json:"sender_type"`
+	ClientCommLogPublicId string    `json:"client_comm_log_public_id"`
+	CreatedAt             time.Time `json:"created_at"`
 }

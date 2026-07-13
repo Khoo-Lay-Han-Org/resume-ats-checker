@@ -291,8 +291,7 @@ func SyncGroupClientSupportMessagingSessionStore() error {
 		return fmt.Errorf("failed to get support messages: %w", err)
 	}
 
-	var polished_client_comms []ClientCommDTO
-	var polished_admin_comms []AdminCommDTO
+	var polished []ClientSupportMessageDTO
 	for _, item := range all_messages {
 		var user User
 		if err := DB.Where("id = ?", item.Content.UserId).First(&user).Error; err != nil {
@@ -300,58 +299,36 @@ func SyncGroupClientSupportMessagingSessionStore() error {
 			continue
 		}
 
-		switch user.UserType {
-		case Client:
-			client_comm := ClientCommDTO{
-				UserId:       user.Id,
-				PublicId:     item.PublicId.String(),
-				PublicUserId: user.PublicId.String(),
-				Type:         string(item.Type),
-				Message:      item.Content.Text,
-			}
-			polished_client_comms = append(polished_client_comms, client_comm)
-		case Admin, SuperAdmin:
-			admin_comm := AdminCommDTO{
-				AdminCommPublicId:     item.PublicId.String(),
-				AdminUserPublicId:     user.PublicId.String(),
-				ClientCommLogPublicId: "",
-				Message:               item.Content.Text,
-			}
-			polished_admin_comms = append(polished_admin_comms, admin_comm)
+		sender_type := "client"
+		if user.UserType == Admin || user.UserType == SuperAdmin {
+			sender_type = "admin"
 		}
+
+		msg := ClientSupportMessageDTO{
+			PublicId:              item.PublicId.String(),
+			UserId:                user.PublicId.String(),
+			Type:                  string(item.Type),
+			Message:               item.Content.Text,
+			SenderType:            sender_type,
+			ClientCommLogPublicId: "",
+			CreatedAt:             item.CreatedAt,
+		}
+		polished = append(polished, msg)
 	}
 
 	ctx := context.Background()
-	if len(polished_client_comms) > 0 {
-		serialised, err := json.Marshal(polished_client_comms)
-		if err != nil {
-			return fmt.Errorf("failed to serialise client support messages: %w", err)
-		}
-		if err := tool.Valkey.Do(
-			ctx,
-			tool.Valkey.B().Set().
-				Key("client_comms").Value(string(serialised)).
-				Ex(systemconfig.SessionExpiryDuration).
-				Build(),
-		).Error(); err != nil {
-			return fmt.Errorf("failed to store client support messages: %w", err)
-		}
+	serialised, err := json.Marshal(polished)
+	if err != nil {
+		return fmt.Errorf("failed to serialise support messages: %w", err)
 	}
-
-	if len(polished_admin_comms) > 0 {
-		serialised, err := json.Marshal(polished_admin_comms)
-		if err != nil {
-			return fmt.Errorf("failed to serialise admin support messages: %w", err)
-		}
-		if err := tool.Valkey.Do(
-			ctx,
-			tool.Valkey.B().Set().
-				Key("admin_comms").Value(string(serialised)).
-				Ex(systemconfig.SessionExpiryDuration).
-				Build(),
-		).Error(); err != nil {
-			return fmt.Errorf("failed to store admin support messages: %w", err)
-		}
+	if err := tool.Valkey.Do(
+		ctx,
+		tool.Valkey.B().Set().
+			Key("client_support_messages").Value(string(serialised)).
+			Ex(systemconfig.SessionExpiryDuration).
+			Build(),
+	).Error(); err != nil {
+		return fmt.Errorf("failed to store support messages: %w", err)
 	}
 
 	return nil

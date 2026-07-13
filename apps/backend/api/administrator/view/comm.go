@@ -3,6 +3,7 @@ package administrator_view
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -14,63 +15,59 @@ import (
 	"resuming/tool"
 )
 
-func GetClientCommunicationLogs() gin.HandlerFunc {
+func GetSupportMessages() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_comms").Build()).ToString()
+		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve client communication logs."})
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve support messages."})
 			return
 		}
 
 		var data []map[string]any
-		err = json.Unmarshal([]byte(retrieved_data), &data)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse client communication logs."})
+		if err := json.Unmarshal([]byte(retrieved_data), &data); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse support messages."})
 			return
 		}
 
 		var polished_data_arr []map[string]any
 		for _, item := range data {
-			public_user_id := item["public_user_id"].(uuid.UUID)
-			message_type := item["type"].(string)
-			message := item["message"].(string)
+			public_user_id, _ := item["user_id"].(string)
+			message_type, _ := item["type"].(string)
+			message, _ := item["message"].(string)
+			sender_type, _ := item["sender_type"].(string)
 
-			user_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id.String()+":user_data").Build()).ToString()
+			user_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 			if err != nil {
 				if valkey.IsValkeyNil(err) {
-					user, dbErr := database.FindUserByPublicId(public_user_id.String())
+					user, dbErr := database.FindUserByPublicId(public_user_id)
 					if dbErr != nil {
-						c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to find user."})
-						return
+						continue
 					}
-					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id.String(), user); syncErr != nil {
-						c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to find user."})
-						return
+					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
+						continue
 					}
-					user_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id.String()+":user_data").Build()).ToString()
+					user_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 					if err != nil {
-						c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to find user."})
-						return
+						continue
 					}
 				} else {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to find user."})
-					return
+					continue
 				}
 			}
 
 			var user database.User
-			err = json.Unmarshal([]byte(user_data), &user)
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user."})
-				return
+			if err := json.Unmarshal([]byte(user_data), &user); err != nil {
+				continue
 			}
 
 			polished_data := map[string]any{
+				"message_id":      item["public_id"],
 				"username":        user.Username,
 				"displayname":     user.Displayname,
 				"message_type":    message_type,
 				"message_content": message,
+				"sender_type":     sender_type,
 			}
 
 			polished_data_arr = append(polished_data_arr, polished_data)
@@ -102,21 +99,28 @@ func ClientCommunicationReply() gin.HandlerFunc {
 			return
 		}
 
-		public_id := polished_request.PublicId
+		original_public_id := polished_request.PublicId
 		message := polished_request.Message
 
 		ctx := c.Request.Context()
-		retrieved_comms_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_comms").Build()).ToString()
+		retrieved_comms_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve admin communication logs."})
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve support messages."})
 			return
 		}
 
-		var comms_data []map[string]any
-		err = json.Unmarshal([]byte(retrieved_comms_data), &comms_data)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse admin communication logs."})
+		var all_messages []map[string]any
+		if err := json.Unmarshal([]byte(retrieved_comms_data), &all_messages); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse support messages."})
 			return
+		}
+
+		var original_type string
+		for _, m := range all_messages {
+			if pid, _ := m["public_id"].(string); pid == original_public_id {
+				original_type, _ = m["type"].(string)
+				break
+			}
 		}
 
 		retrieved_user_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
@@ -143,36 +147,37 @@ func ClientCommunicationReply() gin.HandlerFunc {
 		}
 
 		var user_data database.User
-		err = json.Unmarshal([]byte(retrieved_user_data), &user_data)
-		if err != nil {
+		if err := json.Unmarshal([]byte(retrieved_user_data), &user_data); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse admin data"})
 			return
 		}
 
 		new_admin_comm := map[string]any{
-			"admin_comm_public_id":      uuid.New().String(),
-			"admin_user_public_id":      user_data.PublicId.String(),
-			"client_comm_log_public_id": public_id,
+			"public_id":                 uuid.New().String(),
+			"user_id":                   user_data.PublicId.String(),
+			"type":                      original_type,
 			"message":                   message,
+			"sender_type":               "admin",
+			"client_comm_log_public_id": original_public_id,
+			"created_at":                time.Now(),
 		}
 
-		comms_data = append(comms_data, new_admin_comm)
+		all_messages = append(all_messages, new_admin_comm)
 
-		serialised_admin_comms, err := json.Marshal(comms_data)
+		serialised_data, err := json.Marshal(all_messages)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to serialise communication data"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to serialise support message data"})
 			return
 		}
 
-		err = tool.Valkey.Do(
+		if err := tool.Valkey.Do(
 			ctx,
 			tool.Valkey.B().Set().
-				Key("admin_comms").Value(string(serialised_admin_comms)).
+				Key("client_support_messages").Value(string(serialised_data)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
-		).Error()
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store communication data"})
+		).Error(); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store support message data"})
 			return
 		}
 

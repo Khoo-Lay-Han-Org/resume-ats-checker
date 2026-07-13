@@ -25,7 +25,7 @@ func APIConnect() *gin.Engine {
 			is_admin.POST("/ban_client", BanClientFlow)
 			is_admin.POST("/remove_individual_session", RemoveIndividualUserSessionFlow)
 			is_admin.POST("/remove_all_session", RemoveAllClientSessionFlow)
-			is_admin.GET("/client_comm_log", GetClientCommunicationLogsFlow)
+			is_admin.GET("/client_comm_log", GetSupportMessagesFlow)
 			is_admin.POST("/client_comm_reply_log", ClientCommunicationReplyFlow)
 			is_admin.GET("/get_all_clients", GetClientsFlow)
 			is_admin.GET("/get_all_admins", GetAdminsFlow)

@@ -3,6 +3,7 @@ package client_support_view
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -37,9 +38,9 @@ func ClientCommunicateToAdmin() gin.HandlerFunc {
 		client_message := polished_request.Message
 
 		ctx := c.Request.Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_comms").Build()).ToString()
+		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get support message data."})
 			return
 		}
 
@@ -50,29 +51,32 @@ func ClientCommunicateToAdmin() gin.HandlerFunc {
 		}
 
 		new_client_comm := map[string]any{
-			"public_id":      uuid.New(),
-			"public_user_id": public_user_id,
-			"type":           type_of_message,
-			"message":        client_message,
+			"public_id":                 uuid.New().String(),
+			"user_id":                   public_user_id,
+			"type":                      type_of_message,
+			"message":                   client_message,
+			"sender_type":               "client",
+			"client_comm_log_public_id": "",
+			"created_at":                time.Now(),
 		}
 
 		data = append(data, new_client_comm)
 
 		serialised_data, err := json.Marshal(data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to serialise client communications data."})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to serialise support message data."})
 			return
 		}
 
 		err = tool.Valkey.Do(
 			ctx,
 			tool.Valkey.B().Set().
-				Key("client_comms").Value(string(serialised_data)).
+				Key("client_support_messages").Value(string(serialised_data)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
 		).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to store client communications data."})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to store support message data."})
 			return
 		}
 
