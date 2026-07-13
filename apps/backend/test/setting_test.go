@@ -51,8 +51,8 @@ func TestChangeUsername_Validation(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "missing username field",
-			body: map[string]string{},
+			name:       "missing username field",
+			body:       map[string]string{},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -91,8 +91,8 @@ func TestChangeDisplayname_Validation(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "missing displayname field",
-			body: map[string]string{},
+			name:       "missing displayname field",
+			body:       map[string]string{},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -131,8 +131,8 @@ func TestChangeEmail_Validation(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "missing email field",
-			body: map[string]string{},
+			name:       "missing email field",
+			body:       map[string]string{},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -178,8 +178,8 @@ func TestChangePassword_Validation(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "missing password field",
-			body: map[string]string{},
+			name:       "missing password field",
+			body:       map[string]string{},
 			wantStatus: http.StatusUnauthorized,
 		},
 	}

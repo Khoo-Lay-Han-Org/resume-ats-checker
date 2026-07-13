@@ -411,7 +411,7 @@ func SyncIndividualErrorLogDatabase(public_user_id string) error {
 	return nil
 }
 
-func SyncIndividualClientCommLogDatabase(public_user_id string) error {
+func SyncIndividualClientSupportMessagingDatabase(public_user_id string) error {
 	private_id, err := resolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
@@ -420,67 +420,31 @@ func SyncIndividualClientCommLogDatabase(public_user_id string) error {
 		return nil
 	}
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_comm_log_data").Build()).ToString()
+	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_support_messages").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
-			log.Println("No client communication log data in Valkey — nothing to sync.")
+			log.Println("No support message data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for client communication log data (key: %s:client_comm_log_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for support message data (key: %s:client_support_messages): %w", public_user_id, err)
 	}
 
-	var deserialised []ClientCommLog
+	var deserialised []ClientSupportMessaging
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
-		return fmt.Errorf("client communication log data in Valkey is corrupted: %w", err)
+		return fmt.Errorf("support message data in Valkey is corrupted: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&ClientCommLog{}).Where("public_id = ?", item.PublicId).Updates(ClientCommLog{
+		result := DB.Model(&ClientSupportMessaging{}).Where("public_id = ?", item.PublicId).Updates(ClientSupportMessaging{
 			Type:    item.Type,
-			Message: item.Message,
+			Content: item.Content,
 		})
 		if result.Error != nil {
-			return fmt.Errorf("failed to update client communication log: %w", result.Error)
+			return fmt.Errorf("failed to update support message: %w", result.Error)
 		}
 	}
 
-	log.Println("Successfully updated client communication logs.")
-	return nil
-}
-
-func SyncIndividualAdminCommLogDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
-	if err != nil {
-		return fmt.Errorf("failed to resolve user ID: %w", err)
-	}
-	if private_id == 0 {
-		return nil
-	}
-	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":admin_comm_log_data").Build()).ToString()
-	if err != nil {
-		if valkey.IsValkeyNil(err) {
-			log.Println("No admin communication log data in Valkey — nothing to sync.")
-			return nil
-		}
-		return fmt.Errorf("valkey GET failed for admin communication log data (key: %s:admin_comm_log_data): %w", public_user_id, err)
-	}
-
-	var deserialised []AdminCommLog
-	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
-		return fmt.Errorf("admin communication log data in Valkey is corrupted: %w", err)
-	}
-
-	for _, item := range deserialised {
-		result := DB.Model(&AdminCommLog{}).Where("public_id = ?", item.PublicId).Updates(AdminCommLog{
-			Message: item.Message,
-		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update admin communication log: %w", result.Error)
-		}
-	}
-
-	log.Println("Successfully updated admin communication logs.")
+	log.Println("Successfully updated support messages.")
 	return nil
 }
 

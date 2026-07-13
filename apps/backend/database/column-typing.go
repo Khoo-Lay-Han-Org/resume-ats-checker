@@ -65,16 +65,16 @@ const (
 type ClientSupportMessagingTyping string
 
 const (
-	TechnicalSupport   ClientSupportMessagingTyping  = "technical support"
-	FeatureImprovement ClientSupportMessagingTyping  = "feature improvement"
-	BillingManagement  ClientSupportMessagingTyping  = "billing management"
+	TechnicalSupport    ClientSupportMessagingTyping = "technical support"
+	FeatureImprovement  ClientSupportMessagingTyping = "feature improvement"
+	BillingManagement   ClientSupportMessagingTyping = "billing management"
 	ServiceAndOperation ClientSupportMessagingTyping = "service and operation"
-	OnboardingSupport  ClientSupportMessagingTyping  = "onboarding support"
-	Complaint       ClientSupportMessagingTyping     = "complaint"
+	OnboardingSupport   ClientSupportMessagingTyping = "onboarding support"
+	Complaint           ClientSupportMessagingTyping = "complaint"
 )
 
 type ClientSupportContentTyping struct {
-	Text	string	`json:"text"`
-	UserId int `json:"user_id"`
-	Time time.Time `json:"time"`
+	Text   string    `json:"text"`
+	UserId int       `json:"user_id"`
+	Time   time.Time `json:"time"`
 }

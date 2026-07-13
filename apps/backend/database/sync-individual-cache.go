@@ -337,43 +337,22 @@ func SyncIndividualErrorLogSessionStore(public_user_id string, logs []ErrorLog) 
 	return nil
 }
 
-func SyncIndividualClientCommLogSessionStore(public_user_id string, logs []ClientCommLog) error {
-	serialised, err := json.Marshal(logs)
+func SyncIndividualClientSupportMessagingSessionStore(public_user_id string, messages []ClientSupportMessaging) error {
+	serialised, err := json.Marshal(messages)
 	if err != nil {
-		return fmt.Errorf("failed to serialise client communication log data: %w", err)
+		return fmt.Errorf("failed to serialise support message data: %w", err)
 	}
 
 	ctx := context.Background()
 	if err := tool.Valkey.Do(
 		ctx,
 		tool.Valkey.B().Set().
-			Key(public_user_id+":client_comm_log_data").
+			Key(public_user_id+":client_support_messages").
 			Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
 	).Error(); err != nil {
-		return fmt.Errorf("failed to store client communication log data: %w", err)
-	}
-
-	return nil
-}
-
-func SyncIndividualAdminCommLogSessionStore(public_user_id string, logs []AdminCommLog) error {
-	serialised, err := json.Marshal(logs)
-	if err != nil {
-		return fmt.Errorf("failed to serialise admin communication log data: %w", err)
-	}
-
-	ctx := context.Background()
-	if err := tool.Valkey.Do(
-		ctx,
-		tool.Valkey.B().Set().
-			Key(public_user_id+":admin_comm_log_data").
-			Value(string(serialised)).
-			Ex(systemconfig.SessionExpiryDuration).
-			Build(),
-	).Error(); err != nil {
-		return fmt.Errorf("failed to store admin communication log data: %w", err)
+		return fmt.Errorf("failed to store support message data: %w", err)
 	}
 
 	return nil

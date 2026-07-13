@@ -26,10 +26,7 @@ func DatabaseSchedulerGroupToSessionStore() {
 	if err := database.SyncGroupClientReportLogSessionStore(); err != nil {
 		log.Println(err)
 	}
-	if err := database.SyncGroupClientCommLogSessionStore(); err != nil {
-		log.Println(err)
-	}
-	if err := database.SyncGroupAdminCommLogSessionStore(); err != nil {
+	if err := database.SyncGroupClientSupportMessagingSessionStore(); err != nil {
 		log.Println(err)
 	}
 	if err := database.SyncGroupShowCaseRecordsSessionStore(); err != nil {
@@ -71,10 +68,7 @@ func DatabaseSchedulerGroupToDatabase() {
 	if err := database.SyncGroupClientReportLogDatabase(); err != nil {
 		log.Println(err)
 	}
-	if err := database.SyncGroupClientCommLogDatabase(); err != nil {
-		log.Println(err)
-	}
-	if err := database.SyncGroupAdminCommLogDatabase(); err != nil {
+	if err := database.SyncGroupClientSupportMessagingDatabase(); err != nil {
 		log.Println(err)
 	}
 	if err := database.SyncGroupShowCaseRecordsDatabase(); err != nil {

@@ -52,8 +52,8 @@ func TestPrepareRegistration_Validation(t *testing.T) {
 			wantStatus: http.StatusBadRequest,
 		},
 		{
-			name: "malformed JSON",
-			body: "not-json",
+			name:       "malformed JSON",
+			body:       "not-json",
 			wantStatus: http.StatusUnprocessableEntity,
 		},
 	}
@@ -73,9 +73,9 @@ func TestPrepareRegistration_Validation(t *testing.T) {
 
 func TestRegisterFlow_RequiresCookie(t *testing.T) {
 	tests := []struct {
-		name       string
-		body       any
-		path       string
+		name string
+		body any
+		path string
 	}{
 		{
 			name: "invalid type-of-user",
@@ -124,8 +124,8 @@ func TestPrepareLogin_Validation(t *testing.T) {
 			wantStatus: http.StatusUnprocessableEntity,
 		},
 		{
-			name: "malformed JSON",
-			body: "not-json",
+			name:       "malformed JSON",
+			body:       "not-json",
 			wantStatus: http.StatusUnprocessableEntity,
 		},
 	}

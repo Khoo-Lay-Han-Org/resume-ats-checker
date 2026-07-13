@@ -53,8 +53,8 @@ func TestClientCommunicate_Validation(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "malformed JSON",
-			body: "not-json",
+			name:       "malformed JSON",
+			body:       "not-json",
 			wantStatus: http.StatusUnauthorized,
 		},
 	}
@@ -101,8 +101,8 @@ func TestClientReport_Validation(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "malformed JSON",
-			body: "not-json",
+			name:       "malformed JSON",
+			body:       "not-json",
 			wantStatus: http.StatusUnauthorized,
 		},
 	}

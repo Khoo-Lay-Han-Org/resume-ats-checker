@@ -3,14 +3,14 @@ package test
 import (
 	"testing"
 
-	auth_validator "resuming/api/auth/validator"
-	administrator_validator "resuming/api/administrator/validator"
-	client_support_validator "resuming/api/client-support/validator"
-	setting_validator "resuming/api/setting/validator"
-	auth_typing "resuming/api/auth/typing"
 	administrator_typing "resuming/api/administrator/typing"
+	administrator_validator "resuming/api/administrator/validator"
+	auth_typing "resuming/api/auth/typing"
+	auth_validator "resuming/api/auth/validator"
 	client_support_typing "resuming/api/client-support/typing"
+	client_support_validator "resuming/api/client-support/validator"
 	setting_typing "resuming/api/setting/typing"
+	setting_validator "resuming/api/setting/validator"
 )
 
 func TestValidateRegistration(t *testing.T) {

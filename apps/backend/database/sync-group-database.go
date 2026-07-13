@@ -302,21 +302,32 @@ func SyncGroupClientReportLogDatabase() error {
 	return nil
 }
 
-func SyncGroupClientCommLogDatabase() error {
+func SyncGroupClientSupportMessagingDatabase() error {
 	ctx := context.Background()
+
+	if err := syncClientCommsToSupportMessages(ctx); err != nil {
+		return err
+	}
+	if err := syncAdminCommsToSupportMessages(ctx); err != nil {
+		return err
+	}
+
+	log.Println("Successfully synced client support messages.")
+	return nil
+}
+
+func syncClientCommsToSupportMessages(ctx context.Context) error {
 	retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_comms").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
-			log.Println("No client communication data in Valkey — nothing to sync.")
 			return nil
 		}
 		return fmt.Errorf("valkey GET failed for client_comms: %w", err)
 	}
 
 	var all_client_comm []ClientCommDTO
-	err = json.Unmarshal([]byte(retrieved_data), &all_client_comm)
-	if err != nil {
-		return fmt.Errorf("failed to serialise all client communications data: %w", err)
+	if err := json.Unmarshal([]byte(retrieved_data), &all_client_comm); err != nil {
+		return fmt.Errorf("failed to parse client communications data: %w", err)
 	}
 
 	for _, item := range all_client_comm {
@@ -330,11 +341,9 @@ func SyncGroupClientCommLogDatabase() error {
 			}
 			user_id = user.Id
 		}
-		retrieved_message_type := item.Type
-		message := item.Message
 
-		var message_type ClientCommType
-		switch retrieved_message_type {
+		var message_type ClientSupportMessagingTyping
+		switch item.Type {
 		case "technical support":
 			message_type = TechnicalSupport
 		case "feature improvement":
@@ -347,85 +356,91 @@ func SyncGroupClientCommLogDatabase() error {
 			message_type = OnboardingSupport
 		case "complaint":
 			message_type = Complaint
+		default:
+			log.Printf("Unknown message type %q for comm %s", item.Type, item.PublicId)
+			continue
 		}
 
-		var client_comm ClientCommLog
-		err := DB.Where("public_id = ?", public_id).First(&client_comm).Error
+		var existing ClientSupportMessaging
+		err := DB.Where("public_id = ?", public_id).First(&existing).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				new_client_comm := ClientCommLog{
+				new_msg := ClientSupportMessaging{
 					PublicId: public_id,
-					UserId:   user_id,
 					Type:     message_type,
-					Message:  message,
+					Content: ClientSupportContentTyping{
+						Text:   item.Message,
+						UserId: user_id,
+						Time:   time.Now(),
+					},
 				}
-
-				err = DB.Create(&new_client_comm).Error
-				if err != nil {
-					return fmt.Errorf("failed to store new client messages: %w", err)
+				if err := DB.Create(&new_msg).Error; err != nil {
+					return fmt.Errorf("failed to store new support message: %w", err)
 				}
 			} else {
-				return fmt.Errorf("failed to serialise all client communications data: %w", err)
+				return fmt.Errorf("failed to query support message: %w", err)
 			}
 		}
 	}
 
-	log.Println("Successfully synced client communication logs.")
 	return nil
 }
 
-func SyncGroupAdminCommLogDatabase() error {
-	ctx := context.Background()
+func syncAdminCommsToSupportMessages(ctx context.Context) error {
 	retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_comms").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
-			log.Println("No admin communication data in Valkey — nothing to sync.")
 			return nil
 		}
 		return fmt.Errorf("valkey GET failed for admin_comms: %w", err)
 	}
 
 	var data []AdminCommDTO
-	err = json.Unmarshal([]byte(retrieved_data), &data)
-	if err != nil {
+	if err := json.Unmarshal([]byte(retrieved_data), &data); err != nil {
 		return fmt.Errorf("failed to parse admin communications data: %w", err)
 	}
 
 	for _, item := range data {
 		admin_comm_public_id := uuid.MustParse(item.AdminCommPublicId)
-		message := item.Message
-
 		var admin_user User
 		if err := DB.Where("public_id = ?", item.AdminUserPublicId).First(&admin_user).Error; err != nil {
 			log.Printf("Failed to resolve admin user for admin comm %s: %v", item.AdminCommPublicId, err)
 			continue
 		}
 
-		var client_comm ClientCommLog
-		if err := DB.Where("public_id = ?", item.ClientCommLogPublicId).First(&client_comm).Error; err != nil {
-			log.Printf("Failed to resolve client comm for admin comm %s: %v", item.AdminCommPublicId, err)
-			continue
+		var message_type ClientSupportMessagingTyping
+		if item.ClientCommLogPublicId != "" {
+			var original_msg ClientSupportMessaging
+			if err := DB.Where("public_id = ?", item.ClientCommLogPublicId).First(&original_msg).Error; err == nil {
+				message_type = original_msg.Type
+			}
+		}
+		if message_type == "" {
+			message_type = TechnicalSupport
 		}
 
-		var admin_comm AdminCommLog
-		err := DB.Where("public_id = ?", admin_comm_public_id).First(&admin_comm).Error
+		var existing ClientSupportMessaging
+		err := DB.Where("public_id = ?", admin_comm_public_id).First(&existing).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				if err := DB.Create(&AdminCommLog{
-					PublicId:        admin_comm_public_id,
-					UserId:          admin_user.Id,
-					ClientCommLogId: client_comm.Id,
-					Message:         message,
-				}).Error; err != nil {
-					return fmt.Errorf("failed to store new admin messages: %w", err)
+				new_msg := ClientSupportMessaging{
+					PublicId: admin_comm_public_id,
+					Type:     message_type,
+					Content: ClientSupportContentTyping{
+						Text:   item.Message,
+						UserId: admin_user.Id,
+						Time:   time.Now(),
+					},
+				}
+				if err := DB.Create(&new_msg).Error; err != nil {
+					return fmt.Errorf("failed to store new admin support message: %w", err)
 				}
 			} else {
-				return fmt.Errorf("failed to serialise all admin communications data: %w", err)
+				return fmt.Errorf("failed to query admin support message: %w", err)
 			}
 		}
 	}
 
-	log.Println("Successfully synced admin communication logs.")
 	return nil
 }
 
