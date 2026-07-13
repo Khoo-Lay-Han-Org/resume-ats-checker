@@ -1,0 +1,1556 @@
+basePath: /
+definitions:
+  api.ATSScoreResponse:
+    properties:
+      data:
+        type: integer
+      message:
+        type: string
+    type: object
+  api.ChangeDisplaynameRequest:
+    properties:
+      displayname:
+        type: string
+    required:
+    - displayname
+    type: object
+  api.ChangeEmailRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  api.ChangePasswordRequest:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  api.ChangeUsernameRequest:
+    properties:
+      username:
+        type: string
+    required:
+    - username
+    type: object
+  api.ChoosePortfolioRequest:
+    properties:
+      template_id:
+        type: string
+    required:
+    - template_id
+    type: object
+  api.ChooseResumeRequest:
+    properties:
+      template_id:
+        type: string
+    required:
+    - template_id
+    type: object
+  api.ClientCommunicateRequest:
+    properties:
+      message:
+        type: string
+      type:
+        type: string
+    required:
+    - message
+    - type
+    type: object
+  api.ClientCommunicationReplyRequest:
+    properties:
+      message:
+        type: string
+      public_id:
+        type: string
+    required:
+    - message
+    - public_id
+    type: object
+  api.ClientReportRequest:
+    properties:
+      report type:
+        type: string
+      target client_public_user_id:
+        type: string
+    required:
+    - report type
+    - target client_public_user_id
+    type: object
+  api.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  api.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  api.OTPRequest:
+    properties:
+      otp:
+        type: string
+    required:
+    - otp
+    type: object
+  api.PortfolioDataResponse:
+    properties:
+      address:
+        items:
+          type: string
+        type: array
+      certificate: {}
+      education: {}
+      email:
+        items:
+          type: string
+        type: array
+      job_experience: {}
+      language:
+        items:
+          type: string
+        type: array
+      name:
+        items:
+          type: string
+        type: array
+      phone_number:
+        items:
+          type: string
+        type: array
+      project: {}
+      skill:
+        items:
+          type: string
+        type: array
+      social_media:
+        items:
+          type: string
+        type: array
+      template_id:
+        type: integer
+    type: object
+  api.PortfolioResponse:
+    properties:
+      data:
+        $ref: '#/definitions/api.PortfolioDataResponse'
+      message:
+        type: string
+    type: object
+  api.RegisterRequest:
+    properties:
+      displayname:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - displayname
+    - email
+    - password
+    - username
+    type: object
+  api.ResumeDataResponse:
+    properties:
+      address:
+        items:
+          type: string
+        type: array
+      certificate: {}
+      education: {}
+      email:
+        items:
+          type: string
+        type: array
+      job_experience: {}
+      language:
+        items:
+          type: string
+        type: array
+      name:
+        items:
+          type: string
+        type: array
+      phone_number:
+        items:
+          type: string
+        type: array
+      project: {}
+      skill:
+        items:
+          type: string
+        type: array
+      social_media:
+        items:
+          type: string
+        type: array
+      template_id:
+        type: integer
+    type: object
+  api.ResumeResponse:
+    properties:
+      data:
+        $ref: '#/definitions/api.ResumeDataResponse'
+      message:
+        type: string
+    type: object
+  api.ShowCaseRecordDeleteRequest:
+    properties:
+      index:
+        type: string
+      sectiontitle:
+        type: string
+    required:
+    - index
+    - sectiontitle
+    type: object
+  api.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  api.UserControlRequest:
+    properties:
+      public_user_id:
+        type: string
+    required:
+    - public_user_id
+    type: object
+host: localhost:5321
+info:
+  contact: {}
+  description: API for resume building, portfolio management, and ATS scoring
+  title: Resume Builder API
+  version: "1.0"
+paths:
+  /accept-become-admin/{token}:
+    get:
+      description: Accepts the admin invitation using the token from the email link
+        and updates the user type to admin
+      parameters:
+      - description: Invite token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Accept admin invitation
+      tags:
+      - Admin
+  /admin_audit_logs:
+    get:
+      description: Retrieves audit logs for admin actions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get admin audit logs
+      tags:
+      - Admin
+  /ats-score-user-input:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Extracts resume, validates it, uses user-provided job description,
+        and calculates ATS score
+      parameters:
+      - description: Resume PDF file
+        in: formData
+        name: resume_file
+        required: true
+        type: file
+      - description: Job description text
+        in: formData
+        name: job_desc
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ATSScoreResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: ATS score with user input
+      tags:
+      - ATS
+  /ats-score-webscrape:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Extracts resume, validates it, web scrapes job description from
+        company/title, and calculates ATS score
+      parameters:
+      - description: Resume PDF file
+        in: formData
+        name: resume_file
+        required: true
+        type: file
+      - description: Company name for job description
+        in: formData
+        name: company
+        required: true
+        type: string
+      - description: Job title for job description
+        in: formData
+        name: job_title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ATSScoreResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: ATS score with web scrape
+      tags:
+      - ATS
+  /ban_client:
+    post:
+      consumes:
+      - application/json
+      description: Bans a client user by their public session ID
+      parameters:
+      - description: Ban request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserControlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Ban client
+      tags:
+      - Admin
+  /change-displayname:
+    post:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's displayname
+      parameters:
+      - description: New displayname
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChangeDisplaynameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Change displayname
+      tags:
+      - Setting
+  /change-email:
+    post:
+      consumes:
+      - application/json
+      description: Verifies OTP and updates user's email address
+      parameters:
+      - description: OTP verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Change email
+      tags:
+      - Setting
+  /change-password:
+    post:
+      consumes:
+      - application/json
+      description: Verifies OTP and updates user's password
+      parameters:
+      - description: OTP verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Change password
+      tags:
+      - Setting
+  /change-username:
+    post:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's username
+      parameters:
+      - description: New username
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChangeUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Change username
+      tags:
+      - Setting
+  /choose-portfolio-template:
+    patch:
+      consumes:
+      - application/json
+      description: Sets the portfolio template for the user
+      parameters:
+      - description: Template selection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChoosePortfolioRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Choose portfolio template
+      tags:
+      - Portfolio
+  /choose-resume-template:
+    patch:
+      consumes:
+      - application/json
+      description: Sets the resume template for the user
+      parameters:
+      - description: Template selection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChooseResumeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Choose resume template
+      tags:
+      - Resume
+  /client_audit_logs:
+    get:
+      description: Retrieves audit logs for client actions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get client audit logs
+      tags:
+      - Admin
+  /client_comm_log:
+    get:
+      description: Retrieves all client communication logs for admin review
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get client communication logs
+      tags:
+      - Admin
+  /client_comm_reply_log:
+    post:
+      consumes:
+      - application/json
+      description: Sends a reply to a client communication message
+      parameters:
+      - description: Reply request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ClientCommunicationReplyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Reply to client communication
+      tags:
+      - Admin
+  /client_comm_to_admin:
+    post:
+      consumes:
+      - application/json
+      description: Allows authenticated users to send a message to administrators
+      parameters:
+      - description: Communication details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ClientCommunicateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Submit client communication
+      tags:
+      - ClientSupport
+  /client_report_other_client:
+    post:
+      consumes:
+      - application/json
+      description: Allows authenticated users to report another client
+      parameters:
+      - description: Report details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ClientReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Submit client report
+      tags:
+      - ClientSupport
+  /delete-account:
+    post:
+      consumes:
+      - application/json
+      description: Verifies OTP and deletes the authenticated user's account
+      parameters:
+      - description: OTP verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Delete account
+      tags:
+      - Setting
+  /error_audit_logs:
+    get:
+      description: Retrieves audit logs for system errors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get error audit logs
+      tags:
+      - Admin
+  /get-portfolio-content:
+    get:
+      description: Retrieves the user's portfolio data including all sections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PortfolioResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get portfolio content
+      tags:
+      - Portfolio
+  /get-resume-content:
+    get:
+      description: Retrieves the user's resume data including all sections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.ResumeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get resume content
+      tags:
+      - Resume
+  /get_all_admins:
+    get:
+      description: Retrieves all admin configurations for admin management
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get all admins
+      tags:
+      - Admin
+  /get_all_clients:
+    get:
+      description: Retrieves all client configurations for admin management
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get all clients
+      tags:
+      - Admin
+  /invite-become-admin:
+    post:
+      consumes:
+      - application/json
+      description: Sends an invitation email to a selected user to become an admin
+      parameters:
+      - description: Selected user session
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserControlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Invite user to become admin
+      tags:
+      - Admin
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Verifies OTP, creates session, and syncs user data
+      parameters:
+      - description: OTP verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Complete login
+      tags:
+      - Authentication
+  /prepare-change-email:
+    post:
+      consumes:
+      - application/json
+      description: Validates new email and sends OTP to current email for verification
+      parameters:
+      - description: New email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChangeEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Prepare email change
+      tags:
+      - Setting
+  /prepare-change-password:
+    post:
+      consumes:
+      - application/json
+      description: Sends OTP to user's email for password change verification
+      parameters:
+      - description: New password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Prepare password change
+      tags:
+      - Setting
+  /prepare-delete-account:
+    post:
+      description: Sends OTP to user's email for account deletion verification
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Prepare account deletion
+      tags:
+      - Setting
+  /prepare-login:
+    post:
+      consumes:
+      - application/json
+      description: Validates login credentials and sends OTP to user's email
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Prepare login
+      tags:
+      - Authentication
+  /prepare-registeration:
+    post:
+      consumes:
+      - application/json
+      description: Validates registration data and sends OTP to user's email
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Prepare registration
+      tags:
+      - Authentication
+  /register/{type-of-user}:
+    post:
+      consumes:
+      - application/json
+      description: 'Verifies OTP and creates user account (path param: type-of-user
+        = "client" or "admin")'
+      parameters:
+      - description: User type (client or admin)
+        in: path
+        name: type-of-user
+        required: true
+        type: string
+      - description: OTP verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Complete registration
+      tags:
+      - Authentication
+  /remove_admin:
+    post:
+      consumes:
+      - application/json
+      description: Removes admin privileges from a specified user
+      parameters:
+      - description: Remove admin request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserControlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Remove admin
+      tags:
+      - Admin
+  /remove_all_session:
+    get:
+      description: Removes all client sessions from the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Remove all client sessions
+      tags:
+      - Admin
+  /remove_individual_session:
+    post:
+      consumes:
+      - application/json
+      description: Removes a specific user session by their public session ID
+      parameters:
+      - description: Session removal request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserControlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Remove individual user session
+      tags:
+      - Admin
+  /showcaserecord-add/{type-of-data}:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new showcase record (name, email, phone-number, address,
+        social-media, job-experience, education, skill, certificate, language, project)
+      parameters:
+      - description: Type of data (name, email, phone-number, address, social-media,
+          job-experience, education, skill, certificate, language, project)
+        in: path
+        name: type-of-data
+        required: true
+        type: string
+      - description: Showcase record data (structure depends on type-of-data)
+        in: body
+        name: request
+        required: true
+        schema: {}
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Add showcase record
+      tags:
+      - ShowCaseRecords
+  /showcaserecord-delete:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a showcase record at a specific index within a section
+      parameters:
+      - description: Delete request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ShowCaseRecordDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Delete showcase record
+      tags:
+      - ShowCaseRecords
+  /showcaserecord-edit/{type-of-data}:
+    patch:
+      consumes:
+      - application/json
+      description: Edits a showcase record at a specific index (name, email, phone-number,
+        address, social-media, job-experience, education, skill, certificate, language,
+        project)
+      parameters:
+      - description: Type of data (name, email, phone-number, address, social-media,
+          job-experience, education, skill, certificate, language, project)
+        in: path
+        name: type-of-data
+        required: true
+        type: string
+      - description: Updated showcase record data (structure depends on type-of-data)
+        in: body
+        name: request
+        required: true
+        schema: {}
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Edit showcase record
+      tags:
+      - ShowCaseRecords
+  /showcaserecord-retrieve:
+    get:
+      description: Retrieves all showcase records for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get showcase records
+      tags:
+      - ShowCaseRecords
+swagger: "2.0"
