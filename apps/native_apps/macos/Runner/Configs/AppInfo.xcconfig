@@ -8,7 +8,7 @@
 PRODUCT_NAME = Resuming
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.nativeApps
+PRODUCT_BUNDLE_IDENTIFIER = com.resuming.nativeApps
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Resuming. All rights reserved.
