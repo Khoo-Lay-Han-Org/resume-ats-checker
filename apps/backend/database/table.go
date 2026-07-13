@@ -12,19 +12,19 @@ import (
 
 // Capitalise the table and field names so that GORM can read and write them
 type User struct {
-	Id          int       `gorm:"type:int;primaryKey;index"`
-	PublicId    uuid.UUID `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
-	Username    string    `gorm:"type:varchar(255);not null;unique;"`
-	Email       string    `gorm:"type:varchar(255);not null;unique;"`
-	Password    []byte    `gorm:"type:bytea;not null;"`
-	Displayname string    `gorm:"type:varchar(255);not null;unique;"`
-	UserType    UserType  `gorm:"type:varchar(20);not null;"`
-	CreatedAt   time.Time `gorm:"type:timestamptz;autoCreateTime;index"`
-	UpdatedAt   time.Time `gorm:"type:timestamptz;autoUpdateTime;index"`
-	BannedAt   *time.Time `gorm:"type:timestamptz;index"`
+	Id          int        `gorm:"type:int;primaryKey;index"`
+	PublicId    uuid.UUID  `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
+	Username    string     `gorm:"type:varchar(255);not null;unique;"`
+	Email       string     `gorm:"type:varchar(255);not null;unique;"`
+	Password    []byte     `gorm:"type:bytea;not null;"`
+	Displayname string     `gorm:"type:varchar(255);not null;unique;"`
+	UserType    UserType   `gorm:"type:varchar(20);not null;"`
+	CreatedAt   time.Time  `gorm:"type:timestamptz;autoCreateTime;index"`
+	UpdatedAt   time.Time  `gorm:"type:timestamptz;autoUpdateTime;index"`
+	BannedAt    *time.Time `gorm:"type:timestamptz;index"`
 	// GORM automatically detects this
 	DeletedAt gorm.DeletedAt `gorm:"type:timestamptz;index"`
-	ExpiresAt *time.Time      `gorm:"type:timestamptz;index"`
+	ExpiresAt *time.Time     `gorm:"type:timestamptz;index"`
 
 	ShowcaseRecord   ShowcaseRecord    `gorm:"foreignKey:UserId;references:Id"`
 	Portfolio        Portfolio         `gorm:"foreignKey:UserId;references:Id"`
@@ -37,8 +37,6 @@ type User struct {
 	ReportingReports []ClientReportLog `gorm:"foreignKey:ReportingUserId;references:Id"`
 	TargetReports    []ClientReportLog `gorm:"foreignKey:TargetUserId;references:Id"`
 	ErrorLog         ErrorLog          `gorm:"foreignKey:UserId;references:Id"`
-	ClientCommLog    ClientCommLog     `gorm:"foreignKey:UserId;references:Id"`
-	AdminCommLog     AdminCommLog      `gorm:"foreignKey:UserId;references:Id"`
 }
 
 type ShowcaseRecord struct {
@@ -59,7 +57,7 @@ type ShowcaseRecord struct {
 	CreatedAt     time.Time      `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt     time.Time      `gorm:"type:timestamptz;autoUpdateTime;index"`
 	DeletedAt     gorm.DeletedAt `gorm:"type:timestamptz;index"`
-	ExpiresAt *time.Time      `gorm:"type:timestamptz;index"`
+	ExpiresAt     *time.Time     `gorm:"type:timestamptz;index"`
 }
 
 type Portfolio struct {
@@ -71,7 +69,7 @@ type Portfolio struct {
 	CreatedAt  time.Time      `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt  time.Time      `gorm:"type:timestamptz;autoUpdateTime;index"`
 	DeletedAt  gorm.DeletedAt `gorm:"type:timestamptz;index"`
-	ExpiresAt *time.Time      `gorm:"type:timestamptz;index"`
+	ExpiresAt  *time.Time     `gorm:"type:timestamptz;index"`
 }
 
 type Resume struct {
@@ -83,7 +81,7 @@ type Resume struct {
 	CreatedAt  time.Time      `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt  time.Time      `gorm:"type:timestamptz;autoUpdateTime;index"`
 	DeletedAt  gorm.DeletedAt `gorm:"type:timestamptz;index"`
-	ExpiresAt *time.Time      `gorm:"type:timestamptz;index"`
+	ExpiresAt  *time.Time     `gorm:"type:timestamptz;index"`
 }
 
 type Ats struct {
@@ -95,26 +93,26 @@ type Ats struct {
 	CreatedAt time.Time      `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt time.Time      `gorm:"type:timestamptz;autoUpdateTime;index"`
 	DeletedAt gorm.DeletedAt `gorm:"type:timestamptz;index"`
-	ExpiresAt *time.Time      `gorm:"type:timestamptz;index"`
+	ExpiresAt *time.Time     `gorm:"type:timestamptz;index"`
 }
 
 type JwtKey struct {
-	Id        int       `gorm:"type:int;primaryKey;"`
-	PublicId  uuid.UUID `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
-	UserId    int       `gorm:"type:int;index;not null;unique"`
-	Key       string    `gorm:"type:varchar(355);not null;"`
-	CreatedAt time.Time `gorm:"type:timestamptz;autoCreateTime;index"`
-	UpdatedAt time.Time `gorm:"type:timestamptz;autoUpdateTime;index"`
+	Id        int        `gorm:"type:int;primaryKey;"`
+	PublicId  uuid.UUID  `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
+	UserId    int        `gorm:"type:int;index;not null;unique"`
+	Key       string     `gorm:"type:varchar(355);not null;"`
+	CreatedAt time.Time  `gorm:"type:timestamptz;autoCreateTime;index"`
+	UpdatedAt time.Time  `gorm:"type:timestamptz;autoUpdateTime;index"`
 	ExpiresAt *time.Time `gorm:"type:timestamptz;index"`
 }
 
 type Session struct {
-	Id         int       `gorm:"type:int;primaryKey;"`
-	PublicId   uuid.UUID `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
-	UserId     int       `gorm:"type:int;index;not null;unique"`
-	SessionKey string    `gorm:"type:varchar(355);not null;"`
-	CreatedAt  time.Time `gorm:"type:timestamptz;autoCreateTime;index"`
-	UpdatedAt  time.Time `gorm:"type:timestamptz;autoUpdateTime;index"`
+	Id         int        `gorm:"type:int;primaryKey;"`
+	PublicId   uuid.UUID  `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
+	UserId     int        `gorm:"type:int;index;not null;unique"`
+	SessionKey string     `gorm:"type:varchar(355);not null;"`
+	CreatedAt  time.Time  `gorm:"type:timestamptz;autoCreateTime;index"`
+	UpdatedAt  time.Time  `gorm:"type:timestamptz;autoUpdateTime;index"`
 	ExpiresAt  *time.Time `gorm:"type:timestamptz;index;default:CURRENT_TIMESTAMP + INTERVAL '3 days'"`
 }
 
@@ -126,7 +124,7 @@ type ClientAuditLog struct {
 	Message   string             `gorm:"type:varchar(355);not null;"`
 	CreatedAt time.Time          `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt time.Time          `gorm:"type:timestamptz;autoUpdateTime;index"`
-	ExpiresAt *time.Time          `gorm:"type:timestamptz;index"`
+	ExpiresAt *time.Time         `gorm:"type:timestamptz;index"`
 }
 
 type AdminAuditLog struct {
@@ -137,7 +135,7 @@ type AdminAuditLog struct {
 	Message   string            `gorm:"type:varchar(355);not null;"`
 	CreatedAt time.Time         `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt time.Time         `gorm:"type:timestamptz;autoUpdateTime;index"`
-	ExpiresAt *time.Time         `gorm:"type:timestamptz;index"`
+	ExpiresAt *time.Time        `gorm:"type:timestamptz;index"`
 }
 
 type ClientReportLog struct {
@@ -148,7 +146,7 @@ type ClientReportLog struct {
 	Type            ClientBannedReasonType `gorm:"type:string;not null;"`
 	CreatedAt       time.Time              `gorm:"type:timestamptz;autoCreateTime;index"`
 	UpdatedAt       time.Time              `gorm:"type:timestamptz;autoUpdateTime;index"`
-	ExpiresAt       *time.Time              `gorm:"type:timestamptz;index"`
+	ExpiresAt       *time.Time             `gorm:"type:timestamptz;index"`
 }
 
 type ErrorLog struct {
@@ -156,35 +154,21 @@ type ErrorLog struct {
 	PublicId uuid.UUID `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
 	UserId   int       `gorm:"type:int;index;not null"`
 	// Use the status code
-	Type      int       `gorm:"type:int;not null;"`
-	Message   string    `gorm:"type:varchar(355);not null;"`
-	CreatedAt time.Time `gorm:"type:timestamptz;autoCreateTime;index"`
-	UpdatedAt time.Time `gorm:"type:timestamptz;autoUpdateTime;index"`
+	Type      int        `gorm:"type:int;not null;"`
+	Message   string     `gorm:"type:varchar(355);not null;"`
+	CreatedAt time.Time  `gorm:"type:timestamptz;autoCreateTime;index"`
+	UpdatedAt time.Time  `gorm:"type:timestamptz;autoUpdateTime;index"`
 	ExpiresAt *time.Time `gorm:"type:timestamptz;index"`
 }
 
-type ClientCommLog struct {
-	Id        int            `gorm:"type:int;primaryKey;"`
-	PublicId  uuid.UUID      `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
-	UserId    int            `gorm:"type:int;index;not null"`
-	Type      ClientCommType `gorm:"type:varchar(355);not null;"`
-	Message   string         `gorm:"type:varchar(355);not null;"`
-	CreatedAt time.Time      `gorm:"type:timestamptz;autoCreateTime;index"`
-	UpdatedAt time.Time      `gorm:"type:timestamptz;autoUpdateTime;index"`
-	ExpiresAt *time.Time      `gorm:"type:timestamptz;index"`
-
-	AdminCommLog AdminCommLog `gorm:"foreignKey:ClientCommLogId;references:Id"`
-}
-
-type AdminCommLog struct {
-	Id              int       `gorm:"type:int;primaryKey;"`
-	PublicId        uuid.UUID `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
-	UserId          int       `gorm:"type:int;index;not null"`
-	ClientCommLogId int       `gorm:"type:int;primaryKey;"`
-	Message         string    `gorm:"type:varchar(355);not null;"`
-	CreatedAt       time.Time `gorm:"type:timestamptz;autoCreateTime;index"`
-	UpdatedAt       time.Time `gorm:"type:timestamptz;autoUpdateTime;index"`
-	ExpiresAt       *time.Time `gorm:"type:timestamptz;index"`
+type ClientSupportMessaging struct {
+	Id        int                          `gorm:"type:int;primaryKey;"`
+	PublicId  uuid.UUID                    `gorm:"type:uuid;not null;index;unique;default:gen_random_uuid()"`
+	Type      ClientSupportMessagingTyping `gorm:"type:varchar(355);not null;"`
+	Content   ClientSupportContentTyping   `gorm:"type:jsonb;not null;"`
+	CreatedAt time.Time                    `gorm:"type:timestamptz;autoCreateTime;index"`
+	UpdatedAt time.Time                    `gorm:"type:timestamptz;autoUpdateTime;index"`
+	ExpiresAt *time.Time                   `gorm:"type:timestamptz;index"`
 }
 
 func TableConnect() error {
@@ -200,8 +184,7 @@ func TableConnect() error {
 		&AdminAuditLog{},
 		&ClientReportLog{},
 		&ErrorLog{},
-		&ClientCommLog{},
-		&AdminCommLog{},
+		&ClientSupportMessaging{},
 	); err != nil {
 		return fmt.Errorf("failed to migrate tables: %w", err)
 	}

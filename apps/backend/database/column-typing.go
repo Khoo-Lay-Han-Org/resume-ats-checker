@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 type ClientAuditLogType string
 
 const (
@@ -60,13 +62,19 @@ const (
 	Client     UserType = "client"
 )
 
-type ClientCommType string
+type ClientSupportMessagingTyping string
 
 const (
-	TechnicalSupport    ClientCommType = "technical support"
-	FeatureImprovement  ClientCommType = "feature improvement"
-	BillingManagement   ClientCommType = "billing management"
-	ServiceAndOperation ClientCommType = "service and operation"
-	OnboardingSupport   ClientCommType = "onboarding support"
-	Complaint           ClientCommType = "complaint"
+	TechnicalSupport   ClientSupportMessagingTyping  = "technical support"
+	FeatureImprovement ClientSupportMessagingTyping  = "feature improvement"
+	BillingManagement  ClientSupportMessagingTyping  = "billing management"
+	ServiceAndOperation ClientSupportMessagingTyping = "service and operation"
+	OnboardingSupport  ClientSupportMessagingTyping  = "onboarding support"
+	Complaint       ClientSupportMessagingTyping     = "complaint"
 )
+
+type ClientSupportContentTyping struct {
+	Text	string	`json:"text"`
+	UserId int `json:"user_id"`
+	Time time.Time `json:"time"`
+}
