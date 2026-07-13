@@ -51,7 +51,6 @@ resuming/
 ├── apps/
 │   ├── web/              # Frontend application (Astro + Svelte)
 │   ├── ai-ml/            # AI/ML service (Python)
-│   ├── ai/               # AI service (planned)
 │   └── api/              # Backend API (planned)
 └── packages/
     ├── config/           # Shared TypeScript configuration
@@ -60,7 +59,7 @@ resuming/
 
 - The **web app** serves as the primary frontend, handling portfolio creation, resume generation, and displaying ATS analysis results.
 - The **ai-ml** workspace provides Python-based AI/ML processing for resume parsing, scoring, and semantic analysis.
-- **Shared packages** (`config`, `env`) provide consistent tooling and validated configuration across all apps.
+- **Shared packages** (`config`, `env`) provide consistent TypeScript tooling and validated configuration for the web and future API workspaces.
 
 The portfolio acts as the single source of truth — all user data is entered once in the portfolio and automatically propagated to resume generation and ATS analysis, eliminating redundant data entry.
 
@@ -101,7 +100,6 @@ resuming/
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   ├── ai-ml/                # Python AI/ML service
-│   ├── ai/                   # AI service (planned)
 │   └── api/                  # Backend API (planned)
 ├── packages/
 │   ├── config/               # Shared TypeScript base config
