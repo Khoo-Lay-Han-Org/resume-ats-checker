@@ -1,4 +1,5 @@
 import time
+import traceback
 
 from vector_store import client
 from embedding_model import model
@@ -201,38 +202,44 @@ def embed_scraped_content(contents):
 def insert_to_vector_store(contents, deduplicate=True):
     seen_texts = set()
 
-    try:
-        for content in contents:
-            embedded_content, text = content
+    for content in contents:
+        embedded_content, text = content
 
-            if deduplicate:
-                if text in seen_texts:
-                    print(
-                        f"\n\nSkipping duplicate (seen in this batch): {text[:60]}..."
-                    )
-                    continue
+        if deduplicate:
+            if text in seen_texts:
+                print(
+                    f"\n\nSkipping duplicate (seen in this batch): {text[:60]}..."
+                )
+                continue
 
+            escaped = text.replace('"', '\\"')
+            try:
                 existing = client.query(
                     collection_name="data",
-                    filter=f'text == "{text}"',
+                    filter=f'text == "{escaped}"',
                     output_fields=["id"],
                     limit=1,
                 )
                 if existing:
                     print(f"\n\nSkipping duplicate (already in DB): {text[:60]}...")
                     continue
+            except Exception:
+                print(f"\n\nDedup query failed for text, inserting anyway: {text[:60]}...")
 
-            seen_texts.add(text)
-            print(
-                f"\n\nStoring the following embedded data (insert to vector store): \n{content}"
-            )
+        seen_texts.add(text)
+        print(
+            f"\n\nStoring the following embedded data (insert to vector store): \n{content}"
+        )
+        try:
             client.insert("data", {"vector": embedded_content, "text": text})
             print(
                 f"\n\nStored the following embedded data (insert to vector store): \n{content}"
             )
-        return True
-    except:
-        return False
+        except Exception as e:
+            print(f"\n\nFailed to insert: {e}\n{traceback.format_exc()}")
+            return False
+
+    return True
 
 
 def deduplicate_vector_store():
