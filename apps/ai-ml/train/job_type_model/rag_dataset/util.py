@@ -45,7 +45,7 @@ def slight_change_label_search(search_label):
     return search_labels
 
 
-def scrape_content(modified_search_label):
+def scrape_content(modified_search_label, max_pages=10):
     all_content = []
 
     with sync_playwright() as p:
@@ -57,28 +57,39 @@ def scrape_content(modified_search_label):
         for _, item in enumerate(modified_search_label):
             print(f"\n\nSearching with search keywords (scrape content): \n{item}")
 
-            try:
-                page.goto(f"https://www.bing.com/search?q={quote(item)}")
-                page.wait_for_selector("#sb_form_q")
-            except Exception:
-                try:
-                    time.sleep(60)
-                    page.goto(f"https://www.bing.com/search?q={quote(item)}")
-                    page.wait_for_selector("#sb_form_q")
-                except Exception:
-                    print(
-                        f"\n\nFailed to search keyword (scrape content) {item}. Skipping."
-                    )
-                    time.sleep(60)
-                    continue
-
-            a_tag = page.query_selector_all("h2 a")
-
             links = []
 
-            for tag in a_tag:
-                link = tag.get_attribute("href")
-                links.append(link)
+            for page_num in range(1, max_pages + 1):
+                first = (page_num - 1) * 10 + 1
+                url = f"https://www.bing.com/search?q={quote(item)}&first={first}"
+
+                try:
+                    page.goto(url)
+                    page.wait_for_selector("#sb_form_q")
+                except Exception:
+                    try:
+                        time.sleep(60)
+                        page.goto(url)
+                        page.wait_for_selector("#sb_form_q")
+                    except Exception:
+                        print(
+                            f"\n\nFailed to search keyword page {page_num} (scrape content) {item}. Skipping page."
+                        )
+                        time.sleep(60)
+                        continue
+
+                a_tag = page.query_selector_all("h2 a")
+
+                for tag in a_tag:
+                    link = tag.get_attribute("href")
+                    if link and link not in links:
+                        links.append(link)
+
+                print(
+                    f"\n\nFound {len(links)} unique links so far (page {page_num}/{max_pages})"
+                )
+
+                time.sleep(2)
 
             for link in links:
                 print(f"\n\nSearching with link (scrape content): \n{link}")
