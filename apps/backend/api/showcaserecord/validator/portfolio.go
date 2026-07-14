@@ -1,6 +1,12 @@
 package showcaserecord_validator
 
 import (
+	"context"
+	"fmt"
+	"net"
+	"strings"
+	"time"
+
 	"github.com/bobch27/valtra-go"
 	typing "resuming/api/showcaserecord/typing"
 )
@@ -39,6 +45,12 @@ func ValidateEmailPortfolioData(request typing.EmailSection) (typing.EmailSectio
 				valtra.MinLengthString(4, "Email must be at least 4 characters"),
 				valtra.MaxLengthString(30, "Email must be at most 30 characters"),
 				valtra.Email("Email must be in correct email format"),
+			func(v valtra.Value[string]) error {
+				if !validateEmailMX(v.Value()) {
+					return fmt.Errorf("Email domain must have valid MX or A records")
+				}
+				return nil
+			},
 			).
 			Collect(v),
 
@@ -355,4 +367,28 @@ func ValidateProjectPortfolioData(request typing.ProjectSection) (typing.Project
 	}
 
 	return project, nil
+}
+
+func validateEmailMX(email string) bool {
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return false
+	}
+	domain := parts[1]
+
+	resolver := net.Resolver{}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	mx, err := resolver.LookupMX(ctx, domain)
+	if err == nil && len(mx) > 0 {
+		return true
+	}
+
+	ips, err := resolver.LookupIPAddr(ctx, domain)
+	if err == nil && len(ips) > 0 {
+		return true
+	}
+
+	return false
 }

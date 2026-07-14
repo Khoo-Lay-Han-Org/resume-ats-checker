@@ -1,7 +1,10 @@
 package auth_validator
 
 import (
+	"fmt"
+
 	"github.com/bobch27/valtra-go"
+	auth_util "resuming/api/auth/util"
 	typing "resuming/api/auth/typing"
 )
 
@@ -30,6 +33,12 @@ func ValidateRegistration(request typing.Register) (typing.Register, error) {
 			Validate(
 				valtra.Required[string]("Email is required."),
 				valtra.Email("Email must be in correct email format"),
+			func(v valtra.Value[string]) error {
+				if !auth_util.ValidateEmailMX(v.Value()) {
+					return fmt.Errorf("Email domain must have valid MX or A records")
+				}
+				return nil
+			},
 			).
 			Collect(v),
 

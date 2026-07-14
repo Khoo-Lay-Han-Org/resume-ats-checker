@@ -1,7 +1,10 @@
 package setting_validator
 
 import (
+	"fmt"
+
 	"github.com/bobch27/valtra-go"
+	setting_util "resuming/api/setting/util"
 	typing "resuming/api/setting/typing"
 )
 
@@ -54,6 +57,12 @@ func ValidateEmailRequest(request typing.ChangeEmailRequest) (typing.ChangeEmail
 			Validate(
 				valtra.Required[string]("Email is required."),
 				valtra.Email("Email must be in correct email format"),
+			func(v valtra.Value[string]) error {
+				if !setting_util.ValidateEmailMX(v.Value()) {
+					return fmt.Errorf("Email domain must have valid MX or A records")
+				}
+				return nil
+			},
 			).
 			Collect(v),
 	}

@@ -6,7 +6,10 @@ import (
 	"errors"
 	"log"
 	"math/big"
+	"net"
 	"strconv"
+	"strings"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	systemconfig "resuming/system-config"
@@ -46,7 +49,6 @@ func SendOTP(email string) error {
 }
 
 func CheckOTP(email, otp string) error {
-	// check OTP matching
 	ctx := context.Background()
 	value, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(email+":otp").Build()).ToString()
 	if err != nil {
@@ -63,4 +65,28 @@ func CheckOTP(email, otp string) error {
 	}
 
 	return nil
+}
+
+func ValidateEmailMX(email string) bool {
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return false
+	}
+	domain := parts[1]
+
+	resolver := net.Resolver{}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	mx, err := resolver.LookupMX(ctx, domain)
+	if err == nil && len(mx) > 0 {
+		return true
+	}
+
+	ips, err := resolver.LookupIPAddr(ctx, domain)
+	if err == nil && len(ips) > 0 {
+		return true
+	}
+
+	return false
 }
