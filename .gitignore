@@ -54,3 +54,4 @@ coverage
 tmp
 temp
 __pycache__/
+browser_sessions/
