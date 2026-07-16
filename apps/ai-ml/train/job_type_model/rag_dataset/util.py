@@ -330,46 +330,28 @@ def polish_scraped_content(scraped_content):
                 f"\n\nPolishing the following sentence (polish scraped content): \n{item}"
             )
 
-            random_delay(0.5, 2.0)
-
-            try:
-                result = agent_sentence_polisher.invoke(
-                    {"messages": [{"role": "user", "content": item}]}
-                )
-
-                try:
-                    text = _extract_text(result)
-                    polished_content.append(text)
-
-                    print(
-                        f"\n\nAppending the following polished sentence (polish scraped content): \n{text}"
-                    )
-                except Exception:
-                    pass
-            except Exception:
-                random_delay(30, 60)
+            wait = 30
+            while True:
+                random_delay(0.5, 2.0)
 
                 try:
                     result = agent_sentence_polisher.invoke(
                         {"messages": [{"role": "user", "content": item}]}
                     )
 
-                    try:
-                        text = _extract_text(result)
-                        polished_content.append(text)
+                    text = _extract_text(result)
+                    polished_content.append(text)
 
-                        print(
-                            f"\n\nAppending the following polished sentence (polish scraped content): \n{text}"
-                        )
-                    except Exception:
-                        print(
-                            f"\n\nFailed to polish the following sentence (polish scraped content): \n{item}"
-                        )
-                        pass
-
+                    print(
+                        f"\n\nAppending the following polished sentence (polish scraped content): \n{text}"
+                    )
+                    break
                 except Exception:
-                    print(f"\n\nModel Needs Rest (polish scraped content)")
-                    random_delay(30, 60)
+                    print(
+                        f"\n\nModel needs rest (polish scraped content). Waiting {wait}s before retry..."
+                    )
+                    random_delay(wait, wait + 30)
+                    wait = min(wait * 2, 300)
 
     return polished_content
 
