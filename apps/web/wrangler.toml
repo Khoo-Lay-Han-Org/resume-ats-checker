@@ -15,5 +15,19 @@ binding = "ASSETS"
 [observability]
 enabled = true
 
+    [observability.logs]
+    head_sampling_rate = 1
+    destinations = ["sentry-logs"]
+
+    [observability.traces]
+    enabled = true
+    head_sampling_rate = 0.01
+    destinations = ["sentry-traces"]
+
 [version_metadata]
 binding = "CF_VERSION_METADATA"
+
+[env.staging]
+
+
+[env.production]
