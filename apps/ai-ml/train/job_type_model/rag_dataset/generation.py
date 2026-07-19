@@ -5,9 +5,14 @@ from util import *
 
 
 def generate_dataset():
+    completed = load_checkpoint()
     skipped_items = []
 
     for _, item in enumerate(ALL_JOB_ROLES):
+        if item in completed:
+            print(f"\n\n\nSKIPPING (already checkpointed): {item}\n\n\n")
+            continue
+
         print(f"\n\n\nITEM: {item}\n\n\n")
 
         common_search_labels = slight_change_label_search(item)
@@ -26,6 +31,9 @@ def generate_dataset():
 
         if storing_status != True:
             raise Exception("Failed to store data")
+
+        completed.add(item)
+        save_checkpoint(completed)
 
     data = []
     for _, item in enumerate(ALL_JOB_ROLES):

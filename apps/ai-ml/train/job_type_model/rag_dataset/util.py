@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import traceback
 from urllib.parse import quote
@@ -52,6 +53,25 @@ MAX_RETRIES = 3
 
 HEADLESS = True
 USE_FIREFOX = True
+
+
+# ── Checkpointing ──────────────────────────────────────────────────
+CHECKPOINT_FILE = os.path.join(os.path.dirname(__file__), "checkpoint.json")
+
+
+def load_checkpoint() -> set[str]:
+    """Load completed job roles from checkpoint file."""
+    if os.path.exists(CHECKPOINT_FILE):
+        with open(CHECKPOINT_FILE) as f:
+            return set(json.load(f))
+    return set()
+
+
+def save_checkpoint(completed: set[str]):
+    """Write completed job roles to checkpoint file."""
+    with open(CHECKPOINT_FILE, "w") as f:
+        json.dump(sorted(completed), f, indent=2)
+    print(f"\n\nCheckpoint saved: {len(completed)} roles completed\n")
 
 
 def _extract_text(result):
