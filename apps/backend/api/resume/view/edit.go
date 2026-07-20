@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	typing "resuming/api/resume/typing"
 	validator "resuming/api/resume/validator"
@@ -13,78 +13,73 @@ import (
 	"resuming/tool"
 )
 
-func ChooseTemplate() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to retrieve user data."})
-			return
+func ChooseTemplate() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to retrieve user data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
 		var request typing.ChooseTemplateRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
 		template_id, err := validator.ValidateTemplateID(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve resume data."})
-					return
+					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
 				}
-				if syncErr := database.SyncIndividualResumeDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve resume data."})
-					return
+				resume, dbErr := database.Queries.FindResumeByUserId(ctx, user.ID)
+				if dbErr != nil {
+					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
+				}
+				if syncErr := database.SyncIndividualResumeDataSessionStore(public_user_id, &resume); syncErr != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve resume data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve resume data."})
-					return
+					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve resume data."})
-				return
+				return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
 			}
 		}
 
 		var data map[string]any
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process resume data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume data."})
 		}
 
 		data["template_id"] = template_id
 
 		serialised_data, err := json.Marshal(data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process resume data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume data."})
 		}
 
 		err = tool.Valkey.Do(
-			c.Request.Context(),
+			c.Request().Context(),
 			tool.Valkey.B().Set().
 				Key(public_user_id+":resume_data").Value(string(serialised_data)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
 		).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to save resume data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to save resume data."})
 		}
 
+		return nil
 	}
 }

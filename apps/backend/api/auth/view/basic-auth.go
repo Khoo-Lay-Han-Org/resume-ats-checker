@@ -3,41 +3,35 @@ package auth_view
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	typing "resuming/api/auth/typing"
 	util "resuming/api/auth/util"
 	validator "resuming/api/auth/validator"
 	"resuming/database"
+	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
 	"resuming/tool"
 )
 
-func PrepareRegistration() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		// get request
+func PrepareRegistration() echo.HandlerFunc {
+	return func(c echo.Context) error {
 		var request typing.Register
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		// validate data
 		validated_request, err := validator.ValidateRegistration(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
-		// store the registeration data for after validating OTP
 		hashed_password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process request."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().
+		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
 			Hset().
 			Key(request.Email+":session").
 			FieldValue().
@@ -47,64 +41,63 @@ func PrepareRegistration() gin.HandlerFunc {
 			Build()).
 			Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Connection to in-memory data stores failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().
+		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
 			Expire().
 			Key(request.Email+":session").
 			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
 			Build()).
 			Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Connection to in-memory data stores failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		// send OTP
 		err = util.SendOTP(validated_request.Email)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to send OTP."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
-		// send cookie
-		c.SetCookie("email_for_otp", validated_request.Email, int(systemconfig.OtpExpiryDuration.Seconds()), "/", "", systemconfig.ApplicationHosted, true)
+		c.SetCookie(&http.Cookie{
+			Name:     "email_for_otp",
+			Value:    validated_request.Email,
+			MaxAge:   int(systemconfig.OtpExpiryDuration.Seconds()),
+			Path:     "/",
+			Domain:   "",
+			Secure:   systemconfig.ApplicationHosted,
+			HttpOnly: true,
+		})
+
+		return nil
 	}
 }
 
-func Register() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func Register() echo.HandlerFunc {
+	return func(c echo.Context) error {
 		type_of_user := c.Param("type-of-user")
 
-		// get cookie
-		email, err := c.Cookie("email_for_otp")
+		cookie, err := c.Cookie("email_for_otp")
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to retrieve cookie."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve cookie."})
 		}
+		email := cookie.Value
 
-		// get request data (OTP)
 		var request typing.OTP
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
 		err = util.CheckOTP(email, request.OTP)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid OTP."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
 
-		// if OTP valid, create new user
-		user_details, err := tool.Valkey.Do(c.Request.Context(),
+		user_details, err := tool.Valkey.Do(c.Request().Context(),
 			tool.Valkey.B().Hgetall().Key(email+":session").Build()).
 			ToMap()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve user detail."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user detail."})
 		}
 
 		usernameMsg := user_details["username"]
@@ -113,148 +106,133 @@ func Register() gin.HandlerFunc {
 
 		username, err := (&usernameMsg).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse username."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse username."})
 		}
 
 		displayname, err := (&displaynameMsg).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse displayname."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse displayname."})
 		}
 
 		hashed_password, err := (&passwordMsg).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse password."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse password."})
 		}
 
-		var user_type database.UserType
+		var user_type sqlc.UserType
 		switch type_of_user {
 		case "client":
-			user_type = database.Client
+			user_type = sqlc.UserTypeClient
 		case "admin":
 			if email != systemconfig.Email {
-				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Only the system admin can register as admin."})
-				return
+				return c.JSON(http.StatusForbidden, echo.Map{"message": "Only the system admin can register as admin."})
 			}
-			var count int64
-			database.DB.Model(&database.User{}).
-				Where("user_type IN ?", []database.UserType{database.Admin, database.SuperAdmin}).
-				Count(&count)
-			if count > 0 {
-				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Admin already registered."})
-				return
+			count, err := database.Queries.CountUsersByType(c.Request().Context(), sqlc.UserTypeAdmin)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to check admin count."})
 			}
-			user_type = database.SuperAdmin
+			superAdminCount, err := database.Queries.CountUsersByType(c.Request().Context(), sqlc.UserTypeSuperAdmin)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to check admin count."})
+			}
+			if count+superAdminCount > 0 {
+				return c.JSON(http.StatusForbidden, echo.Map{"message": "Admin already registered."})
+			}
+			user_type = sqlc.UserTypeSuperAdmin
 		default:
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid account type."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid account type."})
 		}
 
-		new_user := database.User{
-			Displayname: displayname,
+		_, err = database.Queries.CreateUser(c.Request().Context(), sqlc.CreateUserParams{
 			Username:    username,
 			Email:       email,
 			Password:    []byte(hashed_password),
+			Displayname: displayname,
 			UserType:    user_type,
+		})
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to create user."})
 		}
 
-		result := database.DB.Create(&new_user)
-		if result.Error != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to create user."})
-			return
-		}
-
+		return nil
 	}
 }
 
-func PrepareLogin() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// get request
+func PrepareLogin() echo.HandlerFunc {
+	return func(c echo.Context) error {
 		var request typing.Login
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		// validate input
 		validated_request, err := validator.ValidateLogin(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
-		// check password
-		var user database.User
-		result := database.DB.Where("email = ?", validated_request.Email).First(&user)
-		if result.Error != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "User does not exist."})
-			return
+		user, err := database.Queries.FindUserByEmail(c.Request().Context(), validated_request.Email)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "User does not exist."})
 		}
 
 		err = bcrypt.CompareHashAndPassword(user.Password, []byte(request.Password))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid password."})
-			return
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid password."})
 		}
 
-		// send OTP
 		err = util.SendOTP(validated_request.Email)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to send OTP."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
-		// set cookie
-		c.SetCookie("email_for_otp", validated_request.Email, int(systemconfig.OtpExpiryDuration.Seconds()), "/", "", systemconfig.ApplicationHosted, true)
+		c.SetCookie(&http.Cookie{
+			Name:     "email_for_otp",
+			Value:    validated_request.Email,
+			MaxAge:   int(systemconfig.OtpExpiryDuration.Seconds()),
+			Path:     "/",
+			Domain:   "",
+			Secure:   systemconfig.ApplicationHosted,
+			HttpOnly: true,
+		})
+
+		return nil
 	}
 }
 
-func Login() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// get cookie
-		email, err := c.Cookie("email_for_otp")
+func Login() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cookie, err := c.Cookie("email_for_otp")
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to retrieve cookie."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve cookie."})
 		}
+		email := cookie.Value
 
-		// get request
 		var request typing.OTP
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		// check OTP matching
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		value, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(email+":otp").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process OTP."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process OTP."})
 		}
 		err = bcrypt.CompareHashAndPassword([]byte(value), []byte(request.OTP))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid OTP"})
-			return
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid OTP"})
 		}
 
 		err = tool.Valkey.Do(ctx, tool.Valkey.B().Del().Key(email+":otp").Build()).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process OTP"})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process OTP"})
 		}
 
-		// find user
-		var user database.User
-		result := database.DB.Where("email = ?", email).First(&user)
-		if result.Error != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve user."})
-			return
+		user, err := database.Queries.FindUserByEmail(ctx, email)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve user."})
 		}
 
-		c.Set("private_id", user.Id)
-		c.Next()
+		c.Set("private_id", user.ID)
+		return nil
 	}
 }

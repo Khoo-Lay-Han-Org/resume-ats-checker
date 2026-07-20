@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"resuming/database"
+	"resuming/database/sqlc"
 	"resuming/tool"
 )
 
-func FindUser(public_user_id string) (*database.User, error) {
+func FindUser(public_user_id string) (*sqlc.User, error) {
 	ctx := context.Background()
 	retrieved_data, err := tool.Valkey.Do(
 		ctx,
@@ -20,7 +20,7 @@ func FindUser(public_user_id string) (*database.User, error) {
 		return nil, err
 	}
 
-	var user database.User
+	var user sqlc.User
 	err = json.Unmarshal([]byte(retrieved_data), &user)
 	if err != nil {
 		return nil, err

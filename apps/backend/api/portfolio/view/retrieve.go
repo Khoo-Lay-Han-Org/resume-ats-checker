@@ -4,70 +4,67 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	"gorm.io/datatypes"
 	"resuming/database"
 	"resuming/tool"
 )
 
-func RetrievePortfolioData() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to retrieve session data."})
-			return
+func RetrievePortfolioData() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to retrieve session data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve portfolio data."})
-					return
+					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 				}
-				if syncErr := database.SyncIndividualPortfolioDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve portfolio data."})
-					return
+				portfolio, dbErr := database.Queries.FindPortfolioByUserId(ctx, user.ID)
+				if dbErr != nil {
+					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
+				}
+				if syncErr := database.SyncIndividualPortfolioDataSessionStore(public_user_id, &portfolio); syncErr != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve portfolio data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve portfolio data."})
-					return
+					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve portfolio data."})
-				return
+				return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 			}
 		}
 
 		var data map[string]any
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process portfolio data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process portfolio data."})
 		}
 
 		data_detail := data["detail"].(map[string]any)
 
-		template_id := data["template_id"].(int)
-		name := data_detail["name"].([]string)
-		email := data_detail["email"].([]string)
-		phone_number := data_detail["phone_number"].([]string)
-		address := data_detail["address"].([]string)
-		social_media := data_detail["social_media"].([]string)
-		job_experience := data_detail["job_experience"].(datatypes.JSON)
-		education := data_detail["education"].(datatypes.JSON)
-		skill := data_detail["skill"].([]string)
-		certificate := data_detail["certificate"].(datatypes.JSON)
-		language := data_detail["language"].([]string)
-		project := data_detail["project"].(datatypes.JSON)
+		template_id := data["template_id"].(float64)
+		name := data_detail["name"].([]any)
+		email := data_detail["email"].([]any)
+		phone_number := data_detail["phone_number"].([]any)
+		address := data_detail["address"].([]any)
+		social_media := data_detail["social_media"].([]any)
+		job_experience := data_detail["job_experience"].([]any)
+		education := data_detail["education"].([]any)
+		skill := data_detail["skill"].([]any)
+		certificate := data_detail["certificate"].([]any)
+		language := data_detail["language"].([]any)
+		project := data_detail["project"].([]any)
 
-		response_data := gin.H{
+		response_data := echo.Map{
 			"template_id":    template_id,
 			"name":           name,
 			"email":          email,
@@ -82,5 +79,7 @@ func RetrievePortfolioData() gin.HandlerFunc {
 			"project":        project,
 		}
 		c.Set("response_data", response_data)
+
+		return nil
 	}
 }

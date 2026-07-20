@@ -3,14 +3,12 @@ package database
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	valkey "github.com/valkey-io/valkey-go"
-	"gorm.io/gorm"
+	"resuming/database/sqlc"
 	"resuming/tool"
 )
 
@@ -25,36 +23,23 @@ func SyncGroupErrorLogDatabase() error {
 		return fmt.Errorf("valkey GET failed for error_log_data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data []ErrorLog
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised []sqlc.ErrorLog
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal error log data: %w", err)
 	}
 
-	for _, item := range deserialised_data {
-		result := DB.Model(&ErrorLog{}).Where("public_id = ?", item.PublicId).Updates(ErrorLog{
-			UserId:    item.UserId,
-			Type:      item.Type,
-			PublicId:  item.PublicId,
-			Message:   item.Message,
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
-			ExpiresAt: item.ExpiresAt,
+	for _, item := range deserialised {
+		err := Queries.UpdateErrorLogByPublicId(ctx, sqlc.UpdateErrorLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Message:  item.Message,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update error log: %w", result.Error)
-		}
-		if result.RowsAffected == 0 {
-			new_error_log := ErrorLog{
-				UserId:   item.UserId,
-				PublicId: item.PublicId,
-				Type:     item.Type,
-				Message:  item.Message,
-			}
-			if err := DB.Create(&new_error_log).Error; err != nil {
-				return fmt.Errorf("failed to create error log: %w", err)
-			}
+		if err != nil {
+			Queries.CreateErrorLog(ctx, sqlc.CreateErrorLogParams{
+				UserID:  item.UserID,
+				Type:    item.Type,
+				Message: item.Message,
+			})
 		}
 	}
 
@@ -73,36 +58,23 @@ func SyncGroupClientAuditLogDatabase() error {
 		return fmt.Errorf("valkey GET failed for client_audit_log_data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data []ClientAuditLog
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised []sqlc.ClientAuditLog
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal client audit log data: %w", err)
 	}
 
-	for _, item := range deserialised_data {
-		result := DB.Model(&ClientAuditLog{}).Where("public_id = ?", item.PublicId).Updates(ClientAuditLog{
-			UserId:    item.UserId,
-			Type:      item.Type,
-			PublicId:  item.PublicId,
-			Message:   item.Message,
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
-			ExpiresAt: item.ExpiresAt,
+	for _, item := range deserialised {
+		err := Queries.UpdateClientAuditLogByPublicId(ctx, sqlc.UpdateClientAuditLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Message:  item.Message,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update client audit log: %w", result.Error)
-		}
-		if result.RowsAffected == 0 {
-			new_client_audit_log := ClientAuditLog{
-				UserId:   item.UserId,
-				PublicId: item.PublicId,
-				Type:     item.Type,
-				Message:  item.Message,
-			}
-			if err := DB.Create(&new_client_audit_log).Error; err != nil {
-				return fmt.Errorf("failed to create client audit log: %w", err)
-			}
+		if err != nil {
+			Queries.CreateClientAuditLog(ctx, sqlc.CreateClientAuditLogParams{
+				UserID:  item.UserID,
+				Type:    item.Type,
+				Message: item.Message,
+			})
 		}
 	}
 
@@ -121,36 +93,23 @@ func SyncGroupAdminAuditLogDatabase() error {
 		return fmt.Errorf("valkey GET failed for admin_audit_log_data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data []AdminAuditLog
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised []sqlc.AdminAuditLog
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal admin audit log data: %w", err)
 	}
 
-	for _, item := range deserialised_data {
-		result := DB.Model(&AdminAuditLog{}).Where("public_id = ?", item.PublicId).Updates(AdminAuditLog{
-			UserId:    item.UserId,
-			Type:      item.Type,
-			PublicId:  item.PublicId,
-			Message:   item.Message,
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
-			ExpiresAt: item.ExpiresAt,
+	for _, item := range deserialised {
+		err := Queries.UpdateAdminAuditLogByPublicId(ctx, sqlc.UpdateAdminAuditLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Message:  item.Message,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update admin audit log: %w", result.Error)
-		}
-		if result.RowsAffected == 0 {
-			new_admin_audit_log := AdminAuditLog{
-				UserId:   item.UserId,
-				PublicId: item.PublicId,
-				Type:     item.Type,
-				Message:  item.Message,
-			}
-			if err := DB.Create(&new_admin_audit_log).Error; err != nil {
-				return fmt.Errorf("failed to create admin audit log: %w", err)
-			}
+		if err != nil {
+			Queries.CreateAdminAuditLog(ctx, sqlc.CreateAdminAuditLogParams{
+				UserID:  item.UserID,
+				Type:    item.Type,
+				Message: item.Message,
+			})
 		}
 	}
 
@@ -169,27 +128,34 @@ func SyncGroupClientsConfigDatabase() error {
 		return fmt.Errorf("valkey GET failed for client_configs: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data []ClientAdminConfigDTO
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal client configs data: %w", err)
+	type ClientConfig struct {
+		PublicId     string `json:"public_id"`
+		Username     string `json:"username"`
+		Displayname  string `json:"displayname"`
+		PublicUserId string `json:"public_user_id"`
 	}
 
-	for _, item := range deserialised_data {
-		public_id := uuid.MustParse(item.PublicId)
-		var deletedAt gorm.DeletedAt
-		if item.DeletedAt != nil {
-			deletedAt = gorm.DeletedAt{Time: *item.DeletedAt, Valid: true}
+	var configs []ClientConfig
+	if err := json.Unmarshal([]byte(data), &configs); err != nil {
+		return fmt.Errorf("failed to unmarshal client configs: %w", err)
+	}
+
+	for _, cfg := range configs {
+		uid := pgtype.UUID{}
+		if err := uid.Scan(cfg.PublicId); err != nil {
+			log.Printf("Invalid public_id in client config: %v", err)
+			continue
 		}
-		result := DB.Model(&User{}).Where("public_id = ?", public_id).Updates(User{
-			Username:    item.Username,
-			Displayname: item.Displayname,
-			DeletedAt:   deletedAt,
-			BannedAt:    item.BannedAt,
+
+		userType := sqlc.UserTypeClient
+		_, err := Queries.UpdateUserByPublicId(ctx, sqlc.UpdateUserByPublicIdParams{
+			PublicID:    uid,
+			Username:    cfg.Username,
+			Displayname: cfg.Displayname,
+			UserType:     userType,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update user: %w", result.Error)
+		if err != nil {
+			log.Printf("Failed to update client %s: %v", cfg.PublicId, err)
 		}
 	}
 
@@ -208,28 +174,34 @@ func SyncGroupAdminsConfigDatabase() error {
 		return fmt.Errorf("valkey GET failed for admin_configs: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data []ClientAdminConfigDTO
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal admin configs data: %w", err)
+	type AdminConfig struct {
+		PublicId     string `json:"public_id"`
+		Username     string `json:"username"`
+		Displayname  string `json:"displayname"`
+		PublicUserId string `json:"public_user_id"`
 	}
 
-	for _, item := range deserialised_data {
-		public_id := uuid.MustParse(item.PublicId)
-		var deletedAt gorm.DeletedAt
-		if item.DeletedAt != nil {
-			deletedAt = gorm.DeletedAt{Time: *item.DeletedAt, Valid: true}
+	var configs []AdminConfig
+	if err := json.Unmarshal([]byte(data), &configs); err != nil {
+		return fmt.Errorf("failed to unmarshal admin configs: %w", err)
+	}
+
+	for _, cfg := range configs {
+		uid := pgtype.UUID{}
+		if err := uid.Scan(cfg.PublicId); err != nil {
+			log.Printf("Invalid public_id in admin config: %v", err)
+			continue
 		}
 
-		result := DB.Model(&User{}).Where("public_id = ?", public_id).Updates(User{
-			Username:    item.Username,
-			Displayname: item.Displayname,
-			DeletedAt:   deletedAt,
-			BannedAt:    item.BannedAt,
+		userType := sqlc.UserTypeAdmin
+		_, err := Queries.UpdateUserByPublicId(ctx, sqlc.UpdateUserByPublicIdParams{
+			PublicID:    uid,
+			Username:    cfg.Username,
+			Displayname: cfg.Displayname,
+			UserType:     userType,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update user: %w", result.Error)
+		if err != nil {
+			log.Printf("Failed to update admin %s: %v", cfg.PublicId, err)
 		}
 	}
 
@@ -239,12 +211,7 @@ func SyncGroupAdminsConfigDatabase() error {
 
 func SyncGroupClientReportLogDatabase() error {
 	ctx := context.Background()
-	retrieved_data, err := tool.Valkey.Do(
-		ctx,
-		tool.Valkey.B().Get().
-			Key("client_report_logs").
-			Build(),
-	).ToString()
+	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_report_logs").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No client report log data in Valkey — nothing to sync.")
@@ -253,48 +220,51 @@ func SyncGroupClientReportLogDatabase() error {
 		return fmt.Errorf("valkey GET failed for client_report_logs: %w", err)
 	}
 
-	var data []ClientReportLogDTO
-	err = json.Unmarshal([]byte(retrieved_data), &data)
-	if err != nil {
+	type ReportDTO struct {
+		PublicId              string `json:"public_id"`
+		ReportingPublicUserId string `json:"reporting_public_user_id"`
+		TargetPublicUserId    string `json:"target_public_user_id"`
+		Type                  string `json:"type"`
+	}
+
+	var dtos []ReportDTO
+	if err := json.Unmarshal([]byte(data), &dtos); err != nil {
 		return fmt.Errorf("failed to parse client report logs: %w", err)
 	}
 
-	for _, item := range data {
-		public_id := uuid.MustParse(item.PublicId)
-		reporting_public_user_id := uuid.MustParse(item.ReportingPublicUserId)
-		target_public_user_id := uuid.MustParse(item.TargetPublicUserId)
-		type_of_report := item.Type
-
-		var report_type ClientBannedReasonType
-		switch type_of_report {
-		case "profanity":
-			report_type = Profanity
-		case "explicit content":
-			report_type = ExplicitContent
-		}
-
-		var reporting_user User
-		if err := DB.Where("public_id = ?", reporting_public_user_id).First(&reporting_user).Error; err != nil {
-			log.Printf("Failed to resolve reporting user for report %s: %v", item.PublicId, err)
+	for _, item := range dtos {
+		publicID := pgtype.UUID{}
+		if err := publicID.Scan(item.PublicId); err != nil {
+			log.Printf("Invalid public_id: %v", err)
 			continue
 		}
 
-		var target_user User
-		if err := DB.Where("public_id = ?", target_public_user_id).First(&target_user).Error; err != nil {
-			log.Printf("Failed to resolve target user for report %s: %v", item.PublicId, err)
+		_, err := Queries.FindClientReportLogByPublicId(ctx, publicID)
+		if err == nil {
 			continue
 		}
 
-		var existing_report ClientReportLog
-		if err := DB.Where("public_id = ?", public_id).First(&existing_report).Error; err == nil {
+		reportingUID := pgtype.UUID{}
+		targetUID := pgtype.UUID{}
+		reportingUID.Scan(item.ReportingPublicUserId)
+		targetUID.Scan(item.TargetPublicUserId)
+
+		reportingUser, err := Queries.FindUserByPublicId(ctx, reportingUID)
+		if err != nil {
+			log.Printf("Failed to resolve reporting user: %v", err)
 			continue
 		}
 
-		DB.Create(&ClientReportLog{
-			PublicId:        public_id,
-			ReportingUserId: reporting_user.Id,
-			TargetUserId:    target_user.Id,
-			Type:            report_type,
+		targetUser, err := Queries.FindUserByPublicId(ctx, targetUID)
+		if err != nil {
+			log.Printf("Failed to resolve target user: %v", err)
+			continue
+		}
+
+		Queries.CreateClientReportLog(ctx, sqlc.CreateClientReportLogParams{
+			ReportingUserID: reportingUser.ID,
+			TargetUserID:    targetUser.ID,
+			Type:            item.Type,
 		})
 	}
 
@@ -304,7 +274,7 @@ func SyncGroupClientReportLogDatabase() error {
 
 func SyncGroupClientSupportMessagingDatabase() error {
 	ctx := context.Background()
-	retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
+	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No support message data in Valkey — nothing to sync.")
@@ -313,67 +283,56 @@ func SyncGroupClientSupportMessagingDatabase() error {
 		return fmt.Errorf("valkey GET failed for client_support_messages: %w", err)
 	}
 
-	var data []ClientSupportMessageDTO
-	if err := json.Unmarshal([]byte(retrieved_data), &data); err != nil {
+	type MessageDTO struct {
+		PublicId              string `json:"public_id"`
+		UserId                string `json:"user_id"`
+		Type                  string `json:"type"`
+		Message               string `json:"message"`
+		SenderType            string `json:"sender_type"`
+		ClientCommLogPublicId string `json:"client_comm_log_public_id"`
+		CreatedAt             string `json:"created_at"`
+	}
+
+	var dtos []MessageDTO
+	if err := json.Unmarshal([]byte(data), &dtos); err != nil {
 		return fmt.Errorf("failed to parse support message data: %w", err)
 	}
 
-	for _, item := range data {
-		public_id := uuid.MustParse(item.PublicId)
-		var user User
-		if err := DB.Where("public_id = ?", item.UserId).First(&user).Error; err != nil {
-			log.Printf("Failed to resolve user for message %s: %v", item.PublicId, err)
+	for _, item := range dtos {
+		publicID := pgtype.UUID{}
+		if err := publicID.Scan(item.PublicId); err != nil {
+			log.Printf("Invalid public_id: %v", err)
 			continue
 		}
-		user_id := user.Id
 
-		var message_type ClientSupportMessagingTyping
-		if item.SenderType == "admin" && item.ClientCommLogPublicId != "" {
-			var original_msg ClientSupportMessaging
-			if err := DB.Where("public_id = ?", item.ClientCommLogPublicId).First(&original_msg).Error; err == nil {
-				message_type = original_msg.Type
-			}
-		}
-		if message_type == "" {
-			switch item.Type {
-			case "technical support":
-				message_type = TechnicalSupport
-			case "feature improvement":
-				message_type = FeatureImprovement
-			case "billing management":
-				message_type = BillingManagement
-			case "service and operation":
-				message_type = ServiceAndOperation
-			case "onboarding support":
-				message_type = OnboardingSupport
-			case "complaint":
-				message_type = Complaint
-			default:
-				log.Printf("Unknown message type %q for message %s", item.Type, item.PublicId)
-				continue
-			}
+		_, err := Queries.FindClientSupportMessageByPublicId(ctx, publicID)
+		if err == nil {
+			continue
 		}
 
-		var existing ClientSupportMessaging
-		err := DB.Where("public_id = ?", public_id).First(&existing).Error
+		userUID := pgtype.UUID{}
+		if err := userUID.Scan(item.UserId); err != nil {
+			log.Printf("Invalid user_id: %v", err)
+			continue
+		}
+
+		user, err := Queries.FindUserByPublicId(ctx, userUID)
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				new_msg := ClientSupportMessaging{
-					PublicId: public_id,
-					Type:     message_type,
-					Content: ClientSupportContentTyping{
-						Text:   item.Message,
-						UserId: user_id,
-						Time:   item.CreatedAt,
-					},
-				}
-				if err := DB.Create(&new_msg).Error; err != nil {
-					return fmt.Errorf("failed to store new support message: %w", err)
-				}
-			} else {
-				return fmt.Errorf("failed to query support message: %w", err)
-			}
+			log.Printf("Failed to resolve user: %v", err)
+			continue
 		}
+
+		content := map[string]any{
+			"text":    item.Message,
+			"user_id": user.ID,
+			"time":    item.CreatedAt,
+		}
+		contentJSON, _ := json.Marshal(content)
+
+		Queries.CreateClientSupportMessage(ctx, sqlc.CreateClientSupportMessageParams{
+			Type:    item.Type,
+			Content: contentJSON,
+		})
 	}
 
 	log.Println("Successfully synced client support messages.")
@@ -391,13 +350,14 @@ func SyncGroupShowCaseRecordsDatabase() error {
 		return fmt.Errorf("valkey GET failed for showcaserecord_data: %w", err)
 	}
 
-	var deserialised []ShowcaseRecord
+	var deserialised []sqlc.ShowcaseRecord
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal showcase record data: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&ShowcaseRecord{}).Where("public_id = ?", item.PublicId).Updates(ShowcaseRecord{
+		Queries.UpdateShowcaseRecordByPublicId(ctx, sqlc.UpdateShowcaseRecordByPublicIdParams{
+			PublicID:      item.PublicID,
 			Name:          item.Name,
 			Email:         item.Email,
 			PhoneNumber:   item.PhoneNumber,
@@ -409,14 +369,7 @@ func SyncGroupShowCaseRecordsDatabase() error {
 			Certificate:   item.Certificate,
 			Language:      item.Language,
 			Project:       item.Project,
-			CreatedAt:     item.CreatedAt,
-			UpdatedAt:     item.UpdatedAt,
-			DeletedAt:     item.DeletedAt,
-			ExpiresAt:     item.ExpiresAt,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update showcase record: %w", result.Error)
-		}
 	}
 
 	log.Println("Successfully synced showcase record data.")
@@ -434,23 +387,15 @@ func SyncGroupPortfoliosDatabase() error {
 		return fmt.Errorf("valkey GET failed for portfolio_data: %w", err)
 	}
 
-	var deserialised []Portfolio
+	var deserialised []sqlc.Portfolio
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal portfolio data: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&Portfolio{}).Where("public_id = ?", item.PublicId).Updates(Portfolio{
-			TemplateId: item.TemplateId,
-			Detail:     item.Detail,
-			CreatedAt:  item.CreatedAt,
-			UpdatedAt:  item.UpdatedAt,
-			DeletedAt:  item.DeletedAt,
-			ExpiresAt:  item.ExpiresAt,
+		Queries.UpdatePortfolio(ctx, sqlc.UpdatePortfolioParams{
+			UserID: item.UserID,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update portfolio: %w", result.Error)
-		}
 	}
 
 	log.Println("Successfully synced portfolio data.")
@@ -468,23 +413,15 @@ func SyncGroupResumesDatabase() error {
 		return fmt.Errorf("valkey GET failed for resume_data: %w", err)
 	}
 
-	var deserialised []Resume
+	var deserialised []sqlc.Resume
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal resume data: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&Resume{}).Where("public_id = ?", item.PublicId).Updates(Resume{
-			TemplateId: item.TemplateId,
-			Detail:     item.Detail,
-			CreatedAt:  item.CreatedAt,
-			UpdatedAt:  item.UpdatedAt,
-			DeletedAt:  item.DeletedAt,
-			ExpiresAt:  item.ExpiresAt,
+		Queries.UpdateResume(ctx, sqlc.UpdateResumeParams{
+			UserID: item.UserID,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update resume: %w", result.Error)
-		}
 	}
 
 	log.Println("Successfully synced resume data.")
@@ -502,23 +439,19 @@ func SyncGroupAtsDatabase() error {
 		return fmt.Errorf("valkey GET failed for ats_data: %w", err)
 	}
 
-	var deserialised []Ats
+	var deserialised []sqlc.At
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("failed to unmarshal ATS data: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&Ats{}).Where("public_id = ?", item.PublicId).Updates(Ats{
-			Score:     item.Score,
-			Reasoning: item.Reasoning,
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
-			DeletedAt: item.DeletedAt,
-			ExpiresAt: item.ExpiresAt,
+		score := item.Score
+		reasoning := item.Reasoning
+		Queries.UpdateAts(ctx, sqlc.UpdateAtsParams{
+			UserID:    item.UserID,
+			Score:     score,
+			Reasoning: reasoning,
 		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update ATS record: %w", result.Error)
-		}
 	}
 
 	log.Println("Successfully synced ATS data.")
@@ -536,31 +469,39 @@ func SyncGroupUsersDatabase() error {
 		return fmt.Errorf("valkey GET failed for user_data: %w", err)
 	}
 
-	var deserialised []User
-	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
+	type UserDTO struct {
+		PublicId    string `json:"public_id"`
+		Username    string `json:"username"`
+		Displayname string `json:"displayname"`
+		Email       string `json:"email"`
+		UserType    string `json:"user_type"`
+	}
+
+	var dtos []UserDTO
+	if err := json.Unmarshal([]byte(data), &dtos); err != nil {
 		return fmt.Errorf("failed to unmarshal user data: %w", err)
 	}
 
-	for _, item := range deserialised {
-		var deletedAt gorm.DeletedAt
-		if item.DeletedAt.Valid {
-			deletedAt = gorm.DeletedAt{Time: item.DeletedAt.Time, Valid: true}
+	for _, dto := range dtos {
+		uid := pgtype.UUID{}
+		if err := uid.Scan(dto.PublicId); err != nil {
+			log.Printf("Invalid public_id: %v", err)
+			continue
 		}
 
-		if err := DB.Model(&User{}).Where("public_id = ?", item.PublicId).Updates(User{
-			Username:    item.Username,
-			Displayname: item.Displayname,
-			Email:       item.Email,
-			UserType:    item.UserType,
-			BannedAt:    item.BannedAt,
-			DeletedAt:   deletedAt,
-			ExpiresAt:   item.ExpiresAt,
-		}).Error; err != nil {
-			return fmt.Errorf("failed to update user %s: %w", item.PublicId.String(), err)
+		_, err := Queries.UpdateUserByPublicId(ctx, sqlc.UpdateUserByPublicIdParams{
+			PublicID:    uid,
+			Username:    dto.Username,
+			Email:       dto.Email,
+			Displayname: dto.Displayname,
+			UserType:    sqlc.UserType(dto.UserType),
+		})
+		if err != nil {
+			log.Printf("Failed to update user %s: %v", dto.PublicId, err)
 		}
 	}
 
-	if err := DB.Unscoped().Where("expires_at IS NOT NULL AND expires_at < ?", time.Now()).Delete(&User{}).Error; err != nil {
+	if err := Queries.HardDeleteExpiredUsers(ctx); err != nil {
 		return fmt.Errorf("failed to hard-delete expired users: %w", err)
 	}
 
@@ -569,15 +510,15 @@ func SyncGroupUsersDatabase() error {
 }
 
 func SyncGroupSessionsDatabase() error {
-	var sessions []Session
-	result := DB.Scopes(NonExpiredSession).Find(&sessions)
-	if result.Error != nil {
-		return fmt.Errorf("failed to query sessions: %w", result.Error)
+	ctx := context.Background()
+
+	sessions, err := Queries.FindAllSessions(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to query sessions: %w", err)
 	}
 
-	ctx := context.Background()
 	for _, session := range sessions {
-		psid := session.PublicId.String()
+		psid := session.PublicID.String()
 
 		exists, err := tool.Valkey.Do(
 			ctx,
@@ -588,13 +529,13 @@ func SyncGroupSessionsDatabase() error {
 		}
 
 		if exists == 0 {
-			if err := DB.Where("user_id = ?", session.UserId).Delete(&Session{}).Error; err != nil {
-				return fmt.Errorf("failed to delete orphaned session for user %d: %w", session.UserId, err)
+			if err := Queries.DeleteSessionByUserId(ctx, session.UserID); err != nil {
+				return fmt.Errorf("failed to delete orphaned session: %w", err)
 			}
-			if err := DB.Where("user_id = ?", session.UserId).Delete(&JwtKey{}).Error; err != nil {
-				return fmt.Errorf("failed to delete orphaned jwt key for user %d: %w", session.UserId, err)
+			if err := Queries.DeleteJwtKeyByUserId(ctx, session.UserID); err != nil {
+				return fmt.Errorf("failed to delete orphaned jwt key: %w", err)
 			}
-			log.Printf("cleaned up orphaned session/jwt for user %d (session %s)", session.UserId, psid)
+			log.Printf("Cleaned up orphaned session/jwt for user %d", session.UserID)
 		}
 	}
 

@@ -6,9 +6,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/lib/pq"
 	valkey "github.com/valkey-io/valkey-go"
-	"gorm.io/datatypes"
 	typing "resuming/api/showcaserecord/typing"
 	validator "resuming/api/showcaserecord/validator"
 	"resuming/database"
@@ -25,7 +23,11 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 			if dbErr != nil {
 				return dbErr
 			}
-			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, user); syncErr != nil {
+			showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
+			if scErr != nil {
+				return scErr
+			}
+			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 				return syncErr
 			}
 			data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
@@ -54,12 +56,12 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 		existing_values := deserialised_data[field_name]
 		switch field_name {
 		case "name", "email", "phone_number", "address", "social_media", "skill", "language":
-			typed_new_value := field_value.(pq.StringArray)
-			typed_old_value := existing_values.(pq.StringArray)
+			typed_new_value := field_value.([]string)
+			typed_old_value := existing_values.([]string)
 			deserialised_data[field_name] = append(typed_old_value, typed_new_value...)
 		case "job_experience", "education", "certificate", "project":
-			typed_new_value := field_value.(datatypes.JSON)
-			typed_old_value := existing_values.(datatypes.JSON)
+			typed_new_value := field_value.([]byte)
+			typed_old_value := existing_values.([]byte)
 			deserialised_data[field_name] = append(typed_old_value, typed_new_value...)
 		}
 	}
@@ -92,7 +94,11 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 			if dbErr != nil {
 				return dbErr
 			}
-			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, user); syncErr != nil {
+			showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
+			if scErr != nil {
+				return scErr
+			}
+			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 				return syncErr
 			}
 			data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
@@ -121,11 +127,11 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 		switch field_name {
 		case "name", "email", "phone_number", "address", "social_media", "skill", "language":
 			typed_new_value := field_value.(string)
-			field_slice := deserialised_data[field_name].(pq.StringArray)
+			field_slice := deserialised_data[field_name].([]string)
 			field_slice[index] = typed_new_value
 			deserialised_data[field_name] = field_slice
 		case "job_experience", "education", "certificate", "project":
-			typed_new_value := field_value.(datatypes.JSON)
+			typed_new_value := field_value.([]byte)
 			field_slice := deserialised_data[field_name].([]any)
 			field_slice[index] = typed_new_value
 			deserialised_data[field_name] = field_slice
@@ -160,7 +166,11 @@ func DeleteShowCaseRecordData(field_name string, index int, public_user_id strin
 			if dbErr != nil {
 				return dbErr
 			}
-			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, user); syncErr != nil {
+			showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
+			if scErr != nil {
+				return scErr
+			}
+			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 				return syncErr
 			}
 			data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()

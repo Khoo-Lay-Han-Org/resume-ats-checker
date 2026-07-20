@@ -3,27 +3,34 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	util "resuming/api/middleware/util"
 	systemconfig "resuming/system-config"
 )
 
-func SessionCheck() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session_cookie, err := c.Cookie("session")
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to retrieve cookie."})
-			return
-		}
+func SessionCheck() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			session_cookie, err := c.Cookie("session")
+			if err != nil {
+				return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to retrieve cookie."})
+			}
 
-		user_public_id, err := util.CheckSession(session_cookie)
-		if err != nil {
-			c.SetCookie("session", "deleting cookie", -1, "/", "", systemconfig.ApplicationHosted, true)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid or expired session."})
-			return
-		}
+			user_public_id, err := util.CheckSession(session_cookie.Value)
+			if err != nil {
+				c.SetCookie(&http.Cookie{
+					Name:   "session",
+					Value:  "deleting cookie",
+					MaxAge: -1,
+					Path:   "/",
+					Domain: "",
+					Secure: systemconfig.ApplicationHosted,
+				})
+				return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid or expired session."})
+			}
 
-		c.Set("public_user_id", user_public_id)
-		c.Next()
+			c.Set("public_user_id", user_public_id)
+			return next(c)
+		}
 	}
 }

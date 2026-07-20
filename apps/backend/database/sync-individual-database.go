@@ -7,6 +7,7 @@ import (
 	"log"
 
 	valkey "github.com/valkey-io/valkey-go"
+	"resuming/database/sqlc"
 	"resuming/tool"
 )
 
@@ -18,6 +19,7 @@ func SyncIndividualShowCaseRecordDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 	if err != nil {
@@ -25,35 +27,51 @@ func SyncIndividualShowCaseRecordDatabase(public_user_id string) error {
 			log.Println("No showcase record data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for showcase record data (key: %s:showcaserecord_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for showcase record data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data ShowcaseRecord
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised sqlc.ShowcaseRecord
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("showcase record data in Valkey is corrupted: %w", err)
 	}
 
-	result := DB.Model(&ShowcaseRecord{}).Where("user_id = ?", private_id).Updates(ShowcaseRecord{
-		Name:          deserialised_data.Name,
-		Email:         deserialised_data.Email,
-		PhoneNumber:   deserialised_data.PhoneNumber,
-		Address:       deserialised_data.Address,
-		SocialMedia:   deserialised_data.SocialMedia,
-		JobExperience: deserialised_data.JobExperience,
-		Education:     deserialised_data.Education,
-		Skill:         deserialised_data.Skill,
-		Certificate:   deserialised_data.Certificate,
-		Language:      deserialised_data.Language,
-		Project:       deserialised_data.Project,
-		CreatedAt:     deserialised_data.CreatedAt,
-		UpdatedAt:     deserialised_data.UpdatedAt,
-		DeletedAt:     deserialised_data.DeletedAt,
-		ExpiresAt:     deserialised_data.ExpiresAt,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update showcase record: %w", result.Error)
+	name := deserialised.Name
+	email := deserialised.Email
+	phone := deserialised.PhoneNumber
+	address := deserialised.Address
+	social := deserialised.SocialMedia
+	skill := deserialised.Skill
+	language := deserialised.Language
+
+	var jobExp, edu, cert, project []byte
+	if deserialised.JobExperience != nil {
+		jobExp = deserialised.JobExperience
+	}
+	if deserialised.Education != nil {
+		edu = deserialised.Education
+	}
+	if deserialised.Certificate != nil {
+		cert = deserialised.Certificate
+	}
+	if deserialised.Project != nil {
+		project = deserialised.Project
+	}
+
+	if err := Queries.UpdateShowcaseRecord(ctx, sqlc.UpdateShowcaseRecordParams{
+		UserID:        private_id,
+		Name:          name,
+		Email:         email,
+		PhoneNumber:   phone,
+		Address:       address,
+		SocialMedia:   social,
+		JobExperience: jobExp,
+		Education:     edu,
+		Skill:         skill,
+		Certificate:   cert,
+		Language:      language,
+		Project:       project,
+	}); err != nil {
+		return fmt.Errorf("failed to update showcase record: %w", err)
 	}
 
 	log.Println("Successfully updated showcase records.")
@@ -68,6 +86,7 @@ func SyncIndividualUserDataDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 	if err != nil {
@@ -75,30 +94,31 @@ func SyncIndividualUserDataDatabase(public_user_id string) error {
 			log.Println("No user data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for user data (key: %s:user_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for user data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data User
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised map[string]any
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("user data in Valkey is corrupted: %w", err)
 	}
 
-	result := DB.Model(&User{}).Where("id = ?", private_id).Updates(User{
-		PublicId:    deserialised_data.PublicId,
-		Username:    deserialised_data.Username,
-		Displayname: deserialised_data.Displayname,
-		Email:       deserialised_data.Email,
-		UserType:    deserialised_data.UserType,
-		CreatedAt:   deserialised_data.CreatedAt,
-		UpdatedAt:   deserialised_data.UpdatedAt,
-		BannedAt:    deserialised_data.BannedAt,
-		DeletedAt:   deserialised_data.DeletedAt,
-		ExpiresAt:   deserialised_data.ExpiresAt,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update user data: %w", result.Error)
+	username, _ := deserialised["username"].(string)
+	displayname, _ := deserialised["displayname"].(string)
+	email, _ := deserialised["email"].(string)
+
+	var userType sqlc.UserType
+	if ut, ok := deserialised["user_type"].(string); ok {
+		userType = sqlc.UserType(ut)
+	}
+
+	if err := Queries.UpdateUser(ctx, sqlc.UpdateUserParams{
+		ID:          private_id,
+		Username:    username,
+		Email:       email,
+		Displayname: displayname,
+		UserType:    userType,
+	}); err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
 	}
 
 	log.Println("Successfully updated user data.")
@@ -113,6 +133,7 @@ func SyncIndividualSessionDataDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":session_data").Build()).ToString()
 	if err != nil {
@@ -120,23 +141,21 @@ func SyncIndividualSessionDataDatabase(public_user_id string) error {
 			log.Println("No session data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for session data (key: %s:session_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for session data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data map[string]any
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised map[string]any
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("session data in Valkey is corrupted: %w", err)
 	}
 
-	session_key, _ := deserialised_data["session_key"].(string)
+	sessionKey, _ := deserialised["session_key"].(string)
 
-	result := DB.Model(&Session{}).Where("user_id = ?", private_id).Updates(Session{
-		SessionKey: session_key,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update session data: %w", result.Error)
+	if err := Queries.UpdateSession(ctx, sqlc.UpdateSessionParams{
+		UserID:     private_id,
+		SessionKey: sessionKey,
+	}); err != nil {
+		return fmt.Errorf("failed to update session data: %w", err)
 	}
 
 	log.Println("Successfully updated session data.")
@@ -151,6 +170,7 @@ func SyncIndividualResumeDataDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
 	if err != nil {
@@ -158,26 +178,18 @@ func SyncIndividualResumeDataDatabase(public_user_id string) error {
 			log.Println("No resume data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for resume data (key: %s:resume_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for resume data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data Resume
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised map[string]any
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("resume data in Valkey is corrupted: %w", err)
 	}
 
-	result := DB.Model(&Resume{}).Where("user_id = ?", private_id).Updates(Resume{
-		TemplateId: deserialised_data.TemplateId,
-		Detail:     deserialised_data.Detail,
-		CreatedAt:  deserialised_data.CreatedAt,
-		UpdatedAt:  deserialised_data.UpdatedAt,
-		DeletedAt:  deserialised_data.DeletedAt,
-		ExpiresAt:  deserialised_data.ExpiresAt,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update resume data: %w", result.Error)
+	if err := Queries.UpdateResume(ctx, sqlc.UpdateResumeParams{
+		UserID: private_id,
+	}); err != nil {
+		return fmt.Errorf("failed to update resume data: %w", err)
 	}
 
 	log.Println("Successfully updated resume data.")
@@ -192,6 +204,7 @@ func SyncIndividualPortfolioDataDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
 	if err != nil {
@@ -199,26 +212,18 @@ func SyncIndividualPortfolioDataDatabase(public_user_id string) error {
 			log.Println("No portfolio data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for portfolio data (key: %s:portfolio_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for portfolio data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data Portfolio
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised map[string]any
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("portfolio data in Valkey is corrupted: %w", err)
 	}
 
-	result := DB.Model(&Portfolio{}).Where("user_id = ?", private_id).Updates(Portfolio{
-		TemplateId: deserialised_data.TemplateId,
-		Detail:     deserialised_data.Detail,
-		CreatedAt:  deserialised_data.CreatedAt,
-		UpdatedAt:  deserialised_data.UpdatedAt,
-		DeletedAt:  deserialised_data.DeletedAt,
-		ExpiresAt:  deserialised_data.ExpiresAt,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update portfolio data: %w", result.Error)
+	if err := Queries.UpdatePortfolio(ctx, sqlc.UpdatePortfolioParams{
+		UserID: private_id,
+	}); err != nil {
+		return fmt.Errorf("failed to update portfolio data: %w", err)
 	}
 
 	log.Println("Successfully updated portfolio data.")
@@ -233,6 +238,7 @@ func SyncIndividualJWTDataDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":jwt_data").Build()).ToString()
 	if err != nil {
@@ -240,24 +246,19 @@ func SyncIndividualJWTDataDatabase(public_user_id string) error {
 			log.Println("No JWT data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for JWT data (key: %s:jwt_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for JWT data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data JwtKey
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised sqlc.JwtKey
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("JWT data in Valkey is corrupted: %w", err)
 	}
 
-	result := DB.Model(&JwtKey{}).Where("user_id = ?", private_id).Updates(JwtKey{
-		Key:       deserialised_data.Key,
-		CreatedAt: deserialised_data.CreatedAt,
-		UpdatedAt: deserialised_data.UpdatedAt,
-		ExpiresAt: deserialised_data.ExpiresAt,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update JWT data: %w", result.Error)
+	if err := Queries.UpdateJwtKey(ctx, sqlc.UpdateJwtKeyParams{
+		UserID: private_id,
+		Key:    deserialised.Key,
+	}); err != nil {
+		return fmt.Errorf("failed to update JWT data: %w", err)
 	}
 
 	log.Println("Successfully updated JWT data.")
@@ -272,6 +273,7 @@ func SyncIndividualClientAuditLogDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_audit_log_data").Build()).ToString()
 	if err != nil {
@@ -279,21 +281,21 @@ func SyncIndividualClientAuditLogDatabase(public_user_id string) error {
 			log.Println("No client audit log data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for client audit log data (key: %s:client_audit_log_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for client audit log data: %w", err)
 	}
 
-	var deserialised []ClientAuditLog
+	var deserialised []sqlc.ClientAuditLog
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("client audit log data in Valkey is corrupted: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&ClientAuditLog{}).Where("public_id = ?", item.PublicId).Updates(ClientAuditLog{
-			Type:    item.Type,
-			Message: item.Message,
-		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update client audit log: %w", result.Error)
+		if err := Queries.UpdateClientAuditLogByPublicId(ctx, sqlc.UpdateClientAuditLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Message:  item.Message,
+		}); err != nil {
+			return fmt.Errorf("failed to update client audit log: %w", err)
 		}
 	}
 
@@ -309,6 +311,7 @@ func SyncIndividualAdminAuditLogDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":admin_audit_log_data").Build()).ToString()
 	if err != nil {
@@ -316,21 +319,21 @@ func SyncIndividualAdminAuditLogDatabase(public_user_id string) error {
 			log.Println("No admin audit log data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for admin audit log data (key: %s:admin_audit_log_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for admin audit log data: %w", err)
 	}
 
-	var deserialised []AdminAuditLog
+	var deserialised []sqlc.AdminAuditLog
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("admin audit log data in Valkey is corrupted: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&AdminAuditLog{}).Where("public_id = ?", item.PublicId).Updates(AdminAuditLog{
-			Type:    item.Type,
-			Message: item.Message,
-		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update admin audit log: %w", result.Error)
+		if err := Queries.UpdateAdminAuditLogByPublicId(ctx, sqlc.UpdateAdminAuditLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Message:  item.Message,
+		}); err != nil {
+			return fmt.Errorf("failed to update admin audit log: %w", err)
 		}
 	}
 
@@ -346,6 +349,7 @@ func SyncIndividualClientReportLogDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_report_log_data").Build()).ToString()
 	if err != nil {
@@ -353,20 +357,20 @@ func SyncIndividualClientReportLogDatabase(public_user_id string) error {
 			log.Println("No client report log data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for client report log data (key: %s:client_report_log_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for client report log data: %w", err)
 	}
 
-	var deserialised []ClientReportLog
+	var deserialised []sqlc.ClientReportLog
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("client report log data in Valkey is corrupted: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&ClientReportLog{}).Where("public_id = ?", item.PublicId).Updates(ClientReportLog{
-			Type: item.Type,
-		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update client report log: %w", result.Error)
+		if err := Queries.UpdateClientReportLogByPublicId(ctx, sqlc.UpdateClientReportLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+		}); err != nil {
+			return fmt.Errorf("failed to update client report log: %w", err)
 		}
 	}
 
@@ -382,6 +386,7 @@ func SyncIndividualErrorLogDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":error_log_data").Build()).ToString()
 	if err != nil {
@@ -389,21 +394,21 @@ func SyncIndividualErrorLogDatabase(public_user_id string) error {
 			log.Println("No error log data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for error log data (key: %s:error_log_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for error log data: %w", err)
 	}
 
-	var deserialised []ErrorLog
+	var deserialised []sqlc.ErrorLog
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("error log data in Valkey is corrupted: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&ErrorLog{}).Where("public_id = ?", item.PublicId).Updates(ErrorLog{
-			Type:    item.Type,
-			Message: item.Message,
-		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update error log: %w", result.Error)
+		if err := Queries.UpdateErrorLogByPublicId(ctx, sqlc.UpdateErrorLogByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Message:  item.Message,
+		}); err != nil {
+			return fmt.Errorf("failed to update error log: %w", err)
 		}
 	}
 
@@ -419,6 +424,7 @@ func SyncIndividualClientSupportMessagingDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_support_messages").Build()).ToString()
 	if err != nil {
@@ -426,21 +432,21 @@ func SyncIndividualClientSupportMessagingDatabase(public_user_id string) error {
 			log.Println("No support message data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for support message data (key: %s:client_support_messages): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for support message data: %w", err)
 	}
 
-	var deserialised []ClientSupportMessaging
+	var deserialised []sqlc.ClientSupportMessaging
 	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("support message data in Valkey is corrupted: %w", err)
 	}
 
 	for _, item := range deserialised {
-		result := DB.Model(&ClientSupportMessaging{}).Where("public_id = ?", item.PublicId).Updates(ClientSupportMessaging{
-			Type:    item.Type,
-			Content: item.Content,
-		})
-		if result.Error != nil {
-			return fmt.Errorf("failed to update support message: %w", result.Error)
+		if err := Queries.UpdateClientSupportMessageByPublicId(ctx, sqlc.UpdateClientSupportMessageByPublicIdParams{
+			PublicID: item.PublicID,
+			Type:     item.Type,
+			Content:  item.Content,
+		}); err != nil {
+			return fmt.Errorf("failed to update support message: %w", err)
 		}
 	}
 
@@ -456,6 +462,7 @@ func SyncIndividualATSDataDatabase(public_user_id string) error {
 	if private_id == 0 {
 		return nil
 	}
+
 	ctx := context.Background()
 	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":ats_data").Build()).ToString()
 	if err != nil {
@@ -463,26 +470,20 @@ func SyncIndividualATSDataDatabase(public_user_id string) error {
 			log.Println("No ATS data in Valkey — nothing to sync.")
 			return nil
 		}
-		return fmt.Errorf("valkey GET failed for ATS data (key: %s:ats_data): %w", public_user_id, err)
+		return fmt.Errorf("valkey GET failed for ATS data: %w", err)
 	}
 
-	json_data := []byte(data)
-	var deserialised_data Ats
-	err = json.Unmarshal(json_data, &deserialised_data)
-	if err != nil {
+	var deserialised sqlc.At
+	if err := json.Unmarshal([]byte(data), &deserialised); err != nil {
 		return fmt.Errorf("ATS data in Valkey is corrupted: %w", err)
 	}
 
-	result := DB.Model(&Ats{}).Where("user_id = ?", private_id).Updates(Ats{
-		Score:     deserialised_data.Score,
-		Reasoning: deserialised_data.Reasoning,
-		CreatedAt: deserialised_data.CreatedAt,
-		UpdatedAt: deserialised_data.UpdatedAt,
-		DeletedAt: deserialised_data.DeletedAt,
-		ExpiresAt: deserialised_data.ExpiresAt,
-	})
-	if result.Error != nil {
-		return fmt.Errorf("failed to update ATS data: %w", result.Error)
+	if err := Queries.UpdateAts(ctx, sqlc.UpdateAtsParams{
+		UserID:    private_id,
+		Score:     deserialised.Score,
+		Reasoning: deserialised.Reasoning,
+	}); err != nil {
+		return fmt.Errorf("failed to update ATS data: %w", err)
 	}
 
 	log.Println("Successfully updated ATS data.")

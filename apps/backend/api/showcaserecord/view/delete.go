@@ -4,45 +4,41 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	typing "resuming/api/showcaserecord/typing"
 	util "resuming/api/showcaserecord/util"
 	validator "resuming/api/showcaserecord/validator"
 )
 
-func DeleteShowCaseRecordData() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to retrieve data."})
-			return
+func DeleteShowCaseRecordData() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to retrieve data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
 		var request typing.SpecificPortoflioDataRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
 		polished_request, err := validator.ValidateSpecificPortfolioDataRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		index, err := strconv.Atoi(polished_request.Index)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid index format."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid index format."})
 		}
 
 		err = util.DeleteShowCaseRecordData(polished_request.SectionTitle, index, public_user_id)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Operation failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 		}
 
+		return nil
 	}
 }

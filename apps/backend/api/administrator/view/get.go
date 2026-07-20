@@ -4,46 +4,44 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"resuming/tool"
 )
 
-func GetClients() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+func GetClients() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_configs").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to retrieve clients config data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve clients config data."})
 		}
 
 		var data []map[string]any
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to parse clients config data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to parse clients config data."})
 		}
 
 		c.Set("response_data", data)
+		return nil
 	}
 }
 
-func GetAdmins() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+func GetAdmins() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_configs").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to retrieve admins config data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve admins config data."})
 		}
 
 		var data []map[string]any
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to parse admins config data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to parse admins config data."})
 		}
 
 		c.Set("response_data", data)
+		return nil
 	}
 }

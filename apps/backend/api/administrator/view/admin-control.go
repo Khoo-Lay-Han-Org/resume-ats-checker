@@ -6,65 +6,61 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/labstack/echo/v4"
 	typing "resuming/api/administrator/typing"
 	validator "resuming/api/administrator/validator"
 	"resuming/database"
+	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
 	"resuming/tool"
 )
 
-func BanClient() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func BanClient() echo.HandlerFunc {
+	return func(c echo.Context) error {
 		var request typing.UserControlRequest
-		if err := c.BindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to retrieve request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve request."})
 		}
 
 		polished_request, err := validator.ValidateUserControlRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		public_user_id := polished_request.PublicUserId
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		group_data, err := tool.Valkey.Do(
 			ctx,
 			tool.Valkey.B().Get().Key("user_data").Build(),
 		).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve cached data."})
-			return
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve cached data."})
 		}
 
-		var all_users []database.User
+		var all_users []sqlc.User
 		if err := json.Unmarshal([]byte(group_data), &all_users); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse cached data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse cached data."})
 		}
 
-		var target_user *database.User
+		var target_user *sqlc.User
 		now := time.Now()
 		for i, user := range all_users {
-			if user.PublicId.String() == public_user_id {
-				all_users[i].BannedAt = &now
+			if user.PublicID.String() == public_user_id {
+				all_users[i].BannedAt = pgtype.Timestamptz{Time: now, Valid: true}
 				target_user = &all_users[i]
 				break
 			}
 		}
 
 		if target_user == nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "User not found."})
-			return
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "User not found."})
 		}
 
 		serialised_group, err := json.Marshal(all_users)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process updated data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process updated data."})
 		}
 		if err := tool.Valkey.Do(
 			ctx,
@@ -73,14 +69,12 @@ func BanClient() gin.HandlerFunc {
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
 		).Error(); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to update user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to update user data."})
 		}
 
 		individual_data, err := json.Marshal(target_user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to serialise user data"})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise user data"})
 		}
 		if err := tool.Valkey.Do(
 			ctx,
@@ -90,8 +84,7 @@ func BanClient() gin.HandlerFunc {
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
 		).Error(); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to ban user."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to ban user."})
 		}
 
 		go func(psid string) {
@@ -99,43 +92,40 @@ func BanClient() gin.HandlerFunc {
 				log.Printf("Failed to sync user data: %v", err)
 			}
 		}(public_user_id)
+
+		return nil
 	}
 }
 
-func RemoveIndividualUserSession() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func RemoveIndividualUserSession() echo.HandlerFunc {
+	return func(c echo.Context) error {
 		var request typing.SessionControlRequest
-		if err := c.BindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to retrieve request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve request."})
 		}
 
 		polished_request, err := validator.ValidateSessionControlRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		public_user_id := polished_request.PublicUserId
 
-		admin_session_id, _ := c.Get("public_user_id")
-		if public_user_id == admin_session_id {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Cannot remove your own session."})
-			return
+		admin_session_id := c.Get("public_user_id")
+		if admin_session_id != nil && public_user_id == admin_session_id.(string) {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Cannot remove your own session."})
 		}
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		exists, err := tool.Valkey.Do(
 			ctx,
 			tool.Valkey.B().Exists().Key(public_user_id+":session_data").Build(),
 		).AsInt64()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to verify session."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to verify session."})
 		}
 		if exists == 0 {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Session not found."})
-			return
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Session not found."})
 		}
 
 		err = tool.Valkey.Do(
@@ -147,38 +137,34 @@ func RemoveIndividualUserSession() gin.HandlerFunc {
 				Build(),
 		).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete session"})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to delete session"})
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Successfully deleted session"})
+		return c.JSON(http.StatusOK, echo.Map{"message": "Successfully deleted session"})
 	}
 }
 
-func RemoveAllClientSession() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+func RemoveAllClientSession() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_configs").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to find client configs."})
-			return
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to find client configs."})
 		}
 
 		var data []map[string]any
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse configs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse configs."})
 		}
 
 		for _, item := range data {
 			public_user_id, ok := item["public_user_id"].(string)
 			if !ok {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Invalid client config format."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Invalid client config format."})
 			}
 
-			ctx := c.Request.Context()
+			ctx := c.Request().Context()
 			_, err := tool.Valkey.Do(
 				ctx,
 				tool.Valkey.B().Del().
@@ -186,18 +172,19 @@ func RemoveAllClientSession() gin.HandlerFunc {
 					Build(),
 			).ToString()
 			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete session"})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to delete session"})
 			}
 		}
 
-		admin_id, exists := c.Get("public_user_id")
-		if exists {
+		admin_id := c.Get("public_user_id")
+		if admin_id != nil {
 			admin_key := admin_id.(string) + ":session_data"
 			ttl_seconds, err := tool.Valkey.Do(ctx, tool.Valkey.B().Ttl().Key(admin_key).Build()).AsInt64()
 			if err == nil && ttl_seconds > 300 {
 				tool.Valkey.Do(ctx, tool.Valkey.B().Expire().Key(admin_key).Seconds(300).Build())
 			}
 		}
+
+		return nil
 	}
 }

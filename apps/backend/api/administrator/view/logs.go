@@ -4,67 +4,64 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"resuming/database"
+	"github.com/labstack/echo/v4"
+	"resuming/database/sqlc"
 	"resuming/tool"
 )
 
-func GetClientAuditLogs() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+func GetClientAuditLogs() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_audit_log_data").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to retrieve clients audit logs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve clients audit logs."})
 		}
 
-		var data []database.ClientAuditLog
+		var data []sqlc.ClientAuditLog
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to parse client audit logs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to parse client audit logs."})
 		}
 
 		c.Set("response_data", data)
+		return nil
 	}
 }
 
-func GetAdminAuditLogs() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+func GetAdminAuditLogs() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_audit_log_data").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to retrieve admin audit logs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve admin audit logs."})
 		}
 
-		var data []database.AdminAuditLog
+		var data []sqlc.AdminAuditLog
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to parse admin audit logs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to parse admin audit logs."})
 		}
 
 		c.Set("response_data", data)
+		return nil
 	}
 }
 
-func GetErrorAuditLogs() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := c.Request.Context()
+func GetErrorAuditLogs() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("error_log_data").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to retrieve error logs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve error logs."})
 		}
 
-		var data []database.ErrorLog
+		var data []sqlc.ErrorLog
 		err = json.Unmarshal([]byte(retrieved_data), &data)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "failed to parse error logs."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to parse error logs."})
 		}
 
 		c.Set("response_data", data)
+		return nil
 	}
 }

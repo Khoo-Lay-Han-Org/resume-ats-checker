@@ -4,17 +4,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	typing "resuming/api/ats/typing"
 	util "resuming/api/ats/util"
 )
 
-func SectionExistenceCheck() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_resume_sections, exists := c.Get("resume_sections")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to extract parsed resume content."})
-			return
+func SectionExistenceCheck() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_resume_sections := c.Get("resume_sections")
+		if retrieved_resume_sections == nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to extract parsed resume content."})
 		}
 
 		resume_sections := retrieved_resume_sections.(map[string][]string)
@@ -155,22 +154,20 @@ func SectionExistenceCheck() gin.HandlerFunc {
 		}
 
 		c.Set("section_existence_score", score)
-		c.Next()
+		return nil
 	}
 }
 
-func FormattingCheck() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_resume_sections, exists := c.Get("resume_sections")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to extract parsed resume content."})
-			return
+func FormattingCheck() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_resume_sections := c.Get("resume_sections")
+		if retrieved_resume_sections == nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to extract parsed resume content."})
 		}
 
 		resume_sections, ok := retrieved_resume_sections.(map[string][]string)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to process resume sections."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to process resume sections."})
 		}
 
 		line_count := util.CountLine(resume_sections)
@@ -603,6 +600,6 @@ func FormattingCheck() gin.HandlerFunc {
 		}
 
 		c.Set("format_score", total_score)
-		c.Next()
+		return nil
 	}
 }

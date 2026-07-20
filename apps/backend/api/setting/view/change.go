@@ -4,74 +4,67 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	"golang.org/x/crypto/bcrypt"
 	typing "resuming/api/setting/typing"
 	util "resuming/api/setting/util"
 	validator "resuming/api/setting/validator"
 	"resuming/database"
+	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
 	"resuming/tool"
 )
 
-func ChangeUsername() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to retrieve session data."})
-			return
+func ChangeUsername() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to retrieve session data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
 		var request typing.ChangeUsernameRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to receive request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
 
 		validated_request, err := validator.ValidateUsernameRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		new_data := validated_request.Username
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 			}
 		}
 
-		var user database.User
+		var user sqlc.User
 		err = json.Unmarshal([]byte(retrieved_data), &user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		new_user_struct := database.User{
-			PublicId:    user.PublicId,
+		new_user_struct := sqlc.User{
+			PublicID:    user.PublicID,
 			Username:    new_data,
 			Email:       user.Email,
 			Displayname: user.Displayname,
@@ -85,8 +78,7 @@ func ChangeUsername() gin.HandlerFunc {
 
 		serialised_new_user_struct, err := json.Marshal(new_user_struct)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
 		err = tool.Valkey.Do(
@@ -97,70 +89,62 @@ func ChangeUsername() gin.HandlerFunc {
 				Build(),
 		).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
+		return nil
 	}
 }
 
-func ChangeDisplayname() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to get user data."})
-			return
+func ChangeDisplayname() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
 		var request typing.ChangeDisplaynameRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to receive request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
 
 		validated_request, err := validator.ValidateDisplaynameRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		new_data := validated_request.Displayname
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 			}
 		}
 
-		var user database.User
+		var user sqlc.User
 		err = json.Unmarshal([]byte(retrieved_data), &user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		new_user_struct := database.User{
-			PublicId:    user.PublicId,
+		new_user_struct := sqlc.User{
+			PublicID:    user.PublicID,
 			Username:    user.Username,
 			Email:       user.Email,
 			Displayname: new_data,
@@ -174,8 +158,7 @@ func ChangeDisplayname() gin.HandlerFunc {
 
 		serialised_new_user_struct, err := json.Marshal(new_user_struct)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
 		err = tool.Valkey.Do(
@@ -186,165 +169,145 @@ func ChangeDisplayname() gin.HandlerFunc {
 				Build(),
 		).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
+		return nil
 	}
 }
 
-func PrepareChangeEmail() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to get user data."})
-			return
+func PrepareChangeEmail() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
 		var request typing.ChangeEmailRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to receive request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
 
 		validated_request, err := validator.ValidateEmailRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		new_data := validated_request.Email
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 			}
 		}
 
-		var user database.User
+		var user sqlc.User
 		err = json.Unmarshal([]byte(retrieved_data), &user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
 		if new_data == user.Email {
-			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": "Email is already in use."})
-			return
+			return c.JSON(http.StatusConflict, echo.Map{"message": "Email is already in use."})
 		}
 
-		err = tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().
+		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
 			Set().
 			Key(user.Email+":change-email").
 			Value(new_data).
 			Build()).
 			Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Connection to in-memory data stores failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().
+		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
 			Expire().
 			Key(user.Email+":change-email").
 			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
 			Build()).
 			Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Connection to in-memory data stores failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
 		err = util.SendOTP(user.Email)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to send OTP."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
+		return nil
 	}
 }
 
-func ChangeEmail() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to get user data."})
-			return
+func ChangeEmail() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 			}
 		}
 
-		var user database.User
+		var user sqlc.User
 		err = json.Unmarshal([]byte(retrieved_data), &user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
 		var request typing.OTPRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
 		err = util.CheckOTP(user.Email, request.OTP)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid OTP."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
 
-		new_data, err := tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().Get().Key(user.Email+":change-email").Build()).ToString()
+		new_data, err := tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().Get().Key(user.Email+":change-email").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Email change request expired or not found."})
-			return
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Email change request expired or not found."})
 		}
 
-		new_user_struct := database.User{
-			PublicId:    user.PublicId,
+		new_user_struct := sqlc.User{
+			PublicID:    user.PublicID,
 			Username:    user.Username,
 			Email:       new_data,
 			Displayname: user.Displayname,
@@ -358,8 +321,7 @@ func ChangeEmail() gin.HandlerFunc {
 
 		serialised_new_user_struct, err := json.Marshal(new_user_struct)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
 		err = tool.Valkey.Do(
@@ -370,183 +332,158 @@ func ChangeEmail() gin.HandlerFunc {
 				Build(),
 		).Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to store user data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
+		return nil
 	}
 }
 
-func PrepareChangePassword() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to get user data."})
-			return
+func PrepareChangePassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
 		var request typing.ChangePasswordRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to receive request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
 
 		validated_request, err := validator.ValidatePasswordRequest(request)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
 		new_data := validated_request.Password
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 			}
 		}
 
-		var user database.User
+		var user sqlc.User
 		err = json.Unmarshal([]byte(retrieved_data), &user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user data."})
-			return
-		}
-
-		var db_user database.User
-		result := database.DB.Where("public_id = ?", user.PublicId).First(&db_user)
-		if result.Error != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Unable to find user."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
 		hashed_password, err := bcrypt.GenerateFromPassword([]byte(new_data), bcrypt.DefaultCost)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process request."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().
+		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
 			Set().
-			Key(db_user.Email+":change-password").
+			Key(user.Email+":change-password").
 			Value(string(hashed_password)).
 			Build()).
 			Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Connection to in-memory data stores failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().
+		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
 			Expire().
-			Key(db_user.Email+":change-password").
+			Key(user.Email+":change-password").
 			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
 			Build()).
 			Error()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Connection to in-memory data stores failed."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = util.SendOTP(db_user.Email)
+		err = util.SendOTP(user.Email)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to send OTP."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
+		return nil
 	}
 }
 
-func ChangePassword() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_public_user_id, exists := c.Get("public_user_id")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to get user data."})
-			return
+func ChangePassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
 		}
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		ctx := c.Request.Context()
+		ctx := c.Request().Context()
 		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
 				if dbErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
 			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to get user data."})
-				return
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 			}
 		}
 
-		var user database.User
+		var user sqlc.User
 		err = json.Unmarshal([]byte(retrieved_data), &user)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user data."})
-			return
-		}
-
-		var db_user database.User
-		result := database.DB.Where("public_id = ?", user.PublicId).First(&db_user)
-		if result.Error != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Unable to find user."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
 		var request typing.OTPRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process request."})
-			return
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = util.CheckOTP(db_user.Email, request.OTP)
+		err = util.CheckOTP(user.Email, request.OTP)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid OTP."})
-			return
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
 
-		new_password, err := tool.Valkey.Do(c.Request.Context(), tool.Valkey.B().Get().Key(db_user.Email+":change-password").Build()).ToString()
+		new_password, err := tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().Get().Key(user.Email+":change-password").Build()).ToString()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "Failed to retrieve new password."})
-			return
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve new password."})
 		}
 
-		result = database.DB.Model(&db_user).Update("password", []byte(new_password))
-		if result.Error != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to update."})
-			return
+		err = database.Queries.UpdateUser(ctx, sqlc.UpdateUserParams{
+			ID:          user.ID,
+			Username:    user.Username,
+			Email:       user.Email,
+			Displayname: user.Displayname,
+			Password:    []byte(new_password),
+			UserType:    user.UserType,
+			BannedAt:    user.BannedAt,
+			DeletedAt:   user.DeletedAt,
+		})
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to update."})
 		}
 
+		return nil
 	}
 }

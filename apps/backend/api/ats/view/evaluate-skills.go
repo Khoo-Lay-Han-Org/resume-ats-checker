@@ -6,22 +6,20 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	systemconfig "resuming/system-config"
 )
 
-func ResumeSkillsCheck() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_resume_content, exists := c.Get("resume_content")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to retrieve resume sections."})
-			return
+func ResumeSkillsCheck() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_resume_content := c.Get("resume_content")
+		if retrieved_resume_content == nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve resume sections."})
 		}
 
 		resume_content, ok := retrieved_resume_content.(string)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process resume content."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume content."})
 		}
 
 		ai_request_content := map[string]string{
@@ -30,14 +28,12 @@ func ResumeSkillsCheck() gin.HandlerFunc {
 
 		ai_request_content_bytes, err := json.Marshal(ai_request_content)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to prepare request data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
 		}
 
 		req, err := http.NewRequest("POST", systemconfig.AiModelsUri+"skills-keyword-predict", bytes.NewBuffer(ai_request_content_bytes))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to prepare request data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -45,41 +41,36 @@ func ResumeSkillsCheck() gin.HandlerFunc {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve request data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve request data."})
 		}
 		defer func() { _ = resp.Body.Close() }()
 
 		retrieved_body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to read response body."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to read response body."})
 		}
 
 		var body []map[string]any
 		err = json.Unmarshal(retrieved_body, &body)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse JSON response."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse JSON response."})
 		}
 
 		c.Set("resume_skills", body)
-		c.Next()
+		return nil
 	}
 }
 
-func JobDescSkillsCheck() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		job_desc, exists := c.Get("job_desc")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Failed to retrieve job description."})
-			return
+func JobDescSkillsCheck() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		job_desc := c.Get("job_desc")
+		if job_desc == nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve job description."})
 		}
 
 		job_desc_str, ok := job_desc.(string)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process job description."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process job description."})
 		}
 
 		ai_request_content := map[string]string{
@@ -88,14 +79,12 @@ func JobDescSkillsCheck() gin.HandlerFunc {
 
 		ai_request_content_bytes, err := json.Marshal(ai_request_content)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to prepare request data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
 		}
 
 		req, err := http.NewRequest("POST", systemconfig.AiModelsUri+"skills-keyword-predict", bytes.NewBuffer(ai_request_content_bytes))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to prepare request data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -103,53 +92,46 @@ func JobDescSkillsCheck() gin.HandlerFunc {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve request data."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve request data."})
 		}
 		defer func() { _ = resp.Body.Close() }()
 
 		retrieved_body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to read response body."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to read response body."})
 		}
 
 		var body []map[string]any
 		err = json.Unmarshal(retrieved_body, &body)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse JSON response."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse JSON response."})
 		}
 
 		c.Set("job_desc_skills", body)
-		c.Next()
+		return nil
 	}
 }
 
-func OverallSkillsCheck() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		retrieved_resume_skills, exists := c.Get("resume_skills")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve resume skills."})
-			return
+func OverallSkillsCheck() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_resume_skills := c.Get("resume_skills")
+		if retrieved_resume_skills == nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve resume skills."})
 		}
 
 		resume_skills, ok := retrieved_resume_skills.([]map[string]any)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process resume skills."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume skills."})
 		}
 
-		retrieved_job_desc_skills, exists := c.Get("job_desc_skills")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to retrieve job description skills."})
-			return
+		retrieved_job_desc_skills := c.Get("job_desc_skills")
+		if retrieved_job_desc_skills == nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve job description skills."})
 		}
 
 		job_desc_skills, ok := retrieved_job_desc_skills.([]map[string]any)
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to process job description skills."})
-			return
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process job description skills."})
 		}
 
 		total_requirements := len(job_desc_skills)
@@ -173,8 +155,7 @@ func OverallSkillsCheck() gin.HandlerFunc {
 
 				json_ai_similarity_check_request, err := json.Marshal(ai_similarity_check_request)
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to calculate score."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to calculate score."})
 				}
 
 				resp, err := http.Post(
@@ -183,15 +164,13 @@ func OverallSkillsCheck() gin.HandlerFunc {
 					bytes.NewBuffer(json_ai_similarity_check_request),
 				)
 				if err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to calculate score."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to calculate score."})
 				}
 				defer func() { _ = resp.Body.Close() }()
 
 				var score float64
 				if err := json.NewDecoder(resp.Body).Decode(&score); err != nil {
-					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode response."})
-					return
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to decode response."})
 				}
 
 				if score > 0.7 {
@@ -210,6 +189,6 @@ func OverallSkillsCheck() gin.HandlerFunc {
 		}
 
 		c.Set("skills_score", finalScore)
-		c.Next()
+		return nil
 	}
 }

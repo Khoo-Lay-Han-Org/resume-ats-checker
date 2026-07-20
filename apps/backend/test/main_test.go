@@ -11,14 +11,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 
 	"resuming/api"
 	"resuming/database"
 	"resuming/tool"
 )
 
-var router *gin.Engine
+var router *echo.Echo
 var infraAvailable bool
 
 func TestMain(m *testing.M) {
@@ -31,14 +31,10 @@ func TestMain(m *testing.M) {
 	} else if err := database.DatabaseConnect(); err != nil {
 		log.Printf("Database not available, skipping integration tests: %v", err)
 		infraAvailable = false
-	} else if err := database.TableConnect(); err != nil {
-		log.Printf("Table migration failed, skipping integration tests: %v", err)
-		infraAvailable = false
 	} else {
 		infraAvailable = true
 	}
 
-	gin.SetMode(gin.TestMode)
 	router = api.APIConnect()
 
 	os.Exit(m.Run())

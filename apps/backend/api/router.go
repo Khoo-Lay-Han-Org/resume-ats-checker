@@ -1,15 +1,15 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
+	echomw "github.com/labstack/echo/v4/middleware"
 	"resuming/api/middleware"
 )
 
-func APIConnect() *gin.Engine {
-	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery())
+func APIConnect() *echo.Echo {
+	router := echo.New()
+	router.Use(echomw.Logger(), echomw.Recover())
 
-	// authenthication
 	router.POST("/prepare-registeration", PrepareRegistrationFlow)
 	router.POST("/register/:type-of-user", RegisterFlow)
 	router.POST("/prepare-login", PrepareLoginFlow)
@@ -41,25 +41,20 @@ func APIConnect() *gin.Engine {
 			}
 		}
 
-		// showcase records
 		authed.POST("/showcaserecord-add/:type-of-data", ShowCaseRecordAddFlow)
 		authed.DELETE("/showcaserecord-delete", ShowCaseRecordDeleteFlow)
 		authed.PATCH("/showcaserecord-edit/:type-of-data", ShowCaseRecordEditFlow)
 		authed.GET("/showcaserecord-retrieve", ShowCaseRecordGetFlow)
 
-		// portfolio
 		authed.PATCH("/choose-portfolio-template", ChoosePortfolioTemplateFlow)
 		authed.GET("/get-portfolio-content", GetPortfolioContentFlow)
 
-		// resume
 		authed.PATCH("/choose-resume-template", ChooseResumeTemplateFlow)
 		authed.GET("/get-resume-content", GetResumeContentFlow)
 
-		// ATS
 		authed.POST("/ats-score-webscrape", ATSScoreWebScrapeFlow)
 		authed.POST("/ats-score-user-input", ATSScoreUserInputFlow)
 
-		// setting
 		authed.POST("/change-username", ChangeUsernameFlow)
 		authed.POST("/change-displayname", ChangeDisplaynameFlow)
 		authed.POST("/prepare-change-email", PrepareEmailChangeFlow)
@@ -69,7 +64,6 @@ func APIConnect() *gin.Engine {
 		authed.POST("/prepare-delete-account", PrepareDeleteAccountFlow)
 		authed.POST("/delete-account", DeleteAccountFlow)
 
-		// client support
 		authed.POST("/client_comm_to_admin", ClientCommunicateToAdminFlow)
 		authed.POST("/client_report_other_client", ClientReportOtherClientFlow)
 	}
