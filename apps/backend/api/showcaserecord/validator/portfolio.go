@@ -45,12 +45,12 @@ func ValidateEmailPortfolioData(request typing.EmailSection) (typing.EmailSectio
 				valtra.MinLengthString(4, "Email must be at least 4 characters"),
 				valtra.MaxLengthString(30, "Email must be at most 30 characters"),
 				valtra.Email("Email must be in correct email format"),
-			func(v valtra.Value[string]) error {
-				if !validateEmailMX(v.Value()) {
-					return fmt.Errorf("Email domain must have valid MX or A records")
-				}
-				return nil
-			},
+				func(v valtra.Value[string]) error {
+					if !validateEmailMX(v.Value()) {
+						return fmt.Errorf("Email domain must have valid MX or A records")
+					}
+					return nil
+				},
 			).
 			Collect(v),
 

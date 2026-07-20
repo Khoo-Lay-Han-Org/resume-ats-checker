@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	typing "resuming/api/client-support/typing"
 	validator "resuming/api/client-support/validator"
 	"resuming/tool"

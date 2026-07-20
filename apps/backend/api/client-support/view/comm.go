@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	typing "resuming/api/client-support/typing"
 	validator "resuming/api/client-support/validator"
 	systemconfig "resuming/system-config"

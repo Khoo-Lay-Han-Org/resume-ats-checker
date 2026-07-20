@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	systemconfig "resuming/system-config"
 	"resuming/database/sqlc"
+	systemconfig "resuming/system-config"
 	"resuming/tool"
 )
 
@@ -183,12 +183,12 @@ func SyncGroupClientSupportMessagingSessionStore() error {
 	}
 
 	type MessageDTO struct {
-		PublicId  string `json:"public_id"`
-		UserId    string `json:"user_id"`
-		Type      string `json:"type"`
-		Message   string `json:"message"`
+		PublicId   string `json:"public_id"`
+		UserId     string `json:"user_id"`
+		Type       string `json:"type"`
+		Message    string `json:"message"`
 		SenderType string `json:"sender_type"`
-		CreatedAt string `json:"created_at"`
+		CreatedAt  string `json:"created_at"`
 	}
 
 	var dtos []MessageDTO

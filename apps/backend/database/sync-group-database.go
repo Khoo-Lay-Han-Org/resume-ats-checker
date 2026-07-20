@@ -152,7 +152,7 @@ func SyncGroupClientsConfigDatabase() error {
 			PublicID:    uid,
 			Username:    cfg.Username,
 			Displayname: cfg.Displayname,
-			UserType:     userType,
+			UserType:    userType,
 		})
 		if err != nil {
 			log.Printf("Failed to update client %s: %v", cfg.PublicId, err)
@@ -198,7 +198,7 @@ func SyncGroupAdminsConfigDatabase() error {
 			PublicID:    uid,
 			Username:    cfg.Username,
 			Displayname: cfg.Displayname,
-			UserType:     userType,
+			UserType:    userType,
 		})
 		if err != nil {
 			log.Printf("Failed to update admin %s: %v", cfg.PublicId, err)

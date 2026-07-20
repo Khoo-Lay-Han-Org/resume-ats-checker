@@ -6,23 +6,23 @@ import (
 	"fmt"
 	"log"
 
-	systemconfig "resuming/system-config"
 	"resuming/database/sqlc"
+	systemconfig "resuming/system-config"
 	"resuming/tool"
 )
 
 func SyncIndividualUserDataSessionStore(public_user_id string, user *sqlc.User) error {
 	userData := map[string]any{
-		"public_id":    user.PublicID.Bytes,
-		"username":     user.Username,
-		"displayname":  user.Displayname,
-		"email":        user.Email,
-		"user_type":    string(user.UserType),
-		"created_at":   user.CreatedAt.Time,
-		"updated_at":   user.UpdatedAt.Time,
-		"banned_at":    nil,
-		"deleted_at":   nil,
-		"expires_at":   nil,
+		"public_id":   user.PublicID.Bytes,
+		"username":    user.Username,
+		"displayname": user.Displayname,
+		"email":       user.Email,
+		"user_type":   string(user.UserType),
+		"created_at":  user.CreatedAt.Time,
+		"updated_at":  user.UpdatedAt.Time,
+		"banned_at":   nil,
+		"deleted_at":  nil,
+		"expires_at":  nil,
 	}
 	if user.BannedAt.Valid {
 		userData["banned_at"] = user.BannedAt.Time
@@ -194,9 +194,9 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signi
 	resume, err := Queries.FindResumeByUserId(context.Background(), privateId)
 	if err == nil {
 		resumeData := map[string]any{
-			"public_id":    resume.PublicID.Bytes,
-			"template_id":  resume.TemplateID,
-			"detail":       resume.Detail,
+			"public_id":   resume.PublicID.Bytes,
+			"template_id": resume.TemplateID,
+			"detail":      resume.Detail,
 		}
 		serialised, _ := json.Marshal(resumeData)
 		storeInValkey(psid+":resume_data", serialised)
@@ -206,9 +206,9 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signi
 	portfolio, err := Queries.FindPortfolioByUserId(context.Background(), privateId)
 	if err == nil {
 		portfolioData := map[string]any{
-			"public_id":    portfolio.PublicID.Bytes,
-			"template_id":  portfolio.TemplateID,
-			"detail":       portfolio.Detail,
+			"public_id":   portfolio.PublicID.Bytes,
+			"template_id": portfolio.TemplateID,
+			"detail":      portfolio.Detail,
 		}
 		serialised, _ := json.Marshal(portfolioData)
 		storeInValkey(psid+":portfolio_data", serialised)
@@ -269,9 +269,9 @@ func storeInValkey(key string, data []byte) {
 
 func SyncIndividualResumeDataSessionStore(public_user_id string, resume *sqlc.Resume) error {
 	resumeData := map[string]any{
-		"public_id":    resume.PublicID.Bytes,
-		"template_id":  resume.TemplateID,
-		"detail":       resume.Detail,
+		"public_id":   resume.PublicID.Bytes,
+		"template_id": resume.TemplateID,
+		"detail":      resume.Detail,
 	}
 	serialised, err := json.Marshal(resumeData)
 	if err != nil {
@@ -290,9 +290,9 @@ func SyncIndividualResumeDataSessionStore(public_user_id string, resume *sqlc.Re
 
 func SyncIndividualPortfolioDataSessionStore(public_user_id string, portfolio *sqlc.Portfolio) error {
 	portfolioData := map[string]any{
-		"public_id":    portfolio.PublicID.Bytes,
-		"template_id":  portfolio.TemplateID,
-		"detail":       portfolio.Detail,
+		"public_id":   portfolio.PublicID.Bytes,
+		"template_id": portfolio.TemplateID,
+		"detail":      portfolio.Detail,
 	}
 	serialised, err := json.Marshal(portfolioData)
 	if err != nil {
