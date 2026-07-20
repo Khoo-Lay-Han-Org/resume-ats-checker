@@ -24,14 +24,14 @@ backend-sqlc-generate:
 # Run all pending migrations
 [working-directory: 'apps/backend']
 backend-migrate-up:
-    goose -dir migrations postgres '{{ _db-conn-string }}' up
+    goose -dir database/migrations postgres '{{ _db-conn-string }}' up
 
 # Reset the database (rollback all migrations)
 [working-directory: 'apps/backend']
 backend-migrate-reset:
-    goose -dir migrations postgres '{{ _db-conn-string }}' reset
+    goose -dir database/migrations postgres '{{ _db-conn-string }}' reset
 
 # Check migration status
 [working-directory: 'apps/backend']
 backend-migrate-status:
-    goose -dir migrations postgres '{{ _db-conn-string }}' status
+    goose -dir database/migrations postgres '{{ _db-conn-string }}' status
