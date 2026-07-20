@@ -1,0 +1,20 @@
+run:
+    go run main.go
+
+sqlc-generate:
+    sqlc generate
+
+_db-host := `grep '^DATABASE_HOST' ../../.env | cut -d'=' -f2`
+_db-user := `grep '^DATABASE_USERNAME' ../../.env | cut -d'=' -f2`
+_db-name := `grep '^DATABASE_NAME' ../../.env | cut -d'=' -f2`
+_db-pass := `grep '^DATABASE_PASSWORD' ../../.env | cut -d'=' -f2`
+_db-port := `grep '^DATABASE_PORT' ../../.env | cut -d'=' -f2`
+
+migrate-up:
+    goose -dir database/migrations postgres "host={{_db-host}} user={{_db-user}} dbname={{_db-name}} password={{_db-pass}} port={{_db-port}} sslmode=require" up
+
+migrate-reset:
+    goose -dir database/migrations postgres "host={{_db-host}} user={{_db-user}} dbname={{_db-name}} password={{_db-pass}} port={{_db-port}} sslmode=require" reset
+
+migrate-status:
+    goose -dir database/migrations postgres "host={{_db-host}} user={{_db-user}} dbname={{_db-name}} password={{_db-pass}} port={{_db-port}} sslmode=require" status
