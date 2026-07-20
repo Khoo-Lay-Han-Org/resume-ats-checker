@@ -1,18 +1,14 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-func RunOpenAPIDoc() *gin.Engine {
-	router := gin.New()
+func RunOpenAPIDoc() *echo.Echo {
+	router := echo.New()
 
-	router.Use(gin.Recovery())
-
-	// OpenAPI docs
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/swagger/*", echoSwagger.EchoWrapHandler())
 
 	return router
 }

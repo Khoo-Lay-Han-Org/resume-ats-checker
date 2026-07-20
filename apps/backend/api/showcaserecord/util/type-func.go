@@ -1,10 +1,6 @@
 package showcaserecord_util
 
-import (
-	"encoding/json"
-
-	"gorm.io/datatypes"
-)
+import "encoding/json"
 
 func ToStringSlice(v any) []string {
 	if v == nil {
@@ -21,13 +17,13 @@ func ToStringSlice(v any) []string {
 	return result
 }
 
-func ToJSON(v any) datatypes.JSON {
+func ToJSON(v any) any {
 	if v == nil {
-		return datatypes.JSON("null")
+		return "null"
 	}
 	b, err := json.Marshal(v)
 	if err != nil {
-		return datatypes.JSON("null")
+		return "null"
 	}
-	return datatypes.JSON(b)
+	return string(b)
 }

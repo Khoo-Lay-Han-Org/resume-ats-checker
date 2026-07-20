@@ -4,7 +4,7 @@ import "resuming/api"
 
 func main() {
 	router := api.RunOpenAPIDoc()
-	if err := router.Run(":5781"); err != nil {
+	if err := router.Start(":5781"); err != nil {
 		panic(err)
 	}
 }

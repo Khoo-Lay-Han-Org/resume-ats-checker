@@ -39,7 +39,7 @@ func TestPrepareRegistration_Validation(t *testing.T) {
 				"email":       "not-an-email",
 				"password":    "password123",
 			},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusUnprocessableEntity,
 		},
 		{
 			name: "password too short",
@@ -49,7 +49,7 @@ func TestPrepareRegistration_Validation(t *testing.T) {
 				"email":       "test@example.com",
 				"password":    "short",
 			},
-			wantStatus: http.StatusBadRequest,
+			wantStatus: http.StatusUnprocessableEntity,
 		},
 		{
 			name:       "malformed JSON",

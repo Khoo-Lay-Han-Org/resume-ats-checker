@@ -23,7 +23,7 @@ func PrepareRegistration() echo.HandlerFunc {
 
 		validated_request, err := validator.ValidateRegistration(request)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": err.Error()})
 		}
 
 		hashed_password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
@@ -167,7 +167,7 @@ func PrepareLogin() echo.HandlerFunc {
 
 		validated_request, err := validator.ValidateLogin(request)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": err.Error()})
 		}
 
 		user, err := database.Queries.FindUserByEmail(c.Request().Context(), validated_request.Email)
