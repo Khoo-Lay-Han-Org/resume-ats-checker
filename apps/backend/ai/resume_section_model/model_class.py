@@ -1,5 +1,4 @@
 import torch.nn as nn
-import tensorflow as tf
 
 
 class ResumeSectionsModel(nn.Module):

@@ -69,14 +69,6 @@ type ProjectSection struct {
 	Index              *int   `json:"index"`
 }
 
-type ToneDetectionModelResponse struct {
-	Prediction [][]float64 `json:"prediction"`
-}
-
-type TranslationModelResponse struct {
-	Prediction string `json:"prediction"`
-}
-
 type SpecificPortoflioDataRequest struct {
 	SectionTitle string `json:"sectiontitle" binding:"required"`
 	Index        string `json:"index" binding:"required"`

@@ -1,8 +1,6 @@
 package ats_view
 
 import (
-	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -13,7 +11,7 @@ import (
 	"github.com/ledongthuc/pdf"
 	util "resuming/api/ats/util"
 	ats_validator "resuming/api/ats/validator"
-	systemconfig "resuming/system-config"
+	"resuming/ai"
 )
 
 func ExtractResume() echo.HandlerFunc {
@@ -85,29 +83,14 @@ func ParseResume() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve resume data."})
 		}
 
-		serialised_resume_content, err := json.Marshal(resume_content)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise resume data."})
+		resume_content_str, ok := resume_content.(string)
+		if !ok {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume data."})
 		}
 
-		resp, err := http.Post(
-			systemconfig.AiModelsUri+"resume-sections-model-predict",
-			"application/json",
-			bytes.NewBuffer(serialised_resume_content),
-		)
+		resume_sections, err := 		ai.ResumeSectionModelPredict(resume_content_str)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve resume data."})
-		}
-		defer func() { _ = resp.Body.Close() }()
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to read response body."})
-		}
-
-		var resume_sections map[string][]string
-		if err := json.Unmarshal(body, &resume_sections); err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse response body."})
 		}
 
 		c.Set("resume_sections", resume_sections)

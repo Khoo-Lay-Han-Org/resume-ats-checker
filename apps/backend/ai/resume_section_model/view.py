@@ -1,38 +1,16 @@
-from fastapi.responses import JSONResponse
-from langdetect import detect
 import torch
-from sentence_transformers import util
 
-from .config import *
-from .typing import *
-
-
-@app.post("/job-type-model-predict")
-def job_type_model_predict(request: TextRequest):
-    JobTypeModel.eval()
-
-    feature = request.text
-
-    tokenised_data = JobTypeTokeniser(
-        text=feature,
-        truncation=True,
-        padding="max_length",
-        max_length=350,
-        return_tensors="pt",
-    )
-    attention_mask = tokenised_data["attention_mask"]
-    tokenised_description = tokenised_data["input_ids"]
-
-    class_indices_tensor = JobTypeModel(tokenised_description, attention_mask)
-    class_index = class_indices_tensor.argmax(dim=1).item()
-
-    job_type = JobTypeClassConverter[class_index]
-
-    return job_type
+from ..typing import TextRequest
+from .config import (
+    ResumeSectionModel,
+    ResumeSectionTokeniser,
+    ResumeSectionClassConverter,
+)
 
 
-@app.post("/resume-sections-model-predict")
-def resume_sections_model_predict(request: TextRequest):
+def predict(data: dict) -> dict:
+    request = TextRequest(**data)
+
     ResumeSectionModel.eval()
 
     raw_feature = request.text
@@ -128,61 +106,3 @@ def resume_sections_model_predict(request: TextRequest):
         "certificates": certificates_section,
         "objective": objective_section,
     }
-
-
-@app.post("/tone-detection-model-predict")
-def tone_detection_model_predict(request: dict):
-    phrase = request.get("phrase", "")
-    vectorised_phrase = ToneDetectionVectorizer.transform([phrase]).toarray()
-    result = ToneDetectionModel.predict(vectorised_phrase)
-    return JSONResponse(content={"prediction": result.tolist()}, status_code=200)
-
-
-@app.post("/translation-model-predict")
-def translation_model_predict(request: TextRequest, tgt_lang="eng_Latn"):
-    phrase = request.text
-
-    detected = detect(phrase)
-    src_lang = TranslationSpecifyLanguage.get(detected)
-
-    if not src_lang:
-        return False
-
-    TranslationTokeniser.src_lang = src_lang
-    inputs = TranslationTokeniser(phrase, return_tensors="pt", truncation=True)
-
-    translated_tokens = TranslationModel.generate(
-        **inputs,
-        forced_bos_token_id=TranslationTokeniser.convert_tokens_to_ids(tgt_lang),
-        max_length=256,
-    )
-
-    return JSONResponse(
-        content={
-            "prediction": TranslationTokeniser.batch_decode(
-                translated_tokens, skip_special_tokens=True
-            )[0]
-        },
-        status_code=200,
-    )
-
-
-@app.post("/skills-keyword-predict")
-def skills_keyword_predict(request: TextRequest):
-    text = request.text
-
-    skills = SkillsKeywordPipeline(text)
-
-    return skills
-
-
-@app.post("/text-similarity-predict")
-def text_similarity_predict(request: DoubleTextRequest):
-    text1 = request.text1
-    text2 = request.text2
-
-    emb1 = TextSimilarityModel.encode(text1, convert_to_tensor=True)
-    emb2 = TextSimilarityModel.encode(text2, convert_to_tensor=True)
-    score = util.pytorch_cos_sim(emb1, emb2).item()
-
-    return score

@@ -1,13 +1,10 @@
 package ats_view
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	systemconfig "resuming/system-config"
+	"resuming/ai"
 )
 
 func ResumeSkillsCheck() echo.HandlerFunc {
@@ -22,38 +19,9 @@ func ResumeSkillsCheck() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume content."})
 		}
 
-		ai_request_content := map[string]string{
-			"text": resume_content,
-		}
-
-		ai_request_content_bytes, err := json.Marshal(ai_request_content)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
-		}
-
-		req, err := http.NewRequest("POST", systemconfig.AiModelsUri+"skills-keyword-predict", bytes.NewBuffer(ai_request_content_bytes))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
-		}
-
-		req.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
+		body, err := ai.SkillsKeywordPredict(resume_content)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve request data."})
-		}
-		defer func() { _ = resp.Body.Close() }()
-
-		retrieved_body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to read response body."})
-		}
-
-		var body []map[string]any
-		err = json.Unmarshal(retrieved_body, &body)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse JSON response."})
 		}
 
 		c.Set("resume_skills", body)
@@ -73,38 +41,9 @@ func JobDescSkillsCheck() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process job description."})
 		}
 
-		ai_request_content := map[string]string{
-			"text": job_desc_str,
-		}
-
-		ai_request_content_bytes, err := json.Marshal(ai_request_content)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
-		}
-
-		req, err := http.NewRequest("POST", systemconfig.AiModelsUri+"skills-keyword-predict", bytes.NewBuffer(ai_request_content_bytes))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to prepare request data."})
-		}
-
-		req.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
+		body, err := ai.SkillsKeywordPredict(job_desc_str)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve request data."})
-		}
-		defer func() { _ = resp.Body.Close() }()
-
-		retrieved_body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to read response body."})
-		}
-
-		var body []map[string]any
-		err = json.Unmarshal(retrieved_body, &body)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse JSON response."})
 		}
 
 		c.Set("job_desc_skills", body)
@@ -148,29 +87,9 @@ func OverallSkillsCheck() echo.HandlerFunc {
 					continue
 				}
 
-				ai_similarity_check_request := map[string]string{
-					"text1": skill_name1,
-					"text2": skill_name2,
-				}
-
-				json_ai_similarity_check_request, err := json.Marshal(ai_similarity_check_request)
+				score, err := ai.TextSimilarityPredict(skill_name1, skill_name2)
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to calculate score."})
-				}
-
-				resp, err := http.Post(
-					systemconfig.AiModelsUri+"text-similarity-predict",
-					"application/json",
-					bytes.NewBuffer(json_ai_similarity_check_request),
-				)
-				if err != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to calculate score."})
-				}
-				defer func() { _ = resp.Body.Close() }()
-
-				var score float64
-				if err := json.NewDecoder(resp.Body).Decode(&score); err != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to decode response."})
 				}
 
 				if score > 0.7 {
