@@ -59,19 +59,27 @@ USE_FIREFOX = True
 CHECKPOINT_FILE = os.path.join(os.path.dirname(__file__), "checkpoint.json")
 
 
-def load_checkpoint() -> set[str]:
-    """Load completed job roles from checkpoint file."""
+def load_keyword_checkpoint() -> dict[str, dict[str, object]]:
+    """Load per-role keyword-level checkpoint.
+
+    Format:
+      { "Role Name": { "keywords": ["kw1", "kw2", ...], "completed": 2 } }
+    """
     if os.path.exists(CHECKPOINT_FILE):
         with open(CHECKPOINT_FILE) as f:
-            return set(json.load(f))
-    return set()
+            return json.load(f)
+    return {}
 
 
-def save_checkpoint(completed: set[str]):
-    """Write completed job roles to checkpoint file."""
+def save_keyword_checkpoint(role: str, keywords: list[str], completed_index: int):
+    """Save the last completed keyword index for a role."""
+    data = load_keyword_checkpoint()
+    data[role] = {"keywords": keywords, "completed": completed_index}
     with open(CHECKPOINT_FILE, "w") as f:
-        json.dump(sorted(completed), f, indent=2)
-    print(f"\n\nCheckpoint saved: {len(completed)} roles completed\n")
+        json.dump(data, f, indent=2)
+    print(
+        f"\n\nCheckpoint: '{role}' — keyword {completed_index + 1}/{len(keywords)} complete\n"
+    )
 
 
 def _extract_text(result):

@@ -5,14 +5,9 @@ from util import *
 
 
 def generate_dataset():
-    completed = load_checkpoint()
     skipped_items = []
 
     for _, item in enumerate(ALL_JOB_ROLES):
-        if item in completed:
-            print(f"\n\n\nSKIPPING (already checkpointed): {item}\n\n\n")
-            continue
-
         print(f"\n\n\nITEM: {item}\n\n\n")
 
         common_search_labels = slight_change_label_search(item)
@@ -24,16 +19,31 @@ def generate_dataset():
             skipped_items.append(item)
             continue
 
-        all_content = scrape_content(common_search_labels)
-        polished_content = polish_scraped_content(all_content)
-        embedded_data = embed_scraped_content(polished_content)
-        storing_status = insert_to_vector_store(embedded_data)
+        # ── Keyword-level checkpoint ────────────────────────────────
+        cp = load_keyword_checkpoint()
+        role_cp = cp.get(item, {})
 
-        if storing_status != True:
-            raise Exception("Failed to store data")
+        if role_cp.get("keywords") == common_search_labels:
+            start_from = role_cp["completed"] + 1
+            print(f"\n  Resuming '{item}' from keyword index {start_from} (of {len(common_search_labels)})")
+        else:
+            start_from = 0
 
-        completed.add(item)
-        save_checkpoint(completed)
+        for kw_index in range(start_from, len(common_search_labels)):
+            kw = common_search_labels[kw_index]
+            print(f"\n\n  Processing keyword {kw_index + 1}/{len(common_search_labels)}: {kw}\n")
+
+            all_content = scrape_content([kw])
+            polished_content = polish_scraped_content(all_content)
+            embedded_data = embed_scraped_content(polished_content)
+            storing_status = insert_to_vector_store(embedded_data)
+
+            if storing_status != True:
+                raise Exception(f"Failed to store data for keyword: {kw}")
+
+            save_keyword_checkpoint(item, common_search_labels, kw_index)
+
+        print(f"\n\n  Finished all keywords for '{item}'\n")
 
     data = []
     for _, item in enumerate(ALL_JOB_ROLES):
