@@ -19,19 +19,22 @@ def generate_dataset():
             skipped_items.append(item)
             continue
 
-        # ── Keyword-level checkpoint ────────────────────────────────
-        cp = load_keyword_checkpoint()
-        role_cp = cp.get(item, {})
+        # ── Checkpoint: which keywords are done for this role? ──────
+        cp = load_checkpoint()
 
+        # Save keyword list immediately so checkpoint exists
+        cp[item] = {"keywords": common_search_labels, "completed": -1}
+        save_checkpoint(cp)
+
+        role_cp = cp.get(item, {})
         if role_cp.get("keywords") == common_search_labels:
             start_from = role_cp["completed"] + 1
-            print(f"\n  Resuming '{item}' from keyword index {start_from} (of {len(common_search_labels)})")
         else:
             start_from = 0
 
-        for kw_index in range(start_from, len(common_search_labels)):
-            kw = common_search_labels[kw_index]
-            print(f"\n\n  Processing keyword {kw_index + 1}/{len(common_search_labels)}: {kw}\n")
+        for kw_idx in range(start_from, len(common_search_labels)):
+            kw = common_search_labels[kw_idx]
+            print(f"\n  Keyword {kw_idx + 1}/{len(common_search_labels)}: {kw}")
 
             all_content = scrape_content([kw])
             polished_content = polish_scraped_content(all_content)
@@ -41,9 +44,8 @@ def generate_dataset():
             if storing_status != True:
                 raise Exception(f"Failed to store data for keyword: {kw}")
 
-            save_keyword_checkpoint(item, common_search_labels, kw_index)
-
-        print(f"\n\n  Finished all keywords for '{item}'\n")
+            cp[item] = {"keywords": common_search_labels, "completed": kw_idx}
+            save_checkpoint(cp)
 
     data = []
     for _, item in enumerate(ALL_JOB_ROLES):
