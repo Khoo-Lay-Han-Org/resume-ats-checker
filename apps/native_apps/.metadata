@@ -1,0 +1,13 @@
+# This file tracks properties of this Flutter project.
+# Used by the Flutter tool to assess capabilities and perform upgrades.
+version: 1
+project_info:
+  last_metadata_revision: ee80f08bbf97172ec030b8751ceab557177a34a6
+  flutter_stable: true
+  flutter_version: 3.29.0
+  platforms:
+    - android
+    - ios
+    - linux
+    - macos
+    - windows
