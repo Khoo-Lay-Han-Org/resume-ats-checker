@@ -21,31 +21,38 @@ def generate_dataset():
 
         # ── Checkpoint: which keywords are done for this role? ──────
         cp = load_checkpoint()
-
-        # Save keyword list immediately so checkpoint exists
-        cp[item] = {"keywords": common_search_labels, "completed": -1}
-        save_checkpoint(cp)
-
         role_cp = cp.get(item, {})
+
         if role_cp.get("keywords") == common_search_labels:
             start_from = role_cp["completed"] + 1
+            print(f"\n  Resuming from keyword index {start_from}")
         else:
             start_from = 0
+            # Save keyword list for first time
+            cp[item] = {"keywords": common_search_labels, "completed": -1}
+            save_checkpoint(cp)
 
         for kw_idx in range(start_from, len(common_search_labels)):
             kw = common_search_labels[kw_idx]
             print(f"\n  Keyword {kw_idx + 1}/{len(common_search_labels)}: {kw}")
 
-            all_content = scrape_content([kw])
-            polished_content = polish_scraped_content(all_content)
-            embedded_data = embed_scraped_content(polished_content)
-            storing_status = insert_to_vector_store(embedded_data)
+            try:
+                all_content = scrape_content([kw])
+                polished_content = polish_scraped_content(all_content)
+                embedded_data = embed_scraped_content(polished_content)
+                storing_status = insert_to_vector_store(embedded_data)
 
-            if storing_status != True:
-                raise Exception(f"Failed to store data for keyword: {kw}")
+                if storing_status != True:
+                    raise Exception(f"Failed to store data for keyword: {kw}")
 
-            cp[item] = {"keywords": common_search_labels, "completed": kw_idx}
-            save_checkpoint(cp)
+                cp[item] = {"keywords": common_search_labels, "completed": kw_idx}
+                save_checkpoint(cp)
+                print(f"\n  >>> CHECKPOINT UPDATED: keyword {kw_idx}/{len(common_search_labels) - 1} done <<<")
+            except Exception as e:
+                print(f"\n\n  Keyword failed: {e}")
+                save_checkpoint(cp)
+                print(f"  Checkpoint at index {cp[item]['completed']} — will retry this keyword on next run\n")
+                break
 
     data = []
     for _, item in enumerate(ALL_JOB_ROLES):

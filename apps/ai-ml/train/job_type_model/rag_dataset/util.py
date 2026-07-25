@@ -87,15 +87,19 @@ def _extract_text(result):
 def slight_change_label_search(search_label):
     search_labels = []
 
-    try:
-        result = agent_word_ideater.invoke(
-            {"messages": [{"role": "user", "content": search_label}]}
-        )
-    except Exception:
-        print(
-            f"\n\nFailed to generate search keywords for '{search_label}' (API error). Skipping."
-        )
-        return search_labels
+    wait = 30
+    result = None
+    while result is None:
+        try:
+            result = agent_word_ideater.invoke(
+                {"messages": [{"role": "user", "content": search_label}]}
+            )
+        except Exception:
+            print(
+                f"\n\nFailed to generate keywords for '{search_label}'. Retrying in {wait}s..."
+            )
+            random_delay(wait, wait + 30)
+            wait = min(wait * 2, 300)
 
     try:
         unparsed_array_keywords = _extract_text(result)
