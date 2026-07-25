@@ -18,7 +18,7 @@ import (
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
-	typing "resuming/api/auth/typing"
+	typing "resuming/api/auth/dto"
 	util "resuming/api/auth/util"
 	"resuming/database"
 	"resuming/env"

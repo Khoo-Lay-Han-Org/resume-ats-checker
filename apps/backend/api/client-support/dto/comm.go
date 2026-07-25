@@ -1,4 +1,4 @@
-package client_support_typing
+package client_support_dto
 
 type ClientCommunicateRequest struct {
 	Type    string `json:"type" binding:"required"`

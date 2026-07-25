@@ -1,4 +1,4 @@
-package auth_typing
+package auth_dto
 
 type Register struct {
 	Displayname string `json:"displayname" binding:"required"`

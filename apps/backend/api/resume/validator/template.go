@@ -2,7 +2,7 @@ package resume_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/resume/typing"
+	typing "resuming/api/resume/dto"
 )
 
 func ValidateTemplateID(request typing.ChooseTemplateRequest) (typing.ChooseTemplateRequest, error) {

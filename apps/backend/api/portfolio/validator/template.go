@@ -2,7 +2,7 @@ package portfolio_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/portfolio/typing"
+	typing "resuming/api/portfolio/dto"
 )
 
 func ValidateTemplateID(request typing.ChooseTemplateRequest) (typing.ChooseTemplateRequest, error) {

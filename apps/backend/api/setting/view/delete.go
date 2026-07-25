@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/api/setting/typing"
+	typing "resuming/api/setting/dto"
 	util "resuming/api/setting/util"
 	"resuming/database"
 	"resuming/database/sqlc"

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/api/administrator/typing"
+	typing "resuming/api/administrator/dto"
 	validator "resuming/api/administrator/validator"
 	"resuming/database"
 	"resuming/database/sqlc"

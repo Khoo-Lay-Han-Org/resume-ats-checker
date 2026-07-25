@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/showcaserecord/typing"
+	typing "resuming/api/showcaserecord/dto"
 )
 
 func ValidateNamePortfolioData(request typing.NameSection) (typing.NameSection, error) {

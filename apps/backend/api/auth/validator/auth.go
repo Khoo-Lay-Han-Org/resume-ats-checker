@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/auth/typing"
+	typing "resuming/api/auth/dto"
 	auth_util "resuming/api/auth/util"
 )
 

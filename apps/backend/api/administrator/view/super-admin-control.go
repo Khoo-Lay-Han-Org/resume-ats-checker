@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	typing "resuming/api/administrator/typing"
+	typing "resuming/api/administrator/dto"
 	util "resuming/api/administrator/util"
 	validator "resuming/api/administrator/validator"
 	"resuming/database"

@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	"golang.org/x/crypto/bcrypt"
-	typing "resuming/api/setting/typing"
+	typing "resuming/api/setting/dto"
 	util "resuming/api/setting/util"
 	validator "resuming/api/setting/validator"
 	"resuming/database"

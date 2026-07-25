@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	typing "resuming/api/ats/typing"
+	typing "resuming/api/ats/dto"
 	util "resuming/api/ats/util"
 )
 

@@ -3,25 +3,25 @@ package test
 import (
 	"testing"
 
-	administrator_typing "resuming/api/administrator/typing"
+	administrator_dto "resuming/api/administrator/dto"
 	administrator_validator "resuming/api/administrator/validator"
-	auth_typing "resuming/api/auth/typing"
+	auth_dto "resuming/api/auth/dto"
 	auth_validator "resuming/api/auth/validator"
-	client_support_typing "resuming/api/client-support/typing"
+	client_support_dto "resuming/api/client-support/dto"
 	client_support_validator "resuming/api/client-support/validator"
-	setting_typing "resuming/api/setting/typing"
+	setting_dto "resuming/api/setting/dto"
 	setting_validator "resuming/api/setting/validator"
 )
 
 func TestValidateRegistration(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   auth_typing.Register
+		input   auth_dto.Register
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -31,7 +31,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing username",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Displayname: "Test User",
 				Email:       "test@example.com",
 				Password:    "password123",
@@ -40,7 +40,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "username too short",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "ab",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -50,7 +50,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing displayname",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username: "testuser",
 				Email:    "test@example.com",
 				Password: "password123",
@@ -59,7 +59,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "displayname too short",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "ab",
 				Email:       "test@example.com",
@@ -69,7 +69,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "invalid email format",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "not-an-email",
@@ -79,7 +79,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing email",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Password:    "password123",
@@ -88,7 +88,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "password too short",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -98,7 +98,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "password too long",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -108,7 +108,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing password",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -117,7 +117,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "all fields empty",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "",
 				Displayname: "",
 				Email:       "",
@@ -127,7 +127,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "email with leading/trailing spaces",
-			input: auth_typing.Register{
+			input: auth_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "  TEST@Example.com  ",
@@ -150,12 +150,12 @@ func TestValidateRegistration(t *testing.T) {
 func TestValidateLogin(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   auth_typing.Login
+		input   auth_dto.Login
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: auth_typing.Login{
+			input: auth_dto.Login{
 				Email:    "test@example.com",
 				Password: "password123",
 			},
@@ -163,21 +163,21 @@ func TestValidateLogin(t *testing.T) {
 		},
 		{
 			name: "missing email",
-			input: auth_typing.Login{
+			input: auth_dto.Login{
 				Password: "password123",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing password",
-			input: auth_typing.Login{
+			input: auth_dto.Login{
 				Email: "test@example.com",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: auth_typing.Login{
+			input: auth_dto.Login{
 				Email:    "",
 				Password: "",
 			},
@@ -185,7 +185,7 @@ func TestValidateLogin(t *testing.T) {
 		},
 		{
 			name: "email with spaces trimmed",
-			input: auth_typing.Login{
+			input: auth_dto.Login{
 				Email:    "  TEST@Example.com  ",
 				Password: "password123",
 			},
@@ -206,19 +206,19 @@ func TestValidateLogin(t *testing.T) {
 func TestValidateUserControlRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   administrator_typing.UserControlRequest
+		input   administrator_dto.UserControlRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: administrator_typing.UserControlRequest{
+			input: administrator_dto.UserControlRequest{
 				PublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing public user id",
-			input: administrator_typing.UserControlRequest{
+			input: administrator_dto.UserControlRequest{
 				PublicUserId: "",
 			},
 			wantErr: true,
@@ -238,19 +238,19 @@ func TestValidateUserControlRequest(t *testing.T) {
 func TestValidateSessionControlRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   administrator_typing.SessionControlRequest
+		input   administrator_dto.SessionControlRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: administrator_typing.SessionControlRequest{
+			input: administrator_dto.SessionControlRequest{
 				PublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: false,
 		},
 		{
 			name: "empty public user id",
-			input: administrator_typing.SessionControlRequest{
+			input: administrator_dto.SessionControlRequest{
 				PublicUserId: "",
 			},
 			wantErr: true,
@@ -270,12 +270,12 @@ func TestValidateSessionControlRequest(t *testing.T) {
 func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   administrator_typing.ClientCommunicationReplyRequest
+		input   administrator_dto.ClientCommunicationReplyRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: administrator_typing.ClientCommunicationReplyRequest{
+			input: administrator_dto.ClientCommunicationReplyRequest{
 				PublicId: "abc123",
 				Message:  "Thank you for your message",
 			},
@@ -283,21 +283,21 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 		},
 		{
 			name: "missing public id",
-			input: administrator_typing.ClientCommunicationReplyRequest{
+			input: administrator_dto.ClientCommunicationReplyRequest{
 				Message: "Thank you",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing message",
-			input: administrator_typing.ClientCommunicationReplyRequest{
+			input: administrator_dto.ClientCommunicationReplyRequest{
 				PublicId: "abc123",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: administrator_typing.ClientCommunicationReplyRequest{
+			input: administrator_dto.ClientCommunicationReplyRequest{
 				PublicId: "",
 				Message:  "",
 			},
@@ -318,12 +318,12 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 func TestValidateClientCommunicateRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   client_support_typing.ClientCommunicateRequest
+		input   client_support_dto.ClientCommunicateRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: client_support_typing.ClientCommunicateRequest{
+			input: client_support_dto.ClientCommunicateRequest{
 				Type:    "complaint",
 				Message: "This is a complaint",
 			},
@@ -331,21 +331,21 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 		},
 		{
 			name: "missing type",
-			input: client_support_typing.ClientCommunicateRequest{
+			input: client_support_dto.ClientCommunicateRequest{
 				Message: "This is a complaint",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing message",
-			input: client_support_typing.ClientCommunicateRequest{
+			input: client_support_dto.ClientCommunicateRequest{
 				Type: "complaint",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: client_support_typing.ClientCommunicateRequest{
+			input: client_support_dto.ClientCommunicateRequest{
 				Type:    "",
 				Message: "",
 			},
@@ -366,12 +366,12 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 func TestValidateClientReportRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   client_support_typing.ClientReportRequest
+		input   client_support_dto.ClientReportRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: client_support_typing.ClientReportRequest{
+			input: client_support_dto.ClientReportRequest{
 				TargetClientPublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 				ReportType:               "profanity",
 			},
@@ -379,21 +379,21 @@ func TestValidateClientReportRequest(t *testing.T) {
 		},
 		{
 			name: "missing target client",
-			input: client_support_typing.ClientReportRequest{
+			input: client_support_dto.ClientReportRequest{
 				ReportType: "profanity",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing report type",
-			input: client_support_typing.ClientReportRequest{
+			input: client_support_dto.ClientReportRequest{
 				TargetClientPublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: client_support_typing.ClientReportRequest{
+			input: client_support_dto.ClientReportRequest{
 				TargetClientPublicUserId: "",
 				ReportType:               "",
 			},
@@ -414,33 +414,33 @@ func TestValidateClientReportRequest(t *testing.T) {
 func TestValidateUsernameRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_typing.ChangeUsernameRequest
+		input   setting_dto.ChangeUsernameRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_typing.ChangeUsernameRequest{
+			input: setting_dto.ChangeUsernameRequest{
 				Username: "newusername",
 			},
 			wantErr: false,
 		},
 		{
 			name: "too short",
-			input: setting_typing.ChangeUsernameRequest{
+			input: setting_dto.ChangeUsernameRequest{
 				Username: "ab",
 			},
 			wantErr: true,
 		},
 		{
 			name: "too long",
-			input: setting_typing.ChangeUsernameRequest{
+			input: setting_dto.ChangeUsernameRequest{
 				Username: string(make([]byte, 256)),
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_typing.ChangeUsernameRequest{
+			input: setting_dto.ChangeUsernameRequest{
 				Username: "",
 			},
 			wantErr: true,
@@ -460,26 +460,26 @@ func TestValidateUsernameRequest(t *testing.T) {
 func TestValidateDisplaynameRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_typing.ChangeDisplaynameRequest
+		input   setting_dto.ChangeDisplaynameRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_typing.ChangeDisplaynameRequest{
+			input: setting_dto.ChangeDisplaynameRequest{
 				Displayname: "New Display Name",
 			},
 			wantErr: false,
 		},
 		{
 			name: "too short",
-			input: setting_typing.ChangeDisplaynameRequest{
+			input: setting_dto.ChangeDisplaynameRequest{
 				Displayname: "ab",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_typing.ChangeDisplaynameRequest{
+			input: setting_dto.ChangeDisplaynameRequest{
 				Displayname: "",
 			},
 			wantErr: true,
@@ -499,33 +499,33 @@ func TestValidateDisplaynameRequest(t *testing.T) {
 func TestValidateEmailRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_typing.ChangeEmailRequest
+		input   setting_dto.ChangeEmailRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_typing.ChangeEmailRequest{
+			input: setting_dto.ChangeEmailRequest{
 				Email: "newemail@example.com",
 			},
 			wantErr: false,
 		},
 		{
 			name: "invalid format",
-			input: setting_typing.ChangeEmailRequest{
+			input: setting_dto.ChangeEmailRequest{
 				Email: "not-an-email",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_typing.ChangeEmailRequest{
+			input: setting_dto.ChangeEmailRequest{
 				Email: "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "email with spaces and uppercase",
-			input: setting_typing.ChangeEmailRequest{
+			input: setting_dto.ChangeEmailRequest{
 				Email: "  NEW@Example.com  ",
 			},
 			wantErr: false,
@@ -545,33 +545,33 @@ func TestValidateEmailRequest(t *testing.T) {
 func TestValidatePasswordRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_typing.ChangePasswordRequest
+		input   setting_dto.ChangePasswordRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_typing.ChangePasswordRequest{
+			input: setting_dto.ChangePasswordRequest{
 				Password: "newpassword123",
 			},
 			wantErr: false,
 		},
 		{
 			name: "too short",
-			input: setting_typing.ChangePasswordRequest{
+			input: setting_dto.ChangePasswordRequest{
 				Password: "short",
 			},
 			wantErr: true,
 		},
 		{
 			name: "too long",
-			input: setting_typing.ChangePasswordRequest{
+			input: setting_dto.ChangePasswordRequest{
 				Password: "thispasswordiswaytoolong20",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_typing.ChangePasswordRequest{
+			input: setting_dto.ChangePasswordRequest{
 				Password: "",
 			},
 			wantErr: true,

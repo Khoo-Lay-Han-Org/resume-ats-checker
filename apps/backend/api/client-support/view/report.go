@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	typing "resuming/api/client-support/typing"
+	typing "resuming/api/client-support/dto"
 	validator "resuming/api/client-support/validator"
 	"resuming/tool"
 )

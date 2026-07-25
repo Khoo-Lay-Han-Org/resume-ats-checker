@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/api/showcaserecord/typing"
+	typing "resuming/api/showcaserecord/dto"
 	validator "resuming/api/showcaserecord/validator"
 	"resuming/database"
 	systemconfig "resuming/system-config"

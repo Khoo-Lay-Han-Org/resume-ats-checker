@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	typing "resuming/api/administrator/typing"
+	typing "resuming/api/administrator/dto"
 	validator "resuming/api/administrator/validator"
 	"resuming/database"
 	"resuming/database/sqlc"

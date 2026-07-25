@@ -2,7 +2,7 @@ package client_support_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/client-support/typing"
+	typing "resuming/api/client-support/dto"
 )
 
 func ValidateClientReportRequest(request typing.ClientReportRequest) (typing.ClientReportRequest, error) {

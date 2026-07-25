@@ -2,7 +2,7 @@ package administrator_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/administrator/typing"
+	typing "resuming/api/administrator/dto"
 )
 
 func ValidateUserControlRequest(request typing.UserControlRequest) (typing.UserControlRequest, error) {

@@ -1,4 +1,4 @@
-package showcaserecord_typing
+package showcaserecord_dto
 
 type NameSection struct {
 	Name string `json:"name" binding:"required"`

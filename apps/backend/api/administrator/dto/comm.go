@@ -1,4 +1,4 @@
-package administrator_typing
+package administrator_dto
 
 type ClientCommunicationReplyRequest struct {
 	PublicId string `json:"public_id" binding:"required"`

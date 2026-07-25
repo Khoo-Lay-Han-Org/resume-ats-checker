@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/setting/typing"
+	typing "resuming/api/setting/dto"
 	setting_util "resuming/api/setting/util"
 )
 

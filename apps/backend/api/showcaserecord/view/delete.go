@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	typing "resuming/api/showcaserecord/typing"
+	typing "resuming/api/showcaserecord/dto"
 	util "resuming/api/showcaserecord/util"
 	validator "resuming/api/showcaserecord/validator"
 )

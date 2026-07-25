@@ -1,4 +1,4 @@
-package ats_typing
+package ats_dto
 
 type FormatCheckErrorStruct struct {
 	Message string

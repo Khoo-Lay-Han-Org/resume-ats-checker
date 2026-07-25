@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	typing "resuming/api/auth/typing"
+	typing "resuming/api/auth/dto"
 	util "resuming/api/auth/util"
 	validator "resuming/api/auth/validator"
 	"resuming/database"

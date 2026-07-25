@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/api/resume/typing"
+	typing "resuming/api/resume/dto"
 	validator "resuming/api/resume/validator"
 	"resuming/database"
 	systemconfig "resuming/system-config"

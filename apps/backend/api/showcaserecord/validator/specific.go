@@ -2,7 +2,7 @@ package showcaserecord_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/api/showcaserecord/typing"
+	typing "resuming/api/showcaserecord/dto"
 )
 
 func ValidateSpecificPortfolioDataRequest(request typing.SpecificPortoflioDataRequest) (typing.SpecificPortoflioDataRequest, error) {

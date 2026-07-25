@@ -1,4 +1,4 @@
-package setting_typing
+package setting_dto
 
 type ChangeUsernameRequest struct {
 	Username string `json:"username" binding:"required"`
