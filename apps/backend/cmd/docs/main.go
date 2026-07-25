@@ -1,6 +1,6 @@
 package main
 
-import "resuming/api"
+import "resuming/backend-api"
 
 func main() {
 	router := api.RunOpenAPIDoc()

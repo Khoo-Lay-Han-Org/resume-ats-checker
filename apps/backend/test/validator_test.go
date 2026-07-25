@@ -3,14 +3,14 @@ package test
 import (
 	"testing"
 
-	administrator_dto "resuming/api/administrator/dto"
-	administrator_validator "resuming/api/administrator/validator"
-	auth_dto "resuming/api/auth/dto"
-	auth_validator "resuming/api/auth/validator"
-	client_support_dto "resuming/api/client-support/dto"
-	client_support_validator "resuming/api/client-support/validator"
-	setting_dto "resuming/api/setting/dto"
-	setting_validator "resuming/api/setting/validator"
+	administrator_dto "resuming/backend-api/administrator/dto"
+	administrator_validator "resuming/backend-api/administrator/validator"
+	auth_dto "resuming/backend-api/auth/dto"
+	auth_validator "resuming/backend-api/auth/validator"
+	client_support_dto "resuming/backend-api/client-support/dto"
+	client_support_validator "resuming/backend-api/client-support/validator"
+	setting_dto "resuming/backend-api/setting/dto"
+	setting_validator "resuming/backend-api/setting/validator"
 )
 
 func TestValidateRegistration(t *testing.T) {
