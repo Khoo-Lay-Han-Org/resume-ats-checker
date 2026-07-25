@@ -3,12 +3,12 @@ set positional-arguments := true
 set shell := ["bash", "-cu"]
 
 # Database connection — all required, fail fast if missing
-_db-host := env_var("DATABASE_HOST")
-_db-user := env_var("DATABASE_USERNAME")
-_db-name := env_var("DATABASE_NAME")
-_db-pass := env_var("DATABASE_PASSWORD")
-_db-port := env_var("DATABASE_PORT")
-_db-conn-string := "host=" + _db-host + " user=" + _db-user + " dbname=" + _db-name + " password=" + _db-pass + " port=" + _db-port + " sslmode=require"
+db-host := env_var("DATABASE_HOST")
+db-user := env_var("DATABASE_USERNAME")
+db-name := env_var("DATABASE_NAME")
+db-pass := env_var("DATABASE_PASSWORD")
+db-port := env_var("DATABASE_PORT")
+db-conn-string := "host=" + db-host + " user=" + db-user + " dbname=" + db-name + " password=" + db-pass + " port=" + db-port + " sslmode=require"
 
 
 # Run the backend server
@@ -24,14 +24,14 @@ backend-sqlc-generate:
 # Run all pending migrations
 [working-directory: 'apps/backend']
 backend-migrate-up:
-    goose -dir database/migrations postgres '{{ _db-conn-string }}' up
+    goose -dir database/migrations postgres '{{ db-conn-string }}' up
 
 # Reset the database (rollback all migrations)
 [working-directory: 'apps/backend']
 backend-migrate-reset:
-    goose -dir database/migrations postgres '{{ _db-conn-string }}' reset
+    goose -dir database/migrations postgres '{{ db-conn-string }}' reset
 
 # Check migration status
 [working-directory: 'apps/backend']
 backend-migrate-status:
-    goose -dir database/migrations postgres '{{ _db-conn-string }}' status
+    goose -dir database/migrations postgres '{{ db-conn-string }}' status
