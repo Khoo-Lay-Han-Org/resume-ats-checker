@@ -1,4 +1,4 @@
-package administrator_util
+package administrator_invite
 
 import (
 	systemconfig "resuming/system-config"

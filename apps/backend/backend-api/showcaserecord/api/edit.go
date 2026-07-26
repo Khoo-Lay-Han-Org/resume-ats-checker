@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/showcaserecord/dto"
-	util "resuming/backend-api/showcaserecord/util"
+	showcaserecord_crud "resuming/backend-api/showcaserecord/crud"
 	validator "resuming/backend-api/showcaserecord/validator"
 )
 
@@ -27,7 +27,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.NameSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.NameSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -40,7 +40,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -52,7 +52,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.EmailSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.EmailSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -65,7 +65,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -77,7 +77,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.PhoneNumberSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.PhoneNumberSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -90,7 +90,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -102,7 +102,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.AddressSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.AddressSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -115,7 +115,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -127,7 +127,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.SocialMediaSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.SocialMediaSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -140,7 +140,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -152,7 +152,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.JobExperienceSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.JobExperienceSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -165,7 +165,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -177,7 +177,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.EducationSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.EducationSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -190,7 +190,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -202,7 +202,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.SkillSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.SkillSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -215,7 +215,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -227,7 +227,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.CertificateSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.CertificateSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -240,7 +240,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -252,7 +252,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.LanguageSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.LanguageSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -265,7 +265,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}
@@ -277,7 +277,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 			}
 
-			validated_request, err := util.ValidateData[typing.ProjectSection](request)
+			validated_request, err := showcaserecord_crud.ValidateData[typing.ProjectSection](request)
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 			}
@@ -290,7 +290,7 @@ func EditShowCaseRecordData() echo.HandlerFunc {
 			if validated_request.Index == nil {
 				return c.JSON(http.StatusBadRequest, echo.Map{"message": "Index is required."})
 			}
-			err = util.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
+			err = showcaserecord_crud.EditShowCaseRecordData(validated_request, *validated_request.Index, public_user_id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 			}

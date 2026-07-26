@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/administrator/dto"
-	util "resuming/backend-api/administrator/util"
+	administrator_invite "resuming/backend-api/administrator/invite"
 	validator "resuming/backend-api/administrator/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
@@ -169,7 +169,7 @@ func InvitationToBecomeAdmin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store invite token."})
 		}
 
-		if err := util.EmailInvitationToBecomeAdmin(target_user.Email, token); err != nil {
+		if err := administrator_invite.EmailInvitationToBecomeAdmin(target_user.Email, token); err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send email invitation."})
 		}
 

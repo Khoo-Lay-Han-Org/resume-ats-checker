@@ -1,4 +1,4 @@
-package auth_util
+package auth_otp
 
 import (
 	"context"
@@ -46,7 +46,6 @@ func SendOTP(email string) error {
 }
 
 func CheckOTP(email, otp string) error {
-	// check OTP matching
 	ctx := context.Background()
 	value, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(email+":otp").Build()).ToString()
 	if err != nil {

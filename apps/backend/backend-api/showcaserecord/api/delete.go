@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/showcaserecord/dto"
-	util "resuming/backend-api/showcaserecord/util"
+	showcaserecord_crud "resuming/backend-api/showcaserecord/crud"
 	validator "resuming/backend-api/showcaserecord/validator"
 )
 
@@ -34,7 +34,7 @@ func DeleteShowCaseRecordData() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid index format."})
 		}
 
-		err = util.DeleteShowCaseRecordData(polished_request.SectionTitle, index, public_user_id)
+		err = showcaserecord_crud.DeleteShowCaseRecordData(polished_request.SectionTitle, index, public_user_id)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Operation failed."})
 		}

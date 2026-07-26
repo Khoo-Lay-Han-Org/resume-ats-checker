@@ -9,7 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/ledongthuc/pdf"
-	util "resuming/backend-api/ats/util"
+	ats_webscrape "resuming/backend-api/ats/webscrape"
 	ats_validator "resuming/backend-api/ats/validator"
 	"resuming/ai"
 )
@@ -117,7 +117,7 @@ func WebScrapeJobDesc() echo.HandlerFunc {
 		company := c.FormValue("company")
 		job_title := c.FormValue("job_title")
 
-		content := util.JobDescWebScrape(company, job_title)
+		content := ats_webscrape.JobDescWebScrape(company, job_title)
 
 		polished_job_desc, err := ats_validator.ValidateJobDesc(content)
 		if err != nil {

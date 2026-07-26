@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/segmentio/ksuid"
-	util "resuming/backend-api/auth/util"
+	auth_find "resuming/backend-api/auth/find"
 	systemconfig "resuming/system-config"
 	"resuming/tool"
 )
@@ -22,7 +22,7 @@ func SetSession() echo.HandlerFunc {
 
 		private_id := retrieved_data.(int32)
 
-		user_pointer, err := util.FindUser(private_id)
+		user_pointer, err := auth_find.FindUser(private_id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "User not found."})
 		}

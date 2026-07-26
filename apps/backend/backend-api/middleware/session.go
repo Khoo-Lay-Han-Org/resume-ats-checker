@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	util "resuming/backend-api/middleware/util"
+	middleware_session "resuming/backend-api/middleware/session"
 	systemconfig "resuming/system-config"
 )
 
@@ -16,7 +16,7 @@ func SessionCheck() echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to retrieve cookie."})
 			}
 
-			user_public_id, err := util.CheckSession(session_cookie.Value)
+			user_public_id, err := middleware_session.CheckSession(session_cookie.Value)
 			if err != nil {
 				c.SetCookie(&http.Cookie{
 					Name:   "session",

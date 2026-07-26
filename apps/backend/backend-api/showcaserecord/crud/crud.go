@@ -1,4 +1,4 @@
-package showcaserecord_util
+package showcaserecord_crud
 
 import (
 	"context"

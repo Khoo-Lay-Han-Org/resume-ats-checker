@@ -5,7 +5,7 @@ import (
 
 	"github.com/bobch27/valtra-go"
 	typing "resuming/backend-api/auth/dto"
-	auth_util "resuming/backend-api/auth/util"
+	auth_email "resuming/backend-api/auth/email"
 )
 
 func ValidateRegistration(request typing.Register) (typing.Register, error) {
@@ -34,7 +34,7 @@ func ValidateRegistration(request typing.Register) (typing.Register, error) {
 				valtra.Required[string]("Email is required."),
 				valtra.Email("Email must be in correct email format"),
 				func(v valtra.Value[string]) error {
-					if !auth_util.ValidateEmailMX(v.Value()) {
+					if !auth_email.ValidateEmailMX(v.Value()) {
 						return fmt.Errorf("Email domain must have valid MX or A records")
 					}
 					return nil

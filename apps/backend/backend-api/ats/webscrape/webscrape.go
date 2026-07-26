@@ -1,4 +1,4 @@
-package ats_util
+package ats_webscrape
 
 import (
 	"fmt"
@@ -12,7 +12,6 @@ import (
 	"github.com/go-rod/rod/lib/launcher"
 )
 
-// Real user-agent rotation pool.
 var userAgents = []string{
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0",
@@ -31,7 +30,6 @@ func randomDelay(minMs, maxMs int) {
 	time.Sleep(d)
 }
 
-// humanType types a string character-by-character with realistic pauses.
 func humanType(el *rod.Element, text string) {
 	for _, ch := range text {
 		el.MustInput(string(ch))
@@ -39,7 +37,6 @@ func humanType(el *rod.Element, text string) {
 	}
 }
 
-// stealthHarden patches browser fingerprint properties.
 func stealthHarden(page *rod.Page) {
 	page.MustEval(`
 		Object.defineProperty(navigator, 'webdriver', { get: () => false });
@@ -49,7 +46,6 @@ func stealthHarden(page *rod.Page) {
 	`)
 }
 
-// setCommonHeaders mimics a real browser request header set.
 func setCommonHeaders(page *rod.Page) {
 	page.SetExtraHeaders([]string{
 		"Accept-Language", "en-US,en;q=0.9",
@@ -67,7 +63,6 @@ func setCommonHeaders(page *rod.Page) {
 func JobDescWebScrape(company, jobTitle string) string {
 	searchString := fmt.Sprintf("New jobs from %s with %s role", company, jobTitle)
 
-	// Launcher with automation-evasion flags
 	l := launcher.New().
 		Headless(true).
 		Set("disable-blink-features=AutomationControlled").
@@ -78,9 +73,6 @@ func JobDescWebScrape(company, jobTitle string) string {
 		Set("window-size=1920,1080").
 		Set("start-maximized")
 
-	// Uncomment to route through a residential proxy:
-	// l = l.Proxy("http://user:pass@host:port")
-
 	browser := rod.New().ControlURL(l.MustLaunch()).MustConnect()
 	defer browser.MustClose()
 
@@ -88,7 +80,6 @@ func JobDescWebScrape(company, jobTitle string) string {
 	setCommonHeaders(page)
 	stealthHarden(page)
 
-	// Human-like pre-navigation pause
 	randomDelay(1000, 3000)
 
 	page.MustNavigate("https://www.google.com")
@@ -96,19 +87,16 @@ func JobDescWebScrape(company, jobTitle string) string {
 
 	randomDelay(500, 1500)
 
-	// Find search box and type naturally
 	searchBox := page.MustElement("textarea[name='q']")
 	humanType(searchBox, searchString)
 
 	randomDelay(200, 500)
 
-	// Press Enter
 	searchBox.MustKeyActions().Press(input.Enter)
 	page.MustWaitLoad()
 
 	randomDelay(2000, 4000)
 
-	// Extract result links
 	results := page.MustElements("div.g")
 
 	links := []string{}
@@ -141,7 +129,6 @@ func JobDescWebScrape(company, jobTitle string) string {
 		setCommonHeaders(directPage)
 		stealthHarden(directPage)
 
-		// Set referer so it looks like the user clicked through from Google
 		directPage.SetExtraHeaders([]string{
 			"Referer", "https://www.google.com/",
 		})
@@ -151,7 +138,6 @@ func JobDescWebScrape(company, jobTitle string) string {
 
 		randomDelay(1000, 2000)
 
-		// Scroll like a real reader
 		directPage.MustEval(`window.scrollTo({ top: document.body.scrollHeight * 0.3, behavior: 'smooth' })`)
 		randomDelay(500, 1200)
 		directPage.MustEval(`window.scrollTo({ top: document.body.scrollHeight * 0.6, behavior: 'smooth' })`)

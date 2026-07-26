@@ -1,4 +1,4 @@
-package auth_util
+package auth_oauth
 
 import (
 	"crypto/rand"
@@ -6,7 +6,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// the passwrod field is required, but the user login using oauth, therefore, randomly generate one for them
 func GenerateRandomPassword() ([]byte, error) {
 	password := make([]byte, 20)
 

@@ -1,4 +1,4 @@
-package auth_util
+package auth_email
 
 import (
 	"context"

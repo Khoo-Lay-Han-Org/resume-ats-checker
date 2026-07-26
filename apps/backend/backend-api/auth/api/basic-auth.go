@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	typing "resuming/backend-api/auth/dto"
-	util "resuming/backend-api/auth/util"
+	auth_otp "resuming/backend-api/auth/otp"
 	validator "resuming/backend-api/auth/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
@@ -54,7 +54,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = util.SendOTP(validated_request.Email)
+		err = auth_otp.SendOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -88,7 +88,7 @@ func Register() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = util.CheckOTP(email, request.OTP)
+		err = auth_otp.CheckOTP(email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
@@ -180,7 +180,7 @@ func PrepareLogin() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid password."})
 		}
 
-		err = util.SendOTP(validated_request.Email)
+		err = auth_otp.SendOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}

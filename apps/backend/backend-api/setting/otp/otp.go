@@ -1,4 +1,4 @@
-package setting_util
+package setting_otp
 
 import (
 	"context"

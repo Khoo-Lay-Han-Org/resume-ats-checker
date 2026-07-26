@@ -19,7 +19,7 @@ import (
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
 	typing "resuming/backend-api/auth/dto"
-	util "resuming/backend-api/auth/util"
+	auth_oauth "resuming/backend-api/auth/oauth"
 	"resuming/database"
 	"resuming/env"
 	systemconfig "resuming/system-config"
@@ -327,7 +327,7 @@ func OAuthRegister() gin.HandlerFunc {
 		var user database.User
 		result := database.DB.Where("email = ?", user_detail.Email).First(user)
 		if result.Error != nil {
-			err, password := util.GenerateRandomPassword()
+			err, password := auth_oauth.GenerateRandomPassword()
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to create user."})
 				return

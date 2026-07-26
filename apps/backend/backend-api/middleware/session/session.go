@@ -1,4 +1,4 @@
-package middleware_util
+package middleware_session
 
 import (
 	"context"

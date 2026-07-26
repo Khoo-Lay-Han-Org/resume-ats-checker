@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/ats/dto"
-	util "resuming/backend-api/ats/util"
+	ats_evaluate "resuming/backend-api/ats/evaluate"
 )
 
 func SectionExistenceCheck() echo.HandlerFunc {
@@ -170,7 +170,7 @@ func FormattingCheck() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to process resume sections."})
 		}
 
-		line_count := util.CountLine(resume_sections)
+		line_count := ats_evaluate.CountLine(resume_sections)
 		error_count := 0
 		format_error := map[string][]typing.FormatCheckErrorStruct{
 			"summary":       {},
@@ -197,7 +197,7 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := util.CheckIfPrintable(item); !found {
+			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
@@ -280,7 +280,7 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := util.CheckIfPrintable(item); !found {
+			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
@@ -363,7 +363,7 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := util.CheckIfPrintable(item); !found {
+			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
@@ -445,7 +445,7 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := util.CheckIfPrintable(item); !found {
+			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
@@ -528,7 +528,7 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := util.CheckIfPrintable(item); !found {
+			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item

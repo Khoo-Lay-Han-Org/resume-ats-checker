@@ -8,7 +8,7 @@ import (
 	valkey "github.com/valkey-io/valkey-go"
 	"golang.org/x/crypto/bcrypt"
 	typing "resuming/backend-api/setting/dto"
-	util "resuming/backend-api/setting/util"
+	setting_otp "resuming/backend-api/setting/otp"
 	validator "resuming/backend-api/setting/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
@@ -247,7 +247,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = util.SendOTP(user.Email)
+		err = setting_otp.SendOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -296,7 +296,7 @@ func ChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = util.CheckOTP(user.Email, request.OTP)
+		err = setting_otp.CheckOTP(user.Email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
@@ -411,7 +411,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = util.SendOTP(user.Email)
+		err = setting_otp.SendOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -460,7 +460,7 @@ func ChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = util.CheckOTP(user.Email, request.OTP)
+		err = setting_otp.CheckOTP(user.Email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}

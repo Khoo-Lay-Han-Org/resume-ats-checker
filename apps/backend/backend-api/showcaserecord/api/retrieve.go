@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	util "resuming/backend-api/showcaserecord/util"
+	showcaserecord_convert "resuming/backend-api/showcaserecord/convert"
 	"resuming/database"
 	"resuming/tool"
 )
@@ -51,17 +51,17 @@ func RetrieveShowCaseRecordData() echo.HandlerFunc {
 		}
 
 		response_data := echo.Map{
-			"name":           util.ToStringSlice(data["name"]),
-			"email":          util.ToStringSlice(data["email"]),
-			"phone_number":   util.ToStringSlice(data["phone_number"]),
-			"address":        util.ToStringSlice(data["address"]),
-			"social_media":   util.ToStringSlice(data["social_media"]),
-			"job_experience": util.ToJSON(data["job_experience"]),
-			"education":      util.ToJSON(data["education"]),
-			"skill":          util.ToStringSlice(data["skill"]),
-			"certificate":    util.ToJSON(data["certificate"]),
-			"language":       util.ToStringSlice(data["language"]),
-			"project":        util.ToJSON(data["project"]),
+			"name":           showcaserecord_convert.ToStringSlice(data["name"]),
+			"email":          showcaserecord_convert.ToStringSlice(data["email"]),
+			"phone_number":   showcaserecord_convert.ToStringSlice(data["phone_number"]),
+			"address":        showcaserecord_convert.ToStringSlice(data["address"]),
+			"social_media":   showcaserecord_convert.ToStringSlice(data["social_media"]),
+			"job_experience": showcaserecord_convert.ToJSON(data["job_experience"]),
+			"education":      showcaserecord_convert.ToJSON(data["education"]),
+			"skill":          showcaserecord_convert.ToStringSlice(data["skill"]),
+			"certificate":    showcaserecord_convert.ToJSON(data["certificate"]),
+			"language":       showcaserecord_convert.ToStringSlice(data["language"]),
+			"project":        showcaserecord_convert.ToJSON(data["project"]),
 		}
 		c.Set("response_data", response_data)
 		return nil

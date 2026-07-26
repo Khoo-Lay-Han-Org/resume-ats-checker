@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	typing "resuming/backend-api/setting/dto"
-	util "resuming/backend-api/setting/util"
+	setting_otp "resuming/backend-api/setting/otp"
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
@@ -51,7 +51,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		err = util.SendOTP(user.Email)
+		err = setting_otp.SendOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -100,7 +100,7 @@ func DeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = util.CheckOTP(user.Email, request.OTP)
+		err = setting_otp.CheckOTP(user.Email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
