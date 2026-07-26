@@ -14,8 +14,8 @@ import (
 	administrator_api "resuming/backend-api/administrator/api"
 	ats_api "resuming/backend-api/ats/api"
 	auth_api "resuming/backend-api/auth/api"
-	client_support_api "resuming/backend-api/client-support/api"
 	portfolio_api "resuming/backend-api/portfolio/api"
+	support_api "resuming/backend-api/support/api"
 	resume_api "resuming/backend-api/resume/api"
 	setting_api "resuming/backend-api/setting/api"
 	showcaserecord_api "resuming/backend-api/showcaserecord/api"
@@ -280,11 +280,11 @@ func DeleteAccountFlow(c echo.Context) error {
 //// CLIENT SUPPORT
 
 func ClientReportOtherClientFlow(c echo.Context) error {
-	return client_support_api.ClientReportOtherClient()(c)
+	return support_api.ClientReportOtherClient()(c)
 }
 
 func ClientCommunicateToAdminFlow(c echo.Context) error {
-	return client_support_api.ClientCommunicateToAdmin()(c)
+	return support_api.ClientCommunicateToAdmin()(c)
 }
 
 ///// ADMINISTRATOR
@@ -302,7 +302,7 @@ func RemoveAllClientSessionFlow(c echo.Context) error {
 }
 
 func GetSupportMessagesFlow(c echo.Context) error {
-	if err := administrator_api.GetSupportMessages()(c); err != nil {
+	if err := support_api.GetSupportMessages()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -310,7 +310,7 @@ func GetSupportMessagesFlow(c echo.Context) error {
 }
 
 func ClientCommunicationReplyFlow(c echo.Context) error {
-	return administrator_api.ClientCommunicationReply()(c)
+	return support_api.ClientCommunicationReply()(c)
 }
 
 func GetClientsFlow(c echo.Context) error {

@@ -1,4 +1,4 @@
-package client_support_api
+package support_api
 
 import (
 	"encoding/json"
@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	typing "resuming/backend-api/client-support/dto"
-	validator "resuming/backend-api/client-support/validator"
+	typing "resuming/backend-api/support/dto"
+	validator "resuming/backend-api/support/validator"
 	systemconfig "resuming/system-config"
 	"resuming/tool"
 )

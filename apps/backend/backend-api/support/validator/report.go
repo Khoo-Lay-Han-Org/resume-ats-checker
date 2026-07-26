@@ -1,8 +1,8 @@
-package client_support_validator
+package support_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/backend-api/client-support/dto"
+	typing "resuming/backend-api/support/dto"
 )
 
 func ValidateClientReportRequest(request typing.ClientReportRequest) (typing.ClientReportRequest, error) {

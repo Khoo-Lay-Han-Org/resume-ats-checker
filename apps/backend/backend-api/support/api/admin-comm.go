@@ -1,4 +1,4 @@
-package administrator_api
+package support_api
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/backend-api/administrator/dto"
-	validator "resuming/backend-api/administrator/validator"
+	typing "resuming/backend-api/support/dto"
+	validator "resuming/backend-api/support/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"

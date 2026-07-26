@@ -7,10 +7,10 @@ import (
 	administrator_validator "resuming/backend-api/administrator/validator"
 	auth_dto "resuming/backend-api/auth/dto"
 	auth_validator "resuming/backend-api/auth/validator"
-	client_support_dto "resuming/backend-api/client-support/dto"
-	client_support_validator "resuming/backend-api/client-support/validator"
 	setting_dto "resuming/backend-api/setting/dto"
 	setting_validator "resuming/backend-api/setting/validator"
+	support_dto "resuming/backend-api/support/dto"
+	support_validator "resuming/backend-api/support/validator"
 )
 
 func TestValidateRegistration(t *testing.T) {
@@ -270,12 +270,12 @@ func TestValidateSessionControlRequest(t *testing.T) {
 func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   administrator_dto.ClientCommunicationReplyRequest
+		input   support_dto.ClientCommunicationReplyRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: administrator_dto.ClientCommunicationReplyRequest{
+			input: support_dto.ClientCommunicationReplyRequest{
 				PublicId: "abc123",
 				Message:  "Thank you for your message",
 			},
@@ -283,21 +283,21 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 		},
 		{
 			name: "missing public id",
-			input: administrator_dto.ClientCommunicationReplyRequest{
+			input: support_dto.ClientCommunicationReplyRequest{
 				Message: "Thank you",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing message",
-			input: administrator_dto.ClientCommunicationReplyRequest{
+			input: support_dto.ClientCommunicationReplyRequest{
 				PublicId: "abc123",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: administrator_dto.ClientCommunicationReplyRequest{
+			input: support_dto.ClientCommunicationReplyRequest{
 				PublicId: "",
 				Message:  "",
 			},
@@ -307,7 +307,7 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := administrator_validator.ValidateClientCommunicationReplyRequest(tt.input)
+			_, err := support_validator.ValidateClientCommunicationReplyRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateClientCommunicationReplyRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -318,12 +318,12 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 func TestValidateClientCommunicateRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   client_support_dto.ClientCommunicateRequest
+		input   support_dto.ClientCommunicateRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: client_support_dto.ClientCommunicateRequest{
+			input: support_dto.ClientCommunicateRequest{
 				Type:    "complaint",
 				Message: "This is a complaint",
 			},
@@ -331,21 +331,21 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 		},
 		{
 			name: "missing type",
-			input: client_support_dto.ClientCommunicateRequest{
+			input: support_dto.ClientCommunicateRequest{
 				Message: "This is a complaint",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing message",
-			input: client_support_dto.ClientCommunicateRequest{
+			input: support_dto.ClientCommunicateRequest{
 				Type: "complaint",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: client_support_dto.ClientCommunicateRequest{
+			input: support_dto.ClientCommunicateRequest{
 				Type:    "",
 				Message: "",
 			},
@@ -355,7 +355,7 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := client_support_validator.ValidateClientCommunicateRequest(tt.input)
+			_, err := support_validator.ValidateClientCommunicateRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateClientCommunicateRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -366,12 +366,12 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 func TestValidateClientReportRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   client_support_dto.ClientReportRequest
+		input   support_dto.ClientReportRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: client_support_dto.ClientReportRequest{
+			input: support_dto.ClientReportRequest{
 				TargetClientPublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 				ReportType:               "profanity",
 			},
@@ -379,21 +379,21 @@ func TestValidateClientReportRequest(t *testing.T) {
 		},
 		{
 			name: "missing target client",
-			input: client_support_dto.ClientReportRequest{
+			input: support_dto.ClientReportRequest{
 				ReportType: "profanity",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing report type",
-			input: client_support_dto.ClientReportRequest{
+			input: support_dto.ClientReportRequest{
 				TargetClientPublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: client_support_dto.ClientReportRequest{
+			input: support_dto.ClientReportRequest{
 				TargetClientPublicUserId: "",
 				ReportType:               "",
 			},
@@ -403,7 +403,7 @@ func TestValidateClientReportRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := client_support_validator.ValidateClientReportRequest(tt.input)
+			_, err := support_validator.ValidateClientReportRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateClientReportRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
