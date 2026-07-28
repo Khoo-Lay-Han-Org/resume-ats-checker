@@ -61,7 +61,7 @@ func ParseJWT(public_id uuid.UUID, token_string string) (jwt.MapClaims, error) {
 		}
 
 		return []byte(jwtKey.Key), nil
-	})
+	}, jwt.WithValidMethods([]string{"HS256"}))
 	if err != nil || !token.Valid {
 		return nil, errors.New("session expired")
 	}
