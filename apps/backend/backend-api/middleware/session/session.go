@@ -2,6 +2,7 @@ package middleware_session
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,18 +51,22 @@ func ParseJWT(public_id uuid.UUID, token_string string) (map[string]any, error) 
 		return nil, errors.New("corrupted session key data")
 	}
 
+	key := sha256.Sum256([]byte(jwtKey.Key))
+
 	object, err := jose.ParseEncrypted(token_string, []jose.KeyAlgorithm{jose.DIRECT}, []jose.ContentEncryption{jose.A128GCM})
 	if err != nil {
 		return nil, errors.New("invalid token format")
 	}
 
-	decoded, err := object.Decrypt([]byte(jwtKey.Key))
+	decoded, err := object.Decrypt(key[:16])
 	if err != nil {
 		return nil, errors.New("failed to decrypt token")
 	}
 
 	var claims map[string]any
-	json.Unmarshal(decoded, &claims)
+	if err := json.Unmarshal(decoded, &claims); err != nil {
+		return nil, errors.New("corrupted token payload")
+	}
 
 	exp, ok := claims["exp"].(float64)
 	if !ok || time.Now().Unix() > int64(exp) {

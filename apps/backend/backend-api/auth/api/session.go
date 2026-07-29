@@ -1,6 +1,7 @@
 package auth_api
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -38,14 +39,26 @@ func SetSession() echo.HandlerFunc {
 			"exp":            time.Now().Add(systemconfig.SessionExpiryDuration).Unix(),
 		})
 
-		encrypter, _ := jose.NewEncrypter(
+		key := sha256.Sum256([]byte(signing_key))
+
+		encrypter, err := jose.NewEncrypter(
 			jose.A128GCM,
-			jose.Recipient{Algorithm: jose.DIRECT, Key: []byte(signing_key)},
+			jose.Recipient{Algorithm: jose.DIRECT, Key: key[:16]},
 			nil,
 		)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to create encrypter."})
+		}
 
-		object, _ := encrypter.Encrypt(payload)
-		token_string, _ := object.CompactSerialize()
+		object, err := encrypter.Encrypt(payload)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to encrypt session."})
+		}
+
+		token_string, err := object.CompactSerialize()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialize session."})
+		}
 
 		session_data := map[string]any{
 			"public_id":   public_user_id,
