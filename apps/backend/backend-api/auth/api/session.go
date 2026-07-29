@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	jose "github.com/go-jose/go-jose/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/segmentio/ksuid"
 	auth_find "resuming/backend-api/auth/find"
@@ -33,15 +33,19 @@ func SetSession() echo.HandlerFunc {
 		signing_key := ksuid.New().String()
 		public_user_id := user.PublicID.String()
 
-		claim := jwt.MapClaims{
+		payload, _ := json.Marshal(map[string]any{
 			"user_public_id": public_user_id,
 			"exp":            time.Now().Add(systemconfig.SessionExpiryDuration).Unix(),
-		}
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-		token_string, err := token.SignedString([]byte(signing_key))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to generate JWT."})
-		}
+		})
+
+		encrypter, _ := jose.NewEncrypter(
+			jose.A128GCM,
+			jose.Recipient{Algorithm: jose.DIRECT, Key: []byte(signing_key)},
+			nil,
+		)
+
+		object, _ := encrypter.Encrypt(payload)
+		token_string, _ := object.CompactSerialize()
 
 		session_data := map[string]any{
 			"public_id":   public_user_id,

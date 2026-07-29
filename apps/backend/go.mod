@@ -19,6 +19,7 @@ require (
 )
 
 require (
+	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/swaggo/echo-swagger v1.5.2
 )

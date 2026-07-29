@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/google/uuid"
 	valkey "github.com/valkey-io/valkey-go"
 	"resuming/tool"
@@ -29,34 +30,45 @@ func ExtractSessionCookie(cookie string) (uuid.UUID, string, error) {
 	return public_id, token_string, nil
 }
 
-func ParseJWT(public_id uuid.UUID, token_string string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(token_string, func(token *jwt.Token) (any, error) {
-		ctx := context.Background()
-		jwt_data, err := tool.Valkey.Do(
-			ctx,
-			tool.Valkey.B().Get().Key(public_id.String()+":jwt_data").Build(),
-		).ToString()
-		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				return nil, errors.New("session key not found")
-			}
-			return nil, errors.New("failed to read session key")
+func ParseJWT(public_id uuid.UUID, token_string string) (map[string]any, error) {
+	ctx := context.Background()
+	jwt_data, err := tool.Valkey.Do(
+		ctx,
+		tool.Valkey.B().Get().Key(public_id.String()+":jwt_data").Build(),
+	).ToString()
+	if err != nil {
+		if valkey.IsValkeyNil(err) {
+			return nil, errors.New("session key not found")
 		}
-
-		var jwtKey struct {
-			Key string `json:"Key"`
-		}
-		if err := json.Unmarshal([]byte(jwt_data), &jwtKey); err != nil {
-			return nil, errors.New("corrupted session key data")
-		}
-
-		return []byte(jwtKey.Key), nil
-	}, jwt.WithValidMethods([]string{"HS256"}))
-	if err != nil || !token.Valid {
-		return nil, errors.New("session expired")
+		return nil, errors.New("failed to read session key")
 	}
 
-	return token.Claims.(jwt.MapClaims), nil
+	var jwtKey struct {
+		Key string `json:"Key"`
+	}
+	if err := json.Unmarshal([]byte(jwt_data), &jwtKey); err != nil {
+		return nil, errors.New("corrupted session key data")
+	}
+
+	object, err := jose.ParseEncrypted(token_string, []jose.KeyAlgorithm{jose.DIRECT}, []jose.ContentEncryption{jose.A128GCM})
+	if err != nil {
+		return nil, errors.New("invalid token format")
+	}
+
+	decoded, err := object.Decrypt([]byte(jwtKey.Key))
+	if err != nil {
+		return nil, errors.New("failed to decrypt token")
+	}
+
+	var claims map[string]any
+	json.Unmarshal(decoded, &claims)
+
+	exp, ok := claims["exp"].(float64)
+	if !ok || time.Now().Unix() > int64(exp) {
+		return nil, errors.New("token expired")
+	}
+
+	return claims, nil
 }
 
 func CheckSession(cookie string) (string, error) {
