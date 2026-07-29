@@ -31,20 +31,10 @@ func ExtractSessionCookie(cookie string) (uuid.UUID, string, error) {
 
 func ParseJWT(public_id uuid.UUID, token_string string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(token_string, func(token *jwt.Token) (any, error) {
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			return nil, errors.New("invalid JWT claims")
-		}
-
-		user_public_id, ok := claims["user_public_id"].(string)
-		if !ok {
-			return nil, errors.New("invalid session: missing user_public_id claim")
-		}
-
 		ctx := context.Background()
 		jwt_data, err := tool.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Get().Key(user_public_id+":jwt_data").Build(),
+			tool.Valkey.B().Get().Key(public_id.String()+":jwt_data").Build(),
 		).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
