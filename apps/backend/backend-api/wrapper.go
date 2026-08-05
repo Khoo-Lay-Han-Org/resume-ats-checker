@@ -11,14 +11,17 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	administrator_api "resuming/backend-api/administrator/api"
+	adminauditlog_api "resuming/backend-api/adminauditlog/api"
 	ats_api "resuming/backend-api/ats/api"
-	auth_api "resuming/backend-api/auth/api"
+	clientauditlog_api "resuming/backend-api/clientauditlog/api"
+	clientreportlog_api "resuming/backend-api/clientreportlog/api"
+	clientsupportmessage_api "resuming/backend-api/clientsupportmessage/api"
+	errorlog_api "resuming/backend-api/errorlog/api"
 	portfolio_api "resuming/backend-api/portfolio/api"
-	support_api "resuming/backend-api/support/api"
 	resume_api "resuming/backend-api/resume/api"
-	setting_api "resuming/backend-api/setting/api"
-	showcaserecord_api "resuming/backend-api/showcaserecord/api"
+	session_api "resuming/backend-api/session/api"
+	showcase_api "resuming/backend-api/showcase/api"
+	user_api "resuming/backend-api/user/api"
 	"resuming/database"
 	"resuming/database/sqlc"
 )
@@ -26,23 +29,23 @@ import (
 //// AUTH
 
 func PrepareRegistrationFlow(c echo.Context) error {
-	return auth_api.PrepareRegistration()(c)
+	return user_api.PrepareRegistration()(c)
 }
 
 func RegisterFlow(c echo.Context) error {
-	return auth_api.Register()(c)
+	return user_api.Register()(c)
 }
 
 func PrepareLoginFlow(c echo.Context) error {
-	return auth_api.PrepareLogin()(c)
+	return user_api.PrepareLogin()(c)
 }
 
 func LoginFlow(c echo.Context) error {
-	if err := auth_api.Login()(c); err != nil {
+	if err := user_api.Login()(c); err != nil {
 		return err
 	}
 
-	auth_api.SetSession()(c)
+	session_api.SetSession()(c)
 
 	if private_id := c.Get("private_id"); private_id != nil {
 		if public_user_id := c.Get("public_user_id"); public_user_id != nil {
@@ -70,19 +73,19 @@ func LoginFlow(c echo.Context) error {
 //// SHOWCASERECORD
 
 func ShowCaseRecordAddFlow(c echo.Context) error {
-	return showcaserecord_api.AddShowCaseRecordData()(c)
+	return showcase_api.AddShowCaseRecordData()(c)
 }
 
 func ShowCaseRecordDeleteFlow(c echo.Context) error {
-	return showcaserecord_api.DeleteShowCaseRecordData()(c)
+	return showcase_api.DeleteShowCaseRecordData()(c)
 }
 
 func ShowCaseRecordEditFlow(c echo.Context) error {
-	return showcaserecord_api.EditShowCaseRecordData()(c)
+	return showcase_api.EditShowCaseRecordData()(c)
 }
 
 func ShowCaseRecordGetFlow(c echo.Context) error {
-	if err := showcaserecord_api.RetrieveShowCaseRecordData()(c); err != nil {
+	if err := showcase_api.RetrieveShowCaseRecordData()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -206,7 +209,7 @@ func ATSScoreUserInputFlow(c echo.Context) error {
 //// SETTING
 
 func ChangeUsernameFlow(c echo.Context) error {
-	if err := setting_api.ChangeUsername()(c); err != nil {
+	if err := user_api.ChangeUsername()(c); err != nil {
 		return err
 	}
 	if public_user_id := c.Get("public_user_id"); public_user_id != nil {
@@ -220,7 +223,7 @@ func ChangeUsernameFlow(c echo.Context) error {
 }
 
 func ChangeDisplaynameFlow(c echo.Context) error {
-	if err := setting_api.ChangeDisplayname()(c); err != nil {
+	if err := user_api.ChangeDisplayname()(c); err != nil {
 		return err
 	}
 	if public_user_id := c.Get("public_user_id"); public_user_id != nil {
@@ -234,11 +237,11 @@ func ChangeDisplaynameFlow(c echo.Context) error {
 }
 
 func PrepareEmailChangeFlow(c echo.Context) error {
-	return setting_api.PrepareChangeEmail()(c)
+	return user_api.PrepareChangeEmail()(c)
 }
 
 func ChangeEmailFlow(c echo.Context) error {
-	if err := setting_api.ChangeEmail()(c); err != nil {
+	if err := user_api.ChangeEmail()(c); err != nil {
 		return err
 	}
 	if public_user_id := c.Get("public_user_id"); public_user_id != nil {
@@ -252,19 +255,19 @@ func ChangeEmailFlow(c echo.Context) error {
 }
 
 func PreparePasswordChangeFlow(c echo.Context) error {
-	return setting_api.PrepareChangePassword()(c)
+	return user_api.PrepareChangePassword()(c)
 }
 
 func ChangePasswordFlow(c echo.Context) error {
-	return setting_api.ChangePassword()(c)
+	return user_api.ChangePassword()(c)
 }
 
 func PrepareDeleteAccountFlow(c echo.Context) error {
-	return setting_api.PrepareDeleteAccount()(c)
+	return user_api.PrepareDeleteAccount()(c)
 }
 
 func DeleteAccountFlow(c echo.Context) error {
-	if err := setting_api.DeleteAccount()(c); err != nil {
+	if err := user_api.DeleteAccount()(c); err != nil {
 		return err
 	}
 	if public_user_id := c.Get("public_user_id"); public_user_id != nil {
@@ -280,29 +283,29 @@ func DeleteAccountFlow(c echo.Context) error {
 //// CLIENT SUPPORT
 
 func ClientReportOtherClientFlow(c echo.Context) error {
-	return support_api.ClientReportOtherClient()(c)
+	return clientreportlog_api.ClientReportOtherClient()(c)
 }
 
 func ClientCommunicateToAdminFlow(c echo.Context) error {
-	return support_api.ClientCommunicateToAdmin()(c)
+	return clientsupportmessage_api.ClientCommunicateToAdmin()(c)
 }
 
 ///// ADMINISTRATOR
 
 func BanClientFlow(c echo.Context) error {
-	return administrator_api.BanClient()(c)
+	return user_api.BanClient()(c)
 }
 
 func RemoveIndividualUserSessionFlow(c echo.Context) error {
-	return administrator_api.RemoveIndividualUserSession()(c)
+	return session_api.RemoveIndividualUserSession()(c)
 }
 
 func RemoveAllClientSessionFlow(c echo.Context) error {
-	return administrator_api.RemoveAllClientSession()(c)
+	return session_api.RemoveAllClientSession()(c)
 }
 
 func GetSupportMessagesFlow(c echo.Context) error {
-	if err := support_api.GetSupportMessages()(c); err != nil {
+	if err := clientsupportmessage_api.GetSupportMessages()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -310,11 +313,11 @@ func GetSupportMessagesFlow(c echo.Context) error {
 }
 
 func ClientCommunicationReplyFlow(c echo.Context) error {
-	return support_api.ClientCommunicationReply()(c)
+	return clientsupportmessage_api.ClientCommunicationReply()(c)
 }
 
 func GetClientsFlow(c echo.Context) error {
-	if err := administrator_api.GetClients()(c); err != nil {
+	if err := user_api.GetClients()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -322,7 +325,7 @@ func GetClientsFlow(c echo.Context) error {
 }
 
 func GetAdminsFlow(c echo.Context) error {
-	if err := administrator_api.GetAdmins()(c); err != nil {
+	if err := user_api.GetAdmins()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -330,7 +333,7 @@ func GetAdminsFlow(c echo.Context) error {
 }
 
 func GetClientAuditLogsFlow(c echo.Context) error {
-	if err := administrator_api.GetClientAuditLogs()(c); err != nil {
+	if err := clientauditlog_api.GetClientAuditLogs()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -338,7 +341,7 @@ func GetClientAuditLogsFlow(c echo.Context) error {
 }
 
 func GetAdminAuditLogsFlow(c echo.Context) error {
-	if err := administrator_api.GetAdminAuditLogs()(c); err != nil {
+	if err := adminauditlog_api.GetAdminAuditLogs()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -346,7 +349,7 @@ func GetAdminAuditLogsFlow(c echo.Context) error {
 }
 
 func GetErrorAuditLogsFlow(c echo.Context) error {
-	if err := administrator_api.GetErrorAuditLogs()(c); err != nil {
+	if err := errorlog_api.GetErrorAuditLogs()(c); err != nil {
 		return err
 	}
 	data := c.Get("response_data")
@@ -354,13 +357,13 @@ func GetErrorAuditLogsFlow(c echo.Context) error {
 }
 
 func RemoveAdminFlow(c echo.Context) error {
-	return administrator_api.RemoveAdmin()(c)
+	return user_api.RemoveAdmin()(c)
 }
 
 func InvitationToBecomeAdminFlow(c echo.Context) error {
-	return administrator_api.InvitationToBecomeAdmin()(c)
+	return user_api.InvitationToBecomeAdmin()(c)
 }
 
 func AcceptToBecomeAdminFlow(c echo.Context) error {
-	return administrator_api.AcceptToBecomeAdmin()(c)
+	return user_api.AcceptToBecomeAdmin()(c)
 }

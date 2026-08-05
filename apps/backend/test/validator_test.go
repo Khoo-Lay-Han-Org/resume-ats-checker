@@ -3,25 +3,25 @@ package test
 import (
 	"testing"
 
-	administrator_dto "resuming/backend-api/administrator/dto"
-	administrator_validator "resuming/backend-api/administrator/validator"
-	auth_dto "resuming/backend-api/auth/dto"
-	auth_validator "resuming/backend-api/auth/validator"
-	setting_dto "resuming/backend-api/setting/dto"
-	setting_validator "resuming/backend-api/setting/validator"
-	support_dto "resuming/backend-api/support/dto"
-	support_validator "resuming/backend-api/support/validator"
+	clientreportlog_dto "resuming/backend-api/clientreportlog/dto"
+	clientreportlog_validator "resuming/backend-api/clientreportlog/validator"
+	clientsupportmessage_dto "resuming/backend-api/clientsupportmessage/dto"
+	clientsupportmessage_validator "resuming/backend-api/clientsupportmessage/validator"
+	session_dto "resuming/backend-api/session/dto"
+	session_validator "resuming/backend-api/session/validator"
+	user_dto "resuming/backend-api/user/dto"
+	user_validator "resuming/backend-api/user/validator"
 )
 
 func TestValidateRegistration(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   auth_dto.Register
+		input   user_dto.Register
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -31,7 +31,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing username",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Displayname: "Test User",
 				Email:       "test@example.com",
 				Password:    "password123",
@@ -40,7 +40,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "username too short",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "ab",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -50,7 +50,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing displayname",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username: "testuser",
 				Email:    "test@example.com",
 				Password: "password123",
@@ -59,7 +59,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "displayname too short",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "ab",
 				Email:       "test@example.com",
@@ -69,7 +69,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "invalid email format",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "not-an-email",
@@ -79,7 +79,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing email",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Password:    "password123",
@@ -88,7 +88,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "password too short",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -98,7 +98,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "password too long",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -108,7 +108,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "missing password",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "test@example.com",
@@ -117,7 +117,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "all fields empty",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "",
 				Displayname: "",
 				Email:       "",
@@ -127,7 +127,7 @@ func TestValidateRegistration(t *testing.T) {
 		},
 		{
 			name: "email with leading/trailing spaces",
-			input: auth_dto.Register{
+			input: user_dto.Register{
 				Username:    "testuser",
 				Displayname: "Test User",
 				Email:       "  TEST@Example.com  ",
@@ -139,7 +139,7 @@ func TestValidateRegistration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := auth_validator.ValidateRegistration(tt.input)
+			_, err := user_validator.ValidateRegistration(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateRegistration() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -150,12 +150,12 @@ func TestValidateRegistration(t *testing.T) {
 func TestValidateLogin(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   auth_dto.Login
+		input   user_dto.Login
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: auth_dto.Login{
+			input: user_dto.Login{
 				Email:    "test@example.com",
 				Password: "password123",
 			},
@@ -163,21 +163,21 @@ func TestValidateLogin(t *testing.T) {
 		},
 		{
 			name: "missing email",
-			input: auth_dto.Login{
+			input: user_dto.Login{
 				Password: "password123",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing password",
-			input: auth_dto.Login{
+			input: user_dto.Login{
 				Email: "test@example.com",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: auth_dto.Login{
+			input: user_dto.Login{
 				Email:    "",
 				Password: "",
 			},
@@ -185,7 +185,7 @@ func TestValidateLogin(t *testing.T) {
 		},
 		{
 			name: "email with spaces trimmed",
-			input: auth_dto.Login{
+			input: user_dto.Login{
 				Email:    "  TEST@Example.com  ",
 				Password: "password123",
 			},
@@ -195,7 +195,7 @@ func TestValidateLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := auth_validator.ValidateLogin(tt.input)
+			_, err := user_validator.ValidateLogin(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateLogin() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -206,19 +206,19 @@ func TestValidateLogin(t *testing.T) {
 func TestValidateUserControlRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   administrator_dto.UserControlRequest
+		input   user_dto.UserControlRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: administrator_dto.UserControlRequest{
+			input: user_dto.UserControlRequest{
 				PublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing public user id",
-			input: administrator_dto.UserControlRequest{
+			input: user_dto.UserControlRequest{
 				PublicUserId: "",
 			},
 			wantErr: true,
@@ -227,7 +227,7 @@ func TestValidateUserControlRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := administrator_validator.ValidateUserControlRequest(tt.input)
+			_, err := user_validator.ValidateUserControlRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateUserControlRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -238,19 +238,19 @@ func TestValidateUserControlRequest(t *testing.T) {
 func TestValidateSessionControlRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   administrator_dto.SessionControlRequest
+		input   session_dto.SessionControlRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: administrator_dto.SessionControlRequest{
+			input: session_dto.SessionControlRequest{
 				PublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: false,
 		},
 		{
 			name: "empty public user id",
-			input: administrator_dto.SessionControlRequest{
+			input: session_dto.SessionControlRequest{
 				PublicUserId: "",
 			},
 			wantErr: true,
@@ -259,7 +259,7 @@ func TestValidateSessionControlRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := administrator_validator.ValidateSessionControlRequest(tt.input)
+			_, err := session_validator.ValidateSessionControlRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateSessionControlRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -270,12 +270,12 @@ func TestValidateSessionControlRequest(t *testing.T) {
 func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   support_dto.ClientCommunicationReplyRequest
+		input   clientsupportmessage_dto.ClientCommunicationReplyRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: support_dto.ClientCommunicationReplyRequest{
+			input: clientsupportmessage_dto.ClientCommunicationReplyRequest{
 				PublicId: "abc123",
 				Message:  "Thank you for your message",
 			},
@@ -283,21 +283,21 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 		},
 		{
 			name: "missing public id",
-			input: support_dto.ClientCommunicationReplyRequest{
+			input: clientsupportmessage_dto.ClientCommunicationReplyRequest{
 				Message: "Thank you",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing message",
-			input: support_dto.ClientCommunicationReplyRequest{
+			input: clientsupportmessage_dto.ClientCommunicationReplyRequest{
 				PublicId: "abc123",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: support_dto.ClientCommunicationReplyRequest{
+			input: clientsupportmessage_dto.ClientCommunicationReplyRequest{
 				PublicId: "",
 				Message:  "",
 			},
@@ -307,7 +307,7 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := support_validator.ValidateClientCommunicationReplyRequest(tt.input)
+			_, err := clientsupportmessage_validator.ValidateClientCommunicationReplyRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateClientCommunicationReplyRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -318,12 +318,12 @@ func TestValidateClientCommunicationReplyRequest(t *testing.T) {
 func TestValidateClientCommunicateRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   support_dto.ClientCommunicateRequest
+		input   clientsupportmessage_dto.ClientCommunicateRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: support_dto.ClientCommunicateRequest{
+			input: clientsupportmessage_dto.ClientCommunicateRequest{
 				Type:    "complaint",
 				Message: "This is a complaint",
 			},
@@ -331,21 +331,21 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 		},
 		{
 			name: "missing type",
-			input: support_dto.ClientCommunicateRequest{
+			input: clientsupportmessage_dto.ClientCommunicateRequest{
 				Message: "This is a complaint",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing message",
-			input: support_dto.ClientCommunicateRequest{
+			input: clientsupportmessage_dto.ClientCommunicateRequest{
 				Type: "complaint",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: support_dto.ClientCommunicateRequest{
+			input: clientsupportmessage_dto.ClientCommunicateRequest{
 				Type:    "",
 				Message: "",
 			},
@@ -355,7 +355,7 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := support_validator.ValidateClientCommunicateRequest(tt.input)
+			_, err := clientsupportmessage_validator.ValidateClientCommunicateRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateClientCommunicateRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -366,12 +366,12 @@ func TestValidateClientCommunicateRequest(t *testing.T) {
 func TestValidateClientReportRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   support_dto.ClientReportRequest
+		input   clientreportlog_dto.ClientReportRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: support_dto.ClientReportRequest{
+			input: clientreportlog_dto.ClientReportRequest{
 				TargetClientPublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 				ReportType:               "profanity",
 			},
@@ -379,21 +379,21 @@ func TestValidateClientReportRequest(t *testing.T) {
 		},
 		{
 			name: "missing target client",
-			input: support_dto.ClientReportRequest{
+			input: clientreportlog_dto.ClientReportRequest{
 				ReportType: "profanity",
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing report type",
-			input: support_dto.ClientReportRequest{
+			input: clientreportlog_dto.ClientReportRequest{
 				TargetClientPublicUserId: "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 			},
 			wantErr: true,
 		},
 		{
 			name: "both empty",
-			input: support_dto.ClientReportRequest{
+			input: clientreportlog_dto.ClientReportRequest{
 				TargetClientPublicUserId: "",
 				ReportType:               "",
 			},
@@ -403,7 +403,7 @@ func TestValidateClientReportRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := support_validator.ValidateClientReportRequest(tt.input)
+			_, err := clientreportlog_validator.ValidateClientReportRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateClientReportRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -414,33 +414,33 @@ func TestValidateClientReportRequest(t *testing.T) {
 func TestValidateUsernameRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_dto.ChangeUsernameRequest
+		input   user_dto.ChangeUsernameRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_dto.ChangeUsernameRequest{
+			input: user_dto.ChangeUsernameRequest{
 				Username: "newusername",
 			},
 			wantErr: false,
 		},
 		{
 			name: "too short",
-			input: setting_dto.ChangeUsernameRequest{
+			input: user_dto.ChangeUsernameRequest{
 				Username: "ab",
 			},
 			wantErr: true,
 		},
 		{
 			name: "too long",
-			input: setting_dto.ChangeUsernameRequest{
+			input: user_dto.ChangeUsernameRequest{
 				Username: string(make([]byte, 256)),
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_dto.ChangeUsernameRequest{
+			input: user_dto.ChangeUsernameRequest{
 				Username: "",
 			},
 			wantErr: true,
@@ -449,7 +449,7 @@ func TestValidateUsernameRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := setting_validator.ValidateUsernameRequest(tt.input)
+			_, err := user_validator.ValidateUsernameRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateUsernameRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -460,26 +460,26 @@ func TestValidateUsernameRequest(t *testing.T) {
 func TestValidateDisplaynameRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_dto.ChangeDisplaynameRequest
+		input   user_dto.ChangeDisplaynameRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_dto.ChangeDisplaynameRequest{
+			input: user_dto.ChangeDisplaynameRequest{
 				Displayname: "New Display Name",
 			},
 			wantErr: false,
 		},
 		{
 			name: "too short",
-			input: setting_dto.ChangeDisplaynameRequest{
+			input: user_dto.ChangeDisplaynameRequest{
 				Displayname: "ab",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_dto.ChangeDisplaynameRequest{
+			input: user_dto.ChangeDisplaynameRequest{
 				Displayname: "",
 			},
 			wantErr: true,
@@ -488,7 +488,7 @@ func TestValidateDisplaynameRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := setting_validator.ValidateDisplaynameRequest(tt.input)
+			_, err := user_validator.ValidateDisplaynameRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateDisplaynameRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -499,33 +499,33 @@ func TestValidateDisplaynameRequest(t *testing.T) {
 func TestValidateEmailRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_dto.ChangeEmailRequest
+		input   user_dto.ChangeEmailRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_dto.ChangeEmailRequest{
+			input: user_dto.ChangeEmailRequest{
 				Email: "newemail@example.com",
 			},
 			wantErr: false,
 		},
 		{
 			name: "invalid format",
-			input: setting_dto.ChangeEmailRequest{
+			input: user_dto.ChangeEmailRequest{
 				Email: "not-an-email",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_dto.ChangeEmailRequest{
+			input: user_dto.ChangeEmailRequest{
 				Email: "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "email with spaces and uppercase",
-			input: setting_dto.ChangeEmailRequest{
+			input: user_dto.ChangeEmailRequest{
 				Email: "  NEW@Example.com  ",
 			},
 			wantErr: false,
@@ -534,7 +534,7 @@ func TestValidateEmailRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := setting_validator.ValidateEmailRequest(tt.input)
+			_, err := user_validator.ValidateEmailRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateEmailRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
@@ -545,33 +545,33 @@ func TestValidateEmailRequest(t *testing.T) {
 func TestValidatePasswordRequest(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   setting_dto.ChangePasswordRequest
+		input   user_dto.ChangePasswordRequest
 		wantErr bool
 	}{
 		{
 			name: "success",
-			input: setting_dto.ChangePasswordRequest{
+			input: user_dto.ChangePasswordRequest{
 				Password: "newpassword123",
 			},
 			wantErr: false,
 		},
 		{
 			name: "too short",
-			input: setting_dto.ChangePasswordRequest{
+			input: user_dto.ChangePasswordRequest{
 				Password: "short",
 			},
 			wantErr: true,
 		},
 		{
 			name: "too long",
-			input: setting_dto.ChangePasswordRequest{
+			input: user_dto.ChangePasswordRequest{
 				Password: "thispasswordiswaytoolong20",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty",
-			input: setting_dto.ChangePasswordRequest{
+			input: user_dto.ChangePasswordRequest{
 				Password: "",
 			},
 			wantErr: true,
@@ -580,7 +580,7 @@ func TestValidatePasswordRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := setting_validator.ValidatePasswordRequest(tt.input)
+			_, err := user_validator.ValidatePasswordRequest(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidatePasswordRequest() error = %v, wantErr = %v", err, tt.wantErr)
 			}
