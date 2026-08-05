@@ -330,7 +330,7 @@ func SyncGroupClientSupportMessagingDatabase() error {
 		contentJSON, _ := json.Marshal(content)
 
 		Queries.CreateClientSupportMessage(ctx, sqlc.CreateClientSupportMessageParams{
-			Type:    item.Type,
+			Type:    sqlc.ClientSupportMessagingType(item.Type),
 			Content: contentJSON,
 		})
 	}

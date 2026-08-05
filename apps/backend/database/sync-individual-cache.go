@@ -13,16 +13,17 @@ import (
 
 func SyncIndividualUserDataSessionStore(public_user_id string, user *sqlc.User) error {
 	userData := map[string]any{
-		"public_id":   user.PublicID.Bytes,
-		"username":    user.Username,
-		"displayname": user.Displayname,
-		"email":       user.Email,
-		"user_type":   string(user.UserType),
-		"created_at":  user.CreatedAt.Time,
-		"updated_at":  user.UpdatedAt.Time,
-		"banned_at":   nil,
-		"deleted_at":  nil,
-		"expires_at":  nil,
+		"public_id":    user.PublicID.Bytes,
+		"username":     user.Username,
+		"displayname":  user.Displayname,
+		"email":        user.Email,
+		"phone_number": user.PhoneNumber,
+		"user_type":    string(user.UserType),
+		"created_at":   user.CreatedAt.Time,
+		"updated_at":   user.UpdatedAt.Time,
+		"banned_at":    nil,
+		"deleted_at":   nil,
+		"expires_at":   nil,
 	}
 	if user.BannedAt.Valid {
 		userData["banned_at"] = user.BannedAt.Time

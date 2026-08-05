@@ -281,6 +281,7 @@ WHERE id = $8
 type UpdateUserParams struct {
 	Username    string             `json:"username"`
 	Email       string             `json:"email"`
+	PhoneNumber string `json:"phone_number"`
 	Displayname string             `json:"displayname"`
 	Password    []byte             `json:"password"`
 	UserType    UserType           `json:"user_type"`
@@ -293,6 +294,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser,
 		arg.Username,
 		arg.Email,
+		arg.PhoneNumber,
 		arg.Displayname,
 		arg.Password,
 		arg.UserType,

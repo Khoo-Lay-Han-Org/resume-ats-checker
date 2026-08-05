@@ -105,6 +105,7 @@ func SyncIndividualUserDataDatabase(public_user_id string) error {
 	username, _ := deserialised["username"].(string)
 	displayname, _ := deserialised["displayname"].(string)
 	email, _ := deserialised["email"].(string)
+	phone_number, _ := deserialised["phone_number"].(string)
 
 	var userType sqlc.UserType
 	if ut, ok := deserialised["user_type"].(string); ok {
@@ -115,6 +116,7 @@ func SyncIndividualUserDataDatabase(public_user_id string) error {
 		ID:          private_id,
 		Username:    username,
 		Email:       email,
+		PhoneNumber: phone_number,
 		Displayname: displayname,
 		UserType:    userType,
 	}); err != nil {

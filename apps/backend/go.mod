@@ -6,7 +6,6 @@ require (
 	github.com/bobch27/valtra-go v0.5.1
 	github.com/casbin/casbin/v3 v3.10.0
 	github.com/go-rod/rod v0.116.2
-	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.15.4
