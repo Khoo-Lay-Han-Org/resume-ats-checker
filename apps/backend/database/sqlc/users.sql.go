@@ -26,7 +26,7 @@ func (q *Queries) CountUsersByType(ctx context.Context, userType UserType) (int6
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, email, password, displayname, user_type)
 VALUES ($1, $2, $3, $4, $5::user_type)
-RETURNING id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at
+RETURNING id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at
 `
 
 type CreateUserParams struct {
@@ -51,6 +51,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,
@@ -64,7 +65,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const findAllUsers = `-- name: FindAllUsers :many
-SELECT id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
 WHERE (expires_at IS NULL OR expires_at > NOW())
 `
 
@@ -82,6 +83,7 @@ func (q *Queries) FindAllUsers(ctx context.Context) ([]User, error) {
 			&i.PublicID,
 			&i.Username,
 			&i.Email,
+			&i.PhoneNumber,
 			&i.Password,
 			&i.Displayname,
 			&i.UserType,
@@ -102,7 +104,7 @@ func (q *Queries) FindAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const findAllUsersByType = `-- name: FindAllUsersByType :many
-SELECT id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
 WHERE user_type = $1::user_type AND (expires_at IS NULL OR expires_at > NOW())
 `
 
@@ -120,6 +122,7 @@ func (q *Queries) FindAllUsersByType(ctx context.Context, userType UserType) ([]
 			&i.PublicID,
 			&i.Username,
 			&i.Email,
+			&i.PhoneNumber,
 			&i.Password,
 			&i.Displayname,
 			&i.UserType,
@@ -140,7 +143,7 @@ func (q *Queries) FindAllUsersByType(ctx context.Context, userType UserType) ([]
 }
 
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
 WHERE email = $1 AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1
 `
 
@@ -152,6 +155,7 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,
@@ -165,7 +169,7 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 }
 
 const findUserById = `-- name: FindUserById :one
-SELECT id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
 WHERE id = $1 AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1
 `
 
@@ -177,6 +181,33 @@ func (q *Queries) FindUserById(ctx context.Context, id int32) (User, error) {
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
+		&i.Password,
+		&i.Displayname,
+		&i.UserType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.BannedAt,
+		&i.DeletedAt,
+		&i.ExpiresAt,
+	)
+	return i, err
+}
+
+const findUserByPhoneNumber = `-- name: FindUserByPhoneNumber :one
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
+WHERE phone_number = $1 AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1
+`
+
+func (q *Queries) FindUserByPhoneNumber(ctx context.Context, phoneNumber string) (User, error) {
+	row := q.db.QueryRow(ctx, findUserByPhoneNumber, phoneNumber)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.Username,
+		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,
@@ -190,7 +221,7 @@ func (q *Queries) FindUserById(ctx context.Context, id int32) (User, error) {
 }
 
 const findUserByPublicId = `-- name: FindUserByPublicId :one
-SELECT id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users
 WHERE public_id = $1 AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1
 `
 
@@ -202,6 +233,7 @@ func (q *Queries) FindUserByPublicId(ctx context.Context, publicID pgtype.UUID) 
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,
@@ -281,7 +313,7 @@ UPDATE users SET
     deleted_at = $6, 
     updated_at = NOW()
 WHERE public_id = $7
-RETURNING id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at
+RETURNING id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at
 `
 
 type UpdateUserByPublicIdParams struct {
@@ -310,6 +342,7 @@ func (q *Queries) UpdateUserByPublicId(ctx context.Context, arg UpdateUserByPubl
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,

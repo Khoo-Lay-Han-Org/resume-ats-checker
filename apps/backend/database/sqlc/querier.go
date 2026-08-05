@@ -56,6 +56,7 @@ type Querier interface {
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByEmailWithExpired(ctx context.Context, email string) (User, error)
 	FindUserById(ctx context.Context, id int32) (User, error)
+	FindUserByPhoneNumber(ctx context.Context, phoneNumber string) (User, error)
 	FindUserByPublicId(ctx context.Context, publicID pgtype.UUID) (User, error)
 	FindUserByPublicIdWithSession(ctx context.Context, publicID pgtype.UUID) (FindUserByPublicIdWithSessionRow, error)
 	HardDeleteExpiredUsers(ctx context.Context) error

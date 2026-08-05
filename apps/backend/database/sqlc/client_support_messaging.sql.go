@@ -18,8 +18,8 @@ RETURNING id, public_id, type, content, created_at, updated_at, expires_at
 `
 
 type CreateClientSupportMessageParams struct {
-	Type    string `json:"type"`
-	Content []byte `json:"content"`
+	Type    ClientSupportMessagingType `json:"type"`
+	Content []byte                     `json:"content"`
 }
 
 func (q *Queries) CreateClientSupportMessage(ctx context.Context, arg CreateClientSupportMessageParams) (ClientSupportMessaging, error) {
@@ -97,9 +97,9 @@ WHERE public_id = $3
 `
 
 type UpdateClientSupportMessageByPublicIdParams struct {
-	Type     string      `json:"type"`
-	Content  []byte      `json:"content"`
-	PublicID pgtype.UUID `json:"public_id"`
+	Type     ClientSupportMessagingType `json:"type"`
+	Content  []byte                     `json:"content"`
+	PublicID pgtype.UUID                `json:"public_id"`
 }
 
 func (q *Queries) UpdateClientSupportMessageByPublicId(ctx context.Context, arg UpdateClientSupportMessageByPublicIdParams) error {

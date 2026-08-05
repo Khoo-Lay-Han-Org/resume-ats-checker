@@ -11,6 +11,146 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AdminAuditLogType string
+
+const (
+	AdminAuditLogTypeNewadmin          AdminAuditLogType = "new admin"
+	AdminAuditLogTypeNewannouncement   AdminAuditLogType = "new announcement"
+	AdminAuditLogTypeClientbanned      AdminAuditLogType = "client banned"
+	AdminAuditLogTypeAdminbanned       AdminAuditLogType = "admin banned"
+	AdminAuditLogTypeCustomersupported AdminAuditLogType = "customer supported"
+)
+
+func (e *AdminAuditLogType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AdminAuditLogType(s)
+	case string:
+		*e = AdminAuditLogType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AdminAuditLogType: %T", src)
+	}
+	return nil
+}
+
+type NullAdminAuditLogType struct {
+	AdminAuditLogType AdminAuditLogType `json:"admin_audit_log_type"`
+	Valid             bool              `json:"valid"` // Valid is true if AdminAuditLogType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAdminAuditLogType) Scan(value interface{}) error {
+	if value == nil {
+		ns.AdminAuditLogType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AdminAuditLogType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAdminAuditLogType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AdminAuditLogType), nil
+}
+
+type ClientAuditLogType string
+
+const (
+	ClientAuditLogTypeNewclient            ClientAuditLogType = "new client"
+	ClientAuditLogTypePortfolioupdate      ClientAuditLogType = "portfolio update"
+	ClientAuditLogTypeResumeupdate         ClientAuditLogType = "resume update"
+	ClientAuditLogTypeShowcaserecordupdate ClientAuditLogType = "showcase record update"
+	ClientAuditLogTypeUsernameupdate       ClientAuditLogType = "username update"
+	ClientAuditLogTypeDisplaynameupdate    ClientAuditLogType = "displayname update"
+	ClientAuditLogTypePasswordupdate       ClientAuditLogType = "password update"
+	ClientAuditLogTypeEmailupdate          ClientAuditLogType = "email update"
+	ClientAuditLogTypeAccountdeletion      ClientAuditLogType = "account deletion"
+)
+
+func (e *ClientAuditLogType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ClientAuditLogType(s)
+	case string:
+		*e = ClientAuditLogType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ClientAuditLogType: %T", src)
+	}
+	return nil
+}
+
+type NullClientAuditLogType struct {
+	ClientAuditLogType ClientAuditLogType `json:"client_audit_log_type"`
+	Valid              bool               `json:"valid"` // Valid is true if ClientAuditLogType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullClientAuditLogType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ClientAuditLogType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ClientAuditLogType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullClientAuditLogType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ClientAuditLogType), nil
+}
+
+type ClientSupportMessagingType string
+
+const (
+	ClientSupportMessagingTypeTechnicalsupport    ClientSupportMessagingType = "technical support"
+	ClientSupportMessagingTypeFeatureimprovement  ClientSupportMessagingType = "feature improvement"
+	ClientSupportMessagingTypeBillingmanagement   ClientSupportMessagingType = "billing management"
+	ClientSupportMessagingTypeServiceandoperation ClientSupportMessagingType = "service and operation"
+	ClientSupportMessagingTypeOnboardingsupport   ClientSupportMessagingType = "onboarding support"
+	ClientSupportMessagingTypeComplaint           ClientSupportMessagingType = "complaint"
+)
+
+func (e *ClientSupportMessagingType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ClientSupportMessagingType(s)
+	case string:
+		*e = ClientSupportMessagingType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ClientSupportMessagingType: %T", src)
+	}
+	return nil
+}
+
+type NullClientSupportMessagingType struct {
+	ClientSupportMessagingType ClientSupportMessagingType `json:"client_support_messaging_type"`
+	Valid                      bool                       `json:"valid"` // Valid is true if ClientSupportMessagingType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullClientSupportMessagingType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ClientSupportMessagingType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ClientSupportMessagingType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullClientSupportMessagingType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ClientSupportMessagingType), nil
+}
+
 type UserType string
 
 const (
@@ -58,7 +198,7 @@ type AdminAuditLog struct {
 	ID        int32              `json:"id"`
 	PublicID  pgtype.UUID        `json:"public_id"`
 	UserID    int32              `json:"user_id"`
-	Type      string             `json:"type"`
+	Type      AdminAuditLogType  `json:"type"`
 	Message   string             `json:"message"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
@@ -81,7 +221,7 @@ type ClientAuditLog struct {
 	ID        int32              `json:"id"`
 	PublicID  pgtype.UUID        `json:"public_id"`
 	UserID    int32              `json:"user_id"`
-	Type      string             `json:"type"`
+	Type      ClientAuditLogType `json:"type"`
 	Message   string             `json:"message"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
@@ -100,13 +240,13 @@ type ClientReportLog struct {
 }
 
 type ClientSupportMessaging struct {
-	ID        int32              `json:"id"`
-	PublicID  pgtype.UUID        `json:"public_id"`
-	Type      string             `json:"type"`
-	Content   []byte             `json:"content"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	ID        int32                      `json:"id"`
+	PublicID  pgtype.UUID                `json:"public_id"`
+	Type      ClientSupportMessagingType `json:"type"`
+	Content   []byte                     `json:"content"`
+	CreatedAt pgtype.Timestamptz         `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz         `json:"updated_at"`
+	ExpiresAt pgtype.Timestamptz         `json:"expires_at"`
 }
 
 type ErrorLog struct {
@@ -190,6 +330,7 @@ type User struct {
 	PublicID    pgtype.UUID        `json:"public_id"`
 	Username    string             `json:"username"`
 	Email       string             `json:"email"`
+	PhoneNumber string             `json:"phone_number"`
 	Password    []byte             `json:"password"`
 	Displayname string             `json:"displayname"`
 	UserType    UserType           `json:"user_type"`

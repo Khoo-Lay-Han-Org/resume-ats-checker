@@ -18,9 +18,9 @@ RETURNING id, public_id, user_id, type, message, created_at, updated_at, expires
 `
 
 type CreateClientAuditLogParams struct {
-	UserID  int32  `json:"user_id"`
-	Type    string `json:"type"`
-	Message string `json:"message"`
+	UserID  int32              `json:"user_id"`
+	Type    ClientAuditLogType `json:"type"`
+	Message string             `json:"message"`
 }
 
 func (q *Queries) CreateClientAuditLog(ctx context.Context, arg CreateClientAuditLogParams) (ClientAuditLog, error) {
@@ -115,9 +115,9 @@ WHERE public_id = $3
 `
 
 type UpdateClientAuditLogByPublicIdParams struct {
-	Type     string      `json:"type"`
-	Message  string      `json:"message"`
-	PublicID pgtype.UUID `json:"public_id"`
+	Type     ClientAuditLogType `json:"type"`
+	Message  string             `json:"message"`
+	PublicID pgtype.UUID        `json:"public_id"`
 }
 
 func (q *Queries) UpdateClientAuditLogByPublicId(ctx context.Context, arg UpdateClientAuditLogByPublicIdParams) error {

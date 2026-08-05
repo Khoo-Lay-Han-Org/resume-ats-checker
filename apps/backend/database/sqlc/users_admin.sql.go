@@ -12,7 +12,7 @@ import (
 )
 
 const findAllAdminsWithSession = `-- name: FindAllAdminsWithSession :many
-SELECT u.id, u.public_id, u.username, u.email, u.password, u.displayname, u.user_type, u.created_at, u.updated_at, u.banned_at, u.deleted_at, u.expires_at, s.id as session_id, s.public_id as session_public_id, s.session_key, s.expires_at as session_expires_at
+SELECT u.id, u.public_id, u.username, u.email, u.phone_number, u.password, u.displayname, u.user_type, u.created_at, u.updated_at, u.banned_at, u.deleted_at, u.expires_at, s.id as session_id, s.public_id as session_public_id, s.session_key, s.expires_at as session_expires_at
 FROM users u
 LEFT JOIN sessions s ON s.user_id = u.id AND (s.expires_at IS NULL OR s.expires_at > NOW())
 WHERE u.user_type IN ('admin'::user_type, 'super-admin'::user_type) AND (u.expires_at IS NULL OR u.expires_at > NOW())
@@ -23,6 +23,7 @@ type FindAllAdminsWithSessionRow struct {
 	PublicID         pgtype.UUID        `json:"public_id"`
 	Username         string             `json:"username"`
 	Email            string             `json:"email"`
+	PhoneNumber      string             `json:"phone_number"`
 	Password         []byte             `json:"password"`
 	Displayname      string             `json:"displayname"`
 	UserType         UserType           `json:"user_type"`
@@ -51,6 +52,7 @@ func (q *Queries) FindAllAdminsWithSession(ctx context.Context) ([]FindAllAdmins
 			&i.PublicID,
 			&i.Username,
 			&i.Email,
+			&i.PhoneNumber,
 			&i.Password,
 			&i.Displayname,
 			&i.UserType,
@@ -75,7 +77,7 @@ func (q *Queries) FindAllAdminsWithSession(ctx context.Context) ([]FindAllAdmins
 }
 
 const findAllClientsWithSession = `-- name: FindAllClientsWithSession :many
-SELECT u.id, u.public_id, u.username, u.email, u.password, u.displayname, u.user_type, u.created_at, u.updated_at, u.banned_at, u.deleted_at, u.expires_at, s.id as session_id, s.public_id as session_public_id, s.session_key, s.expires_at as session_expires_at
+SELECT u.id, u.public_id, u.username, u.email, u.phone_number, u.password, u.displayname, u.user_type, u.created_at, u.updated_at, u.banned_at, u.deleted_at, u.expires_at, s.id as session_id, s.public_id as session_public_id, s.session_key, s.expires_at as session_expires_at
 FROM users u
 LEFT JOIN sessions s ON s.user_id = u.id AND (s.expires_at IS NULL OR s.expires_at > NOW())
 WHERE u.user_type = 'client'::user_type AND (u.expires_at IS NULL OR u.expires_at > NOW())
@@ -86,6 +88,7 @@ type FindAllClientsWithSessionRow struct {
 	PublicID         pgtype.UUID        `json:"public_id"`
 	Username         string             `json:"username"`
 	Email            string             `json:"email"`
+	PhoneNumber      string             `json:"phone_number"`
 	Password         []byte             `json:"password"`
 	Displayname      string             `json:"displayname"`
 	UserType         UserType           `json:"user_type"`
@@ -114,6 +117,7 @@ func (q *Queries) FindAllClientsWithSession(ctx context.Context) ([]FindAllClien
 			&i.PublicID,
 			&i.Username,
 			&i.Email,
+			&i.PhoneNumber,
 			&i.Password,
 			&i.Displayname,
 			&i.UserType,
@@ -138,7 +142,7 @@ func (q *Queries) FindAllClientsWithSession(ctx context.Context) ([]FindAllClien
 }
 
 const findUserByEmailWithExpired = `-- name: FindUserByEmailWithExpired :one
-SELECT id, public_id, username, email, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users WHERE email = $1 LIMIT 1
+SELECT id, public_id, username, email, phone_number, password, displayname, user_type, created_at, updated_at, banned_at, deleted_at, expires_at FROM users WHERE email = $1 LIMIT 1
 `
 
 func (q *Queries) FindUserByEmailWithExpired(ctx context.Context, email string) (User, error) {
@@ -149,6 +153,7 @@ func (q *Queries) FindUserByEmailWithExpired(ctx context.Context, email string) 
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,
@@ -162,7 +167,7 @@ func (q *Queries) FindUserByEmailWithExpired(ctx context.Context, email string) 
 }
 
 const findUserByPublicIdWithSession = `-- name: FindUserByPublicIdWithSession :one
-SELECT u.id, u.public_id, u.username, u.email, u.password, u.displayname, u.user_type, u.created_at, u.updated_at, u.banned_at, u.deleted_at, u.expires_at, s.id as session_id, s.public_id as session_public_id, s.session_key, s.expires_at as session_expires_at
+SELECT u.id, u.public_id, u.username, u.email, u.phone_number, u.password, u.displayname, u.user_type, u.created_at, u.updated_at, u.banned_at, u.deleted_at, u.expires_at, s.id as session_id, s.public_id as session_public_id, s.session_key, s.expires_at as session_expires_at
 FROM users u
 LEFT JOIN sessions s ON s.user_id = u.id AND (s.expires_at IS NULL OR s.expires_at > NOW())
 WHERE u.public_id = $1 AND (u.expires_at IS NULL OR u.expires_at > NOW()) LIMIT 1
@@ -173,6 +178,7 @@ type FindUserByPublicIdWithSessionRow struct {
 	PublicID         pgtype.UUID        `json:"public_id"`
 	Username         string             `json:"username"`
 	Email            string             `json:"email"`
+	PhoneNumber      string             `json:"phone_number"`
 	Password         []byte             `json:"password"`
 	Displayname      string             `json:"displayname"`
 	UserType         UserType           `json:"user_type"`
@@ -195,6 +201,7 @@ func (q *Queries) FindUserByPublicIdWithSession(ctx context.Context, publicID pg
 		&i.PublicID,
 		&i.Username,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.Password,
 		&i.Displayname,
 		&i.UserType,
