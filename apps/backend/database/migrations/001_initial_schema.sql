@@ -8,7 +8,7 @@ CREATE TABLE users (
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
-    phone_number VARCHAR(255) NOT NULL UNIQUE,
+    phone_number VARCHAR(255) UNIQUE,
     password BYTEA NOT NULL,
     displayname VARCHAR(255) NOT NULL UNIQUE,
     user_type user_type NOT NULL,
