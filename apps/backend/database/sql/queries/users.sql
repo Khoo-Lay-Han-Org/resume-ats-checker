@@ -2,6 +2,10 @@
 SELECT * FROM users
 WHERE email = @email AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1;
 
+-- name: FindUserByPhoneNumber :one
+SELECT * FROM users
+WHERE phone_number = @phone_number AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1;
+
 -- name: FindUserByPublicId :one
 SELECT * FROM users
 WHERE public_id = @public_id AND (expires_at IS NULL OR expires_at > NOW()) LIMIT 1;
