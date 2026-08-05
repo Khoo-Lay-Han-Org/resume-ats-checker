@@ -133,7 +133,7 @@ CREATE TYPE client_audit_log_type AS ENUM (
 	'password update',
 	'email update',
 	'account deletion'
-)
+);
 
 CREATE TABLE client_audit_logs (
     id SERIAL PRIMARY KEY,
@@ -155,7 +155,7 @@ CREATE TYPE admin_audit_log_type AS ENUM (
 	'client banned',
 	'admin banned',
 	'customer supported'
-)
+);
 
 CREATE TABLE admin_audit_logs (
     id SERIAL PRIMARY KEY,
@@ -207,7 +207,7 @@ CREATE TYPE client_support_messaging_type AS ENUM (
 	'service and operation',
 	'onboarding support',
 	'complaint'
-)
+);
 
 CREATE TABLE client_support_messaging (
     id SERIAL PRIMARY KEY,
