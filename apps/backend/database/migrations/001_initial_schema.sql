@@ -123,11 +123,23 @@ CREATE TABLE sessions (
 CREATE INDEX idx_sessions_public_id ON sessions(public_id);
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 
+CREATE TYPE client_audit_log_type AS ENUM (
+	'new client',
+	'portfolio update',
+	'resume update',
+	'showcase record update',
+	'username update',
+	'displayname update',
+	'password update',
+	'email update',
+	'account deletion'
+)
+
 CREATE TABLE client_audit_logs (
     id SERIAL PRIMARY KEY,
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(355) NOT NULL,
+    type client_audit_log_type NOT NULL,
     message VARCHAR(355) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -137,11 +149,19 @@ CREATE TABLE client_audit_logs (
 CREATE INDEX idx_client_audit_logs_public_id ON client_audit_logs(public_id);
 CREATE INDEX idx_client_audit_logs_created_at ON client_audit_logs(created_at);
 
+CREATE TYPE admin_audit_log_type AS ENUM (
+	'new admin',
+	'new announcement',
+	'client banned',
+	'admin banned',
+	'customer supported'
+)
+
 CREATE TABLE admin_audit_logs (
     id SERIAL PRIMARY KEY,
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(355) NOT NULL,
+    type admin_audit_log_type NOT NULL,
     message VARCHAR(355) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -180,14 +200,41 @@ CREATE TABLE error_logs (
 CREATE INDEX idx_error_logs_public_id ON error_logs(public_id);
 CREATE INDEX idx_error_logs_created_at ON error_logs(created_at);
 
+CREATE TYPE client_support_messaging_type AS ENUM (
+	'technical support',
+	'feature improvement',
+	'billing management',
+	'service and operation',
+	'onboarding support',
+	'complaint'
+)
+
 CREATE TABLE client_support_messaging (
     id SERIAL PRIMARY KEY,
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-    type VARCHAR(355) NOT NULL,
+    type client_support_messaging_type NOT NULL,
     content JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMPTZ
+    expires_at TIMESTAMPTZ,
+
+    CONSTRAINT chk_content_has_all_fields CHECK (
+        content ? 'text' AND 
+        content ? 'user_id' AND 
+        content ? 'time'
+    ),
+
+    CONSTRAINT chk_content_text_is_string CHECK (jsonb_typeof(content->'text') = 'string'),
+    CONSTRAINT chk_content_user_id_is_number CHECK (jsonb_typeof(content->'user_id') = 'number'),
+    CONSTRAINT chk_content_time_is_string CHECK (jsonb_typeof(content->'time') = 'string'),
+
+    CONSTRAINT chk_content_text_not_null CHECK (content->>'text' IS NOT NULL),
+    CONSTRAINT chk_content_user_id_not_null CHECK (content->>'user_id' IS NOT NULL),
+    CONSTRAINT chk_content_time_not_null CHECK (content->>'time' IS NOT NULL),
+
+    CONSTRAINT chk_content_text_not_empty CHECK (LENGTH(TRIM(content->>'text')) > 0),
+
+    CONSTRAINT chk_user_ids_match CHECK ((content->>'user_id')::INT = user_id)
 );
 
 CREATE INDEX idx_client_support_messaging_public_id ON client_support_messaging(public_id);
