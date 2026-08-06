@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/valkey-io/valkey-go"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 var Valkey valkey.Client

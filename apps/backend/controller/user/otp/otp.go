@@ -31,9 +31,17 @@ func GenerateOTP() (string, string, error) {
 	return otp_string, string(hashed_otp), nil
 }
 
-func CheckOTP(email, otp string) error {
+func CheckEmailOTP(email, otp string) error {
+	return checkStoredOTP(email+"otp-email", otp)
+}
+
+func CheckSMSOTP(phone_number, otp string) error {
+	return checkStoredOTP(phone_number+"otp-sms", otp)
+}
+
+func checkStoredOTP(key, otp string) error {
 	ctx := context.Background()
-	value, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(email+"otp-email").Build()).ToString()
+	value, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(key).Build()).ToString()
 	if err != nil {
 		return err
 	}
@@ -42,7 +50,7 @@ func CheckOTP(email, otp string) error {
 		return err
 	}
 
-	err = service.Valkey.Do(ctx, service.Valkey.B().Del().Key(email+"otp-email").Build()).Error()
+	err = service.Valkey.Do(ctx, service.Valkey.B().Del().Key(key).Build()).Error()
 	if err != nil {
 		return err
 	}

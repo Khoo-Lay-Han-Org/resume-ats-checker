@@ -10,8 +10,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/ledongthuc/pdf"
 	"resuming/ai"
-	ats_validator "resuming/controller/ats/validator"
-	ats_webscrape "resuming/controller/ats/webscrape"
+	validator "resuming/controller/ats/validator"
+	webscrape "resuming/controller/ats/webscrape"
 )
 
 func ExtractResume() echo.HandlerFunc {
@@ -102,7 +102,7 @@ func UserInputJobDesc() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		job_desc := c.FormValue("job_desc")
 
-		polished_job_desc, err := ats_validator.ValidateJobDesc(job_desc)
+		polished_job_desc, err := validator.ValidateJobDesc(job_desc)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
@@ -117,9 +117,9 @@ func WebScrapeJobDesc() echo.HandlerFunc {
 		company := c.FormValue("company")
 		job_title := c.FormValue("job_title")
 
-		content := ats_webscrape.JobDescWebScrape(company, job_title)
+		content := webscrape.JobDescWebScrape(company, job_title)
 
-		polished_job_desc, err := ats_validator.ValidateJobDesc(content)
+		polished_job_desc, err := validator.ValidateJobDesc(content)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}

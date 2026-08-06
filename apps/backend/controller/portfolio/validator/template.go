@@ -2,13 +2,13 @@ package portfolio_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/portfolio/dto"
+	dto "resuming/controller/portfolio/dto"
 )
 
-func ValidateTemplateID(request typing.ChooseTemplateRequest) (typing.ChooseTemplateRequest, error) {
+func ValidateTemplateID(request dto.ChooseTemplateRequest) (dto.ChooseTemplateRequest, error) {
 	v := valtra.NewCollector()
 
-	template_id := typing.ChooseTemplateRequest{
+	template_id := dto.ChooseTemplateRequest{
 		TemplateId: valtra.Val(request.TemplateId, "Template ID").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -18,7 +18,7 @@ func ValidateTemplateID(request typing.ChooseTemplateRequest) (typing.ChooseTemp
 	}
 
 	if !v.IsValid() {
-		return typing.ChooseTemplateRequest{}, v.Errors()[0]
+		return dto.ChooseTemplateRequest{}, v.Errors()[0]
 	}
 
 	return template_id, nil

@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/user/dto"
+	dto "resuming/controller/user/dto"
 )
 
-func ValidateUsernameRequest(request typing.ChangeUsernameRequest) (typing.ChangeUsernameRequest, error) {
+func ValidateUsernameRequest(request dto.ChangeUsernameRequest) (dto.ChangeUsernameRequest, error) {
 	v := valtra.NewCollector()
 
-	username := typing.ChangeUsernameRequest{
+	username := dto.ChangeUsernameRequest{
 		Username: valtra.Val(request.Username, "Username").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -27,10 +27,10 @@ func ValidateUsernameRequest(request typing.ChangeUsernameRequest) (typing.Chang
 	return username, nil
 }
 
-func ValidateDisplaynameRequest(request typing.ChangeDisplaynameRequest) (typing.ChangeDisplaynameRequest, error) {
+func ValidateDisplaynameRequest(request dto.ChangeDisplaynameRequest) (dto.ChangeDisplaynameRequest, error) {
 	v := valtra.NewCollector()
 
-	displayname := typing.ChangeDisplaynameRequest{
+	displayname := dto.ChangeDisplaynameRequest{
 		Displayname: valtra.Val(request.Displayname, "Displayname").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -47,10 +47,10 @@ func ValidateDisplaynameRequest(request typing.ChangeDisplaynameRequest) (typing
 	return displayname, nil
 }
 
-func ValidateEmailRequest(request typing.ChangeEmailRequest) (typing.ChangeEmailRequest, error) {
+func ValidateEmailRequest(request dto.ChangeEmailRequest) (dto.ChangeEmailRequest, error) {
 	v := valtra.NewCollector()
 
-	email := typing.ChangeEmailRequest{
+	email := dto.ChangeEmailRequest{
 		Email: valtra.Val(request.Email, "Email").
 			Transform(valtra.TrimSpace(), valtra.Lowercase()).
 			Validate(
@@ -73,10 +73,29 @@ func ValidateEmailRequest(request typing.ChangeEmailRequest) (typing.ChangeEmail
 	return email, nil
 }
 
-func ValidatePasswordRequest(request typing.ChangePasswordRequest) (typing.ChangePasswordRequest, error) {
+func ValidatePhoneNumberRequest(request dto.ChangePhoneNumberRequest) (dto.ChangePhoneNumberRequest, error) {
 	v := valtra.NewCollector()
 
-	password := typing.ChangePasswordRequest{
+	phone_number := dto.ChangePhoneNumberRequest{
+		PhoneNumber: valtra.Val(request.PhoneNumber, "Phone Number").
+			Transform(valtra.TrimSpace()).
+			Validate(
+				valtra.Required[string]("Phone number is required."),
+			).
+			Collect(v),
+	}
+
+	if !v.IsValid() {
+		return request, v.Errors()[0]
+	}
+
+	return phone_number, nil
+}
+
+func ValidatePasswordRequest(request dto.ChangePasswordRequest) (dto.ChangePasswordRequest, error) {
+	v := valtra.NewCollector()
+
+	password := dto.ChangePasswordRequest{
 		Password: valtra.Val(request.Password, "Password").
 			Validate(
 				valtra.Required[string]("Password is required"),

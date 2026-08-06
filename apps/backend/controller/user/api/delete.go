@@ -8,13 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/controller/user/dto"
-	setting_email "resuming/controller/user/email"
-	setting_otp "resuming/controller/user/otp"
+	dto "resuming/controller/user/dto"
+	email "resuming/controller/user/email"
+	otp "resuming/controller/user/otp"
 	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func PrepareDeleteAccount() echo.HandlerFunc {
@@ -52,7 +52,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		err = setting_email.SendEmailOTP(user.Email)
+		err = email.SendEmailOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -96,12 +96,12 @@ func DeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		var request typing.OTPRequest
+		var request dto.OTPRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = setting_otp.CheckOTP(user.Email, request.OTP)
+		err = otp.CheckEmailOTP(user.Email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}

@@ -97,7 +97,7 @@ apps/backend/
 │   ├── sync-individual-cache.go    # Per-user sync → Valkey
 │   └── sync-individual-database.go # Per-user sync → PostgreSQL
 │
-├── system-config/             # ── Configuration ──────────────────────────
+├── systemconfig/             # ── Configuration ──────────────────────────
 │   ├── backend.go             # BackendDomain, BackendPort, BackendUri
 │   ├── frontend.go            # FrontendDomain, FrontendPort, FrontendUri
 │   ├── database.go            # Database DSN construction

@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/showcase/dto"
+	dto "resuming/controller/showcase/dto"
 )
 
-func ValidateNamePortfolioData(request typing.NameSection) (typing.NameSection, error) {
+func ValidateNamePortfolioData(request dto.NameSection) (dto.NameSection, error) {
 	v := valtra.NewCollector()
 
-	name := typing.NameSection{
+	name := dto.NameSection{
 		Name: valtra.Val(request.Name, "Name").
 			Transform(valtra.TrimSpace(), valtra.Uppercase()).
 			Validate(
@@ -28,16 +28,16 @@ func ValidateNamePortfolioData(request typing.NameSection) (typing.NameSection, 
 	}
 
 	if !v.IsValid() {
-		return typing.NameSection{}, v.Errors()[0]
+		return dto.NameSection{}, v.Errors()[0]
 	}
 
 	return name, nil
 }
 
-func ValidateEmailPortfolioData(request typing.EmailSection) (typing.EmailSection, error) {
+func ValidateEmailPortfolioData(request dto.EmailSection) (dto.EmailSection, error) {
 	v := valtra.NewCollector()
 
-	email := typing.EmailSection{
+	email := dto.EmailSection{
 		Email: valtra.Val(request.Email, "Email").
 			Transform(valtra.TrimSpace(), valtra.Lowercase()).
 			Validate(
@@ -58,16 +58,16 @@ func ValidateEmailPortfolioData(request typing.EmailSection) (typing.EmailSectio
 	}
 
 	if !v.IsValid() {
-		return typing.EmailSection{}, v.Errors()[0]
+		return dto.EmailSection{}, v.Errors()[0]
 	}
 
 	return email, nil
 }
 
-func ValidatePhoneNumberPortfolioData(request typing.PhoneNumberSection) (typing.PhoneNumberSection, error) {
+func ValidatePhoneNumberPortfolioData(request dto.PhoneNumberSection) (dto.PhoneNumberSection, error) {
 	v := valtra.NewCollector()
 
-	phone_number := typing.PhoneNumberSection{
+	phone_number := dto.PhoneNumberSection{
 		PhoneNumber: valtra.Val(request.PhoneNumber, "Phone number").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -81,16 +81,16 @@ func ValidatePhoneNumberPortfolioData(request typing.PhoneNumberSection) (typing
 	}
 
 	if !v.IsValid() {
-		return typing.PhoneNumberSection{}, v.Errors()[0]
+		return dto.PhoneNumberSection{}, v.Errors()[0]
 	}
 
 	return phone_number, nil
 }
 
-func ValidateAddressPortfolioData(request typing.AddressSection) (typing.AddressSection, error) {
+func ValidateAddressPortfolioData(request dto.AddressSection) (dto.AddressSection, error) {
 	v := valtra.NewCollector()
 
-	address := typing.AddressSection{
+	address := dto.AddressSection{
 		Address: valtra.Val(request.Address, "Address").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -104,16 +104,16 @@ func ValidateAddressPortfolioData(request typing.AddressSection) (typing.Address
 	}
 
 	if !v.IsValid() {
-		return typing.AddressSection{}, v.Errors()[0]
+		return dto.AddressSection{}, v.Errors()[0]
 	}
 
 	return address, nil
 }
 
-func ValidateSocialMediaPortfolioData(request typing.SocialMediaSection) (typing.SocialMediaSection, error) {
+func ValidateSocialMediaPortfolioData(request dto.SocialMediaSection) (dto.SocialMediaSection, error) {
 	v := valtra.NewCollector()
 
-	social_media := typing.SocialMediaSection{
+	social_media := dto.SocialMediaSection{
 		SocialMedia: valtra.Val(request.SocialMedia, "Social media").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -127,16 +127,16 @@ func ValidateSocialMediaPortfolioData(request typing.SocialMediaSection) (typing
 	}
 
 	if !v.IsValid() {
-		return typing.SocialMediaSection{}, v.Errors()[0]
+		return dto.SocialMediaSection{}, v.Errors()[0]
 	}
 
 	return social_media, nil
 }
 
-func ValidateJobExperiencePortfolioData(request typing.JobExperienceSection) (typing.JobExperienceSection, error) {
+func ValidateJobExperiencePortfolioData(request dto.JobExperienceSection) (dto.JobExperienceSection, error) {
 	v := valtra.NewCollector()
 
-	job_experience := typing.JobExperienceSection{
+	job_experience := dto.JobExperienceSection{
 		CompanyName: valtra.Val(request.CompanyName, "Company name").
 			Transform(valtra.TrimSpace(), valtra.Uppercase()).
 			Validate(
@@ -186,16 +186,16 @@ func ValidateJobExperiencePortfolioData(request typing.JobExperienceSection) (ty
 	}
 
 	if !v.IsValid() {
-		return typing.JobExperienceSection{}, v.Errors()[0]
+		return dto.JobExperienceSection{}, v.Errors()[0]
 	}
 
 	return job_experience, nil
 }
 
-func ValidateEducationPortfolioData(request typing.EducationSection) (typing.EducationSection, error) {
+func ValidateEducationPortfolioData(request dto.EducationSection) (dto.EducationSection, error) {
 	v := valtra.NewCollector()
 
-	education := typing.EducationSection{
+	education := dto.EducationSection{
 		InstitutionName: valtra.Val(request.InstitutionName, "Institution name").
 			Transform(valtra.TrimSpace(), valtra.Uppercase()).
 			Validate(
@@ -244,16 +244,16 @@ func ValidateEducationPortfolioData(request typing.EducationSection) (typing.Edu
 	}
 
 	if !v.IsValid() {
-		return typing.EducationSection{}, v.Errors()[0]
+		return dto.EducationSection{}, v.Errors()[0]
 	}
 
 	return education, nil
 }
 
-func ValidateSkillPortfolioData(request typing.SkillSection) (typing.SkillSection, error) {
+func ValidateSkillPortfolioData(request dto.SkillSection) (dto.SkillSection, error) {
 	v := valtra.NewCollector()
 
-	skill := typing.SkillSection{
+	skill := dto.SkillSection{
 		Skill: valtra.Val(request.Skill, "Skill").
 			Transform(valtra.TrimSpace(), valtra.Uppercase()).
 			Validate(
@@ -267,16 +267,16 @@ func ValidateSkillPortfolioData(request typing.SkillSection) (typing.SkillSectio
 	}
 
 	if !v.IsValid() {
-		return typing.SkillSection{}, v.Errors()[0]
+		return dto.SkillSection{}, v.Errors()[0]
 	}
 
 	return skill, nil
 }
 
-func ValidateLanguagePortfolioData(request typing.LanguageSection) (typing.LanguageSection, error) {
+func ValidateLanguagePortfolioData(request dto.LanguageSection) (dto.LanguageSection, error) {
 	v := valtra.NewCollector()
 
-	language := typing.LanguageSection{
+	language := dto.LanguageSection{
 		Language: valtra.Val(request.Language, "Language").
 			Transform(valtra.TrimSpace(), valtra.Uppercase()).
 			Validate(
@@ -290,16 +290,16 @@ func ValidateLanguagePortfolioData(request typing.LanguageSection) (typing.Langu
 	}
 
 	if !v.IsValid() {
-		return typing.LanguageSection{}, v.Errors()[0]
+		return dto.LanguageSection{}, v.Errors()[0]
 	}
 
 	return language, nil
 }
 
-func ValidateCertificatePortfolioData(request typing.CertificateSection) (typing.CertificateSection, error) {
+func ValidateCertificatePortfolioData(request dto.CertificateSection) (dto.CertificateSection, error) {
 	v := valtra.NewCollector()
 
-	certificate := typing.CertificateSection{
+	certificate := dto.CertificateSection{
 		Certificate: valtra.Val(request.Certificate, "Certificate").
 			Transform(valtra.TrimSpace(), valtra.Uppercase()).
 			Validate(
@@ -313,16 +313,16 @@ func ValidateCertificatePortfolioData(request typing.CertificateSection) (typing
 	}
 
 	if !v.IsValid() {
-		return typing.CertificateSection{}, v.Errors()[0]
+		return dto.CertificateSection{}, v.Errors()[0]
 	}
 
 	return certificate, nil
 }
 
-func ValidateProjectPortfolioData(request typing.ProjectSection) (typing.ProjectSection, error) {
+func ValidateProjectPortfolioData(request dto.ProjectSection) (dto.ProjectSection, error) {
 	v := valtra.NewCollector()
 
-	project := typing.ProjectSection{
+	project := dto.ProjectSection{
 		ProjectTitle: valtra.Val(request.ProjectTitle, "Project title").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -363,7 +363,7 @@ func ValidateProjectPortfolioData(request typing.ProjectSection) (typing.Project
 	}
 
 	if !v.IsValid() {
-		return typing.ProjectSection{}, v.Errors()[0]
+		return dto.ProjectSection{}, v.Errors()[0]
 	}
 
 	return project, nil

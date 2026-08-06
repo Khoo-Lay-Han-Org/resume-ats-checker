@@ -2,13 +2,13 @@ package user_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/user/dto"
+	dto "resuming/controller/user/dto"
 )
 
-func ValidateUserControlRequest(request typing.UserControlRequest) (typing.UserControlRequest, error) {
+func ValidateUserControlRequest(request dto.UserControlRequest) (dto.UserControlRequest, error) {
 	v := valtra.NewCollector()
 
-	user_control_request := typing.UserControlRequest{
+	user_control_request := dto.UserControlRequest{
 		PublicUserId: valtra.Val(request.PublicUserId, "Public user ID").
 			Transform(valtra.TrimSpace()).
 			Validate(

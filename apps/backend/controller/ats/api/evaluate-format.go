@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	typing "resuming/controller/ats/dto"
-	ats_evaluate "resuming/controller/ats/evaluate"
+	dto "resuming/controller/ats/dto"
+	evaluate "resuming/controller/ats/evaluate"
 )
 
 func SectionExistenceCheck() echo.HandlerFunc {
@@ -170,9 +170,9 @@ func FormattingCheck() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to process resume sections."})
 		}
 
-		line_count := ats_evaluate.CountLine(resume_sections)
+		line_count := evaluate.CountLine(resume_sections)
 		error_count := 0
-		format_error := map[string][]typing.FormatCheckErrorStruct{
+		format_error := map[string][]dto.FormatCheckErrorStruct{
 			"summary":       {},
 			"skills":        {},
 			"personal_info": {},
@@ -189,7 +189,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 2
 
-				format_error["summary"] = append(format_error["summary"], typing.FormatCheckErrorStruct{
+				format_error["summary"] = append(format_error["summary"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -197,13 +197,13 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
+			if found, position := evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
 					end := item + 1
 
-					format_error["summary"] = append(format_error["summary"], typing.FormatCheckErrorStruct{
+					format_error["summary"] = append(format_error["summary"], dto.FormatCheckErrorStruct{
 						Message: message,
 						Start:   start,
 						End:     end,
@@ -219,7 +219,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["summary"] = append(format_error["summary"], typing.FormatCheckErrorStruct{
+				format_error["summary"] = append(format_error["summary"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -234,7 +234,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["summary"] = append(format_error["summary"], typing.FormatCheckErrorStruct{
+				format_error["summary"] = append(format_error["summary"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -252,7 +252,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := 0
 				end := len(item)
 
-				format_error["summary"] = append(format_error["summary"], typing.FormatCheckErrorStruct{
+				format_error["summary"] = append(format_error["summary"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -272,7 +272,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 2
 
-				format_error["personal_info"] = append(format_error["personal_info"], typing.FormatCheckErrorStruct{
+				format_error["personal_info"] = append(format_error["personal_info"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -280,13 +280,13 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
+			if found, position := evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
 					end := item + 1
 
-					format_error["personal_info"] = append(format_error["personal_info"], typing.FormatCheckErrorStruct{
+					format_error["personal_info"] = append(format_error["personal_info"], dto.FormatCheckErrorStruct{
 						Message: message,
 						Start:   start,
 						End:     end,
@@ -302,7 +302,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["personal_info"] = append(format_error["personal_info"], typing.FormatCheckErrorStruct{
+				format_error["personal_info"] = append(format_error["personal_info"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -317,7 +317,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["personal_info"] = append(format_error["personal_info"], typing.FormatCheckErrorStruct{
+				format_error["personal_info"] = append(format_error["personal_info"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -335,7 +335,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := 0
 				end := len(item)
 
-				format_error["personal_info"] = append(format_error["personal_info"], typing.FormatCheckErrorStruct{
+				format_error["personal_info"] = append(format_error["personal_info"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -355,7 +355,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 2
 
-				format_error["skills"] = append(format_error["skills"], typing.FormatCheckErrorStruct{
+				format_error["skills"] = append(format_error["skills"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -363,13 +363,13 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
+			if found, position := evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
 					end := item + 1
 
-					format_error["skills"] = append(format_error["skills"], typing.FormatCheckErrorStruct{
+					format_error["skills"] = append(format_error["skills"], dto.FormatCheckErrorStruct{
 						Message: message,
 						Start:   start,
 						End:     end,
@@ -385,7 +385,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["skills"] = append(format_error["skills"], typing.FormatCheckErrorStruct{
+				format_error["skills"] = append(format_error["skills"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -400,7 +400,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["skills"] = append(format_error["skills"], typing.FormatCheckErrorStruct{
+				format_error["skills"] = append(format_error["skills"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -418,7 +418,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := 0
 				end := len(item)
 
-				format_error["skills"] = append(format_error["skills"], typing.FormatCheckErrorStruct{
+				format_error["skills"] = append(format_error["skills"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -437,7 +437,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 2
 
-				format_error["experience"] = append(format_error["experience"], typing.FormatCheckErrorStruct{
+				format_error["experience"] = append(format_error["experience"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -445,13 +445,13 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
+			if found, position := evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
 					end := item + 1
 
-					format_error["experience"] = append(format_error["experience"], typing.FormatCheckErrorStruct{
+					format_error["experience"] = append(format_error["experience"], dto.FormatCheckErrorStruct{
 						Message: message,
 						Start:   start,
 						End:     end,
@@ -467,7 +467,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["experience"] = append(format_error["experience"], typing.FormatCheckErrorStruct{
+				format_error["experience"] = append(format_error["experience"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -482,7 +482,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["experience"] = append(format_error["experience"], typing.FormatCheckErrorStruct{
+				format_error["experience"] = append(format_error["experience"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -500,7 +500,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := 0
 				end := len(item)
 
-				format_error["experience"] = append(format_error["experience"], typing.FormatCheckErrorStruct{
+				format_error["experience"] = append(format_error["experience"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -520,7 +520,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 2
 
-				format_error["education"] = append(format_error["education"], typing.FormatCheckErrorStruct{
+				format_error["education"] = append(format_error["education"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -528,13 +528,13 @@ func FormattingCheck() echo.HandlerFunc {
 
 				error_count += 1
 			}
-			if found, position := ats_evaluate.CheckIfPrintable(item); !found {
+			if found, position := evaluate.CheckIfPrintable(item); !found {
 				for _, item := range position {
 					message := "Unusual text found."
 					start := item
 					end := item + 1
 
-					format_error["education"] = append(format_error["education"], typing.FormatCheckErrorStruct{
+					format_error["education"] = append(format_error["education"], dto.FormatCheckErrorStruct{
 						Message: message,
 						Start:   start,
 						End:     end,
@@ -550,7 +550,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["education"] = append(format_error["education"], typing.FormatCheckErrorStruct{
+				format_error["education"] = append(format_error["education"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -565,7 +565,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := idx
 				end := idx + 1
 
-				format_error["education"] = append(format_error["education"], typing.FormatCheckErrorStruct{
+				format_error["education"] = append(format_error["education"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,
@@ -583,7 +583,7 @@ func FormattingCheck() echo.HandlerFunc {
 				start := 0
 				end := len(item)
 
-				format_error["education"] = append(format_error["education"], typing.FormatCheckErrorStruct{
+				format_error["education"] = append(format_error["education"], dto.FormatCheckErrorStruct{
 					Message: message,
 					Start:   start,
 					End:     end,

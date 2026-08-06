@@ -1,4 +1,4 @@
-package api
+package controller
 
 // RegisterRequest represents the registration request body
 type RegisterRequest struct {

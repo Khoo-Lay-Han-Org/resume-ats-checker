@@ -9,7 +9,7 @@ import (
 	"resuming/database"
 	"resuming/scheduler"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 
 	time.Sleep(5 * time.Second)
 
-	router := api.APIConnect()
+	router := controller.APIConnect()
 	router.Use(echomw.CORSWithConfig(echomw.CORSConfig{
 		AllowOrigins:     []string{systemconfig.FrontendUri},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},

@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	typing "resuming/controller/session/dto"
+	dto "resuming/controller/session/dto"
 	validator "resuming/controller/session/validator"
 	"resuming/service"
 )
 
 func RemoveIndividualUserSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var request typing.SessionControlRequest
+		var request dto.SessionControlRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve request."})
 		}

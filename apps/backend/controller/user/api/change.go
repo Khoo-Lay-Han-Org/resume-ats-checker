@@ -7,14 +7,15 @@ import (
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	"golang.org/x/crypto/bcrypt"
-	typing "resuming/controller/user/dto"
-	setting_email "resuming/controller/user/email"
-	setting_otp "resuming/controller/user/otp"
+	dto "resuming/controller/user/dto"
+	email "resuming/controller/user/email"
+	otp "resuming/controller/user/otp"
+	sms "resuming/controller/user/sms"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func ChangeUsername() echo.HandlerFunc {
@@ -26,7 +27,7 @@ func ChangeUsername() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		var request typing.ChangeUsernameRequest
+		var request dto.ChangeUsernameRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
@@ -106,7 +107,7 @@ func ChangeDisplayname() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		var request typing.ChangeDisplaynameRequest
+		var request dto.ChangeDisplaynameRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
@@ -186,7 +187,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		var request typing.ChangeEmailRequest
+		var request dto.ChangeEmailRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
@@ -248,7 +249,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = setting_email.SendEmailOTP(user.Email)
+		err = email.SendEmailOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -292,12 +293,12 @@ func ChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		var request typing.OTPRequest
+		var request dto.OTPRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = setting_otp.CheckOTP(user.Email, request.OTP)
+		err = otp.CheckEmailOTP(user.Email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
@@ -340,8 +341,166 @@ func ChangeEmail() echo.HandlerFunc {
 	}
 }
 
+func PrepareChangePhoneNumber() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
+		}
+
+		public_user_id := retrieved_public_user_id.(string)
+
+		var request dto.ChangePhoneNumberRequest
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
+		}
+
+		validated_request, err := validator.ValidatePhoneNumberRequest(request)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
+		}
+
+		new_data := validated_request.PhoneNumber
+
+		ctx := c.Request().Context()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		if err != nil {
+			if valkey.IsValkeyNil(err) {
+				user, dbErr := database.FindUserByPublicId(public_user_id)
+				if dbErr != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+				}
+				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+				}
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				if err != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+				}
+			} else {
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+			}
+		}
+
+		var user sqlc.User
+		err = json.Unmarshal([]byte(retrieved_data), &user)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
+		}
+
+		if new_data == user.PhoneNumber {
+			return c.JSON(http.StatusConflict, echo.Map{"message": "Phone number is already in use."})
+		}
+
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
+			Set().
+			Key(user.Email+":change-phone-number").
+			Value(new_data).
+			Build()).
+			Error()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
+		}
+
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
+			Expire().
+			Key(user.Email+":change-phone-number").
+			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
+			Build()).
+			Error()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
+		}
+
+		err = sms.SendSMSOTP(user.PhoneNumber)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
+		}
+
+		return nil
+	}
+}
+
 func ChangePhoneNumber() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		retrieved_public_user_id := c.Get("public_user_id")
+		if retrieved_public_user_id == nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Failed to get user data."})
+		}
+
+		public_user_id := retrieved_public_user_id.(string)
+
+		ctx := c.Request().Context()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		if err != nil {
+			if valkey.IsValkeyNil(err) {
+				user, dbErr := database.FindUserByPublicId(public_user_id)
+				if dbErr != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+				}
+				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+				}
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				if err != nil {
+					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+				}
+			} else {
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
+			}
+		}
+
+		var user sqlc.User
+		err = json.Unmarshal([]byte(retrieved_data), &user)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
+		}
+
+		var request dto.OTPRequest
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
+		}
+
+		err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
+		}
+
+		new_data, err := service.Valkey.Do(c.Request().Context(), service.Valkey.B().Get().Key(user.Email+":change-phone-number").Build()).ToString()
+		if err != nil {
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Phone number change request expired or not found."})
+		}
+
+		new_user_struct := sqlc.User{
+			PublicID:    user.PublicID,
+			Username:    user.Username,
+			Email:       user.Email,
+			PhoneNumber: new_data,
+			Displayname: user.Displayname,
+			UserType:    user.UserType,
+			CreatedAt:   user.CreatedAt,
+			UpdatedAt:   user.UpdatedAt,
+			BannedAt:    user.BannedAt,
+			DeletedAt:   user.DeletedAt,
+			ExpiresAt:   user.ExpiresAt,
+		}
+
+		serialised_new_user_struct, err := json.Marshal(new_user_struct)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
+		}
+
+		err = service.Valkey.Do(
+			ctx,
+			service.Valkey.B().Set().
+				Key(public_user_id+":user_data").Value(string(serialised_new_user_struct)).
+				Ex(systemconfig.SessionExpiryDuration).
+				Build(),
+		).Error()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
+		}
+
 		return nil
 	}
 }
@@ -355,7 +514,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		var request typing.ChangePasswordRequest
+		var request dto.ChangePasswordRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to receive request."})
 		}
@@ -418,7 +577,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = setting_email.SendEmailOTP(user.Email)
+		err = email.SendEmailOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -462,12 +621,12 @@ func ChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		var request typing.OTPRequest
+		var request dto.OTPRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = setting_otp.CheckOTP(user.Email, request.OTP)
+		err = otp.CheckEmailOTP(user.Email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}

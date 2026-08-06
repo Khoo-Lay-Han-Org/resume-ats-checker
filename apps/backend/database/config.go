@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"resuming/database/sqlc"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 var Pool *pgxpool.Pool

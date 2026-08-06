@@ -6,11 +6,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/controller/portfolio/dto"
+	dto "resuming/controller/portfolio/dto"
 	validator "resuming/controller/portfolio/validator"
 	"resuming/database"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func ChooseTemplate() echo.HandlerFunc {
@@ -22,7 +22,7 @@ func ChooseTemplate() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		var request typing.ChooseTemplateRequest
+		var request dto.ChooseTemplateRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}

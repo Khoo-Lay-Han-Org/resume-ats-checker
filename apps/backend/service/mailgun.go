@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func SendEmail(to, subject, body string, isHTML bool) error {

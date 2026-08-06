@@ -5,19 +5,19 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	typing "resuming/controller/user/dto"
-	auth_email "resuming/controller/user/email"
-	auth_otp "resuming/controller/user/otp"
+	dto "resuming/controller/user/dto"
+	email "resuming/controller/user/email"
+	otp "resuming/controller/user/otp"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func PrepareRegistration() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var request typing.Register
+		var request dto.Register
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
@@ -55,7 +55,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = auth_email.SendEmailOTP(validated_request.Email)
+		err = email.SendEmailOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -84,12 +84,12 @@ func Register() echo.HandlerFunc {
 		}
 		email := cookie.Value
 
-		var request typing.OTP
+		var request dto.OTP
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = auth_otp.CheckOTP(email, request.OTP)
+		err = otp.CheckEmailOTP(email, request.OTP)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
@@ -161,7 +161,7 @@ func Register() echo.HandlerFunc {
 
 func PrepareLogin() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var request typing.Login
+		var request dto.Login
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
@@ -181,7 +181,7 @@ func PrepareLogin() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid password."})
 		}
 
-		err = auth_email.SendEmailOTP(validated_request.Email)
+		err = email.SendEmailOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -208,7 +208,7 @@ func Login() echo.HandlerFunc {
 		}
 		email := cookie.Value
 
-		var request typing.OTP
+		var request dto.OTP
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}

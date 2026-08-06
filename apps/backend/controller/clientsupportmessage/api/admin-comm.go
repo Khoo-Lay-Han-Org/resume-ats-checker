@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/controller/clientsupportmessage/dto"
+	dto "resuming/controller/clientsupportmessage/dto"
 	validator "resuming/controller/clientsupportmessage/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func GetSupportMessages() echo.HandlerFunc {
@@ -86,7 +86,7 @@ func ClientCommunicationReply() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		var request typing.ClientCommunicationReplyRequest
+		var request dto.ClientCommunicationReplyRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to get request."})
 		}

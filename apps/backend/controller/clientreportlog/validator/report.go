@@ -2,13 +2,13 @@ package clientreportlog_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/clientreportlog/dto"
+	dto "resuming/controller/clientreportlog/dto"
 )
 
-func ValidateClientReportRequest(request typing.ClientReportRequest) (typing.ClientReportRequest, error) {
+func ValidateClientReportRequest(request dto.ClientReportRequest) (dto.ClientReportRequest, error) {
 	v := valtra.NewCollector()
 
-	client_report_request := typing.ClientReportRequest{
+	client_report_request := dto.ClientReportRequest{
 		TargetClientPublicUserId: valtra.Val(request.TargetClientPublicUserId, "Target client").
 			Transform(valtra.TrimSpace()).
 			Validate(

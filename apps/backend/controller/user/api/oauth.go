@@ -18,11 +18,11 @@ import (
 	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
-	typing "resuming/controller/user/dto"
-	auth_oauth "resuming/controller/user/oauth"
+	dto "resuming/controller/user/dto"
+	oauth "resuming/controller/user/oauth"
 	"resuming/database"
 	"resuming/env"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 	"resuming/service"
 )
 
@@ -133,7 +133,7 @@ func OAuthCallback() gin.HandlerFunc {
 		defer resp.Body.Close()
 
 		// parse response
-		var user_info typing.OAuthResponse
+		var user_info dto.OAuthResponse
 		if err := json.NewDecoder(resp.Body).Decode(&user_info); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user info."})
 			return
@@ -152,7 +152,7 @@ func OAuthLogin() gin.HandlerFunc {
 			return
 		}
 
-		user_detail, ok := user_info.(typing.OAuthResponse)
+		user_detail, ok := user_info.(dto.OAuthResponse)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user detail."})
 			return
@@ -318,7 +318,7 @@ func OAuthRegister() gin.HandlerFunc {
 			return
 		}
 
-		user_detail, ok := user_info.(typing.OAuthResponse)
+		user_detail, ok := user_info.(dto.OAuthResponse)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse user detail."})
 			return
@@ -327,7 +327,7 @@ func OAuthRegister() gin.HandlerFunc {
 		var user database.User
 		result := database.DB.Where("email = ?", user_detail.Email).First(user)
 		if result.Error != nil {
-			err, password := auth_oauth.GenerateRandomPassword()
+			err, password := oauth.GenerateRandomPassword()
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Failed to create user."})
 				return

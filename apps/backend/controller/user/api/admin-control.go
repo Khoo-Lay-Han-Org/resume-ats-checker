@@ -8,17 +8,17 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	typing "resuming/controller/user/dto"
+	dto "resuming/controller/user/dto"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func BanClient() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var request typing.UserControlRequest
+		var request dto.UserControlRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve request."})
 		}

@@ -5,13 +5,13 @@ import (
 	"errors"
 	"log"
 
-	"resuming/controller/user/otp"
+	otp "resuming/controller/user/otp"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func SendEmailOTP(recipient_email string) error {
-	otp_string, hashed_otp, err := user_otp.GenerateOTP()
+	otp_string, hashed_otp, err := otp.GenerateOTP()
 	if err != nil {
 		return err
 	}

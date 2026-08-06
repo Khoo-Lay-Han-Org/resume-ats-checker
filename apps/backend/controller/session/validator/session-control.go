@@ -2,13 +2,13 @@ package session_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/session/dto"
+	dto "resuming/controller/session/dto"
 )
 
-func ValidateSessionControlRequest(request typing.SessionControlRequest) (typing.SessionControlRequest, error) {
+func ValidateSessionControlRequest(request dto.SessionControlRequest) (dto.SessionControlRequest, error) {
 	v := valtra.NewCollector()
 
-	session_control_request := typing.SessionControlRequest{
+	session_control_request := dto.SessionControlRequest{
 		PublicUserId: valtra.Val(request.PublicUserId, "Public session ID").
 			Transform(valtra.TrimSpace()).
 			Validate(

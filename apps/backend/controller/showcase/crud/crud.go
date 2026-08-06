@@ -7,11 +7,11 @@ import (
 	"reflect"
 
 	valkey "github.com/valkey-io/valkey-go"
-	typing "resuming/controller/showcase/dto"
+	dto "resuming/controller/showcase/dto"
 	validator "resuming/controller/showcase/validator"
 	"resuming/database"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func InsertShowCaseRecordData(request any, public_user_id string) error {
@@ -212,10 +212,10 @@ func DeleteShowCaseRecordData(field_name string, index int, public_user_id strin
 	return nil
 }
 
-func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.EducationSection | typing.EmailSection | typing.JobExperienceSection | typing.LanguageSection | typing.NameSection | typing.PhoneNumberSection | typing.ProjectSection | typing.SkillSection | typing.SocialMediaSection](request any) (T, error) {
+func ValidateData[T dto.AddressSection | dto.CertificateSection | dto.EducationSection | dto.EmailSection | dto.JobExperienceSection | dto.LanguageSection | dto.NameSection | dto.PhoneNumberSection | dto.ProjectSection | dto.SkillSection | dto.SocialMediaSection](request any) (T, error) {
 	switch request.(type) {
-	case typing.NameSection:
-		typed_request, ok := request.(typing.NameSection)
+	case dto.NameSection:
+		typed_request, ok := request.(dto.NameSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -228,8 +228,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.EmailSection:
-		typed_request, ok := request.(typing.EmailSection)
+	case dto.EmailSection:
+		typed_request, ok := request.(dto.EmailSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -242,8 +242,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.PhoneNumberSection:
-		typed_request, ok := request.(typing.PhoneNumberSection)
+	case dto.PhoneNumberSection:
+		typed_request, ok := request.(dto.PhoneNumberSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -256,8 +256,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.AddressSection:
-		typed_request, ok := request.(typing.AddressSection)
+	case dto.AddressSection:
+		typed_request, ok := request.(dto.AddressSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -270,8 +270,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.SocialMediaSection:
-		typed_request, ok := request.(typing.SocialMediaSection)
+	case dto.SocialMediaSection:
+		typed_request, ok := request.(dto.SocialMediaSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -284,8 +284,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.JobExperienceSection:
-		typed_request, ok := request.(typing.JobExperienceSection)
+	case dto.JobExperienceSection:
+		typed_request, ok := request.(dto.JobExperienceSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -298,8 +298,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.EducationSection:
-		typed_request, ok := request.(typing.EducationSection)
+	case dto.EducationSection:
+		typed_request, ok := request.(dto.EducationSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -312,8 +312,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.SkillSection:
-		typed_request, ok := request.(typing.SkillSection)
+	case dto.SkillSection:
+		typed_request, ok := request.(dto.SkillSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -326,8 +326,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.CertificateSection:
-		typed_request, ok := request.(typing.CertificateSection)
+	case dto.CertificateSection:
+		typed_request, ok := request.(dto.CertificateSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -340,8 +340,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.LanguageSection:
-		typed_request, ok := request.(typing.LanguageSection)
+	case dto.LanguageSection:
+		typed_request, ok := request.(dto.LanguageSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")
@@ -354,8 +354,8 @@ func ValidateData[T typing.AddressSection | typing.CertificateSection | typing.E
 		}
 
 		return any(validated_request).(T), nil
-	case typing.ProjectSection:
-		typed_request, ok := request.(typing.ProjectSection)
+	case dto.ProjectSection:
+		typed_request, ok := request.(dto.ProjectSection)
 		if !ok {
 			var zero T
 			return zero, errors.New("failed to process data")

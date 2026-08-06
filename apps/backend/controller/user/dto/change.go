@@ -12,6 +12,10 @@ type ChangeEmailRequest struct {
 	Email string `json:"email" binding:"required"`
 }
 
+type ChangePhoneNumberRequest struct {
+	PhoneNumber string `json:"phone_number" binding:"required"`
+}
+
 type ChangePasswordRequest struct {
 	Password string `json:"password" binding:"required"`
 }

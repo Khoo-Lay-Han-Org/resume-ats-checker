@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 		infraAvailable = true
 	}
 
-	router = api.APIConnect()
+	router = controller.APIConnect()
 
 	os.Exit(m.Run())
 }

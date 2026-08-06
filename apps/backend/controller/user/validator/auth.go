@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/user/dto"
+	dto "resuming/controller/user/dto"
 )
 
-func ValidateRegistration(request typing.Register) (typing.Register, error) {
+func ValidateRegistration(request dto.Register) (dto.Register, error) {
 	v := valtra.NewCollector()
 
-	registration := typing.Register{
+	registration := dto.Register{
 		Username: valtra.Val(request.Username, "Username").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -51,16 +51,16 @@ func ValidateRegistration(request typing.Register) (typing.Register, error) {
 	}
 
 	if !v.IsValid() {
-		return typing.Register{}, v.Errors()[0]
+		return dto.Register{}, v.Errors()[0]
 	}
 
 	return registration, nil
 }
 
-func ValidateLogin(request typing.Login) (typing.Login, error) {
+func ValidateLogin(request dto.Login) (dto.Login, error) {
 	v := valtra.NewCollector()
 
-	login := typing.Login{
+	login := dto.Login{
 		Email: valtra.Val(request.Email).
 			Transform(valtra.Lowercase(), valtra.TrimSpace()).
 			Validate(
@@ -75,7 +75,7 @@ func ValidateLogin(request typing.Login) (typing.Login, error) {
 	}
 
 	if !v.IsValid() {
-		return typing.Login{}, v.Errors()[0]
+		return dto.Login{}, v.Errors()[0]
 	}
 
 	return login, nil

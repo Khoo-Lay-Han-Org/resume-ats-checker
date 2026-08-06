@@ -8,18 +8,18 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	typing "resuming/controller/user/dto"
-	administrator_invite "resuming/controller/user/invite"
+	dto "resuming/controller/user/dto"
+	invite "resuming/controller/user/invite"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func RemoveAdmin() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var request typing.UserControlRequest
+		var request dto.UserControlRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve request."})
 		}
@@ -105,7 +105,7 @@ func ChangeAdminAccessibility() echo.HandlerFunc {
 
 func InvitationToBecomeAdmin() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var request typing.UserControlRequest
+		var request dto.UserControlRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve request."})
 		}
@@ -169,7 +169,7 @@ func InvitationToBecomeAdmin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store invite token."})
 		}
 
-		if err := administrator_invite.EmailInvitationToBecomeAdmin(target_user.Email, token); err != nil {
+		if err := invite.EmailInvitationToBecomeAdmin(target_user.Email, token); err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send email invitation."})
 		}
 

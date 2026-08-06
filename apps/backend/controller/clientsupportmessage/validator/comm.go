@@ -2,13 +2,13 @@ package clientsupportmessage_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/clientsupportmessage/dto"
+	dto "resuming/controller/clientsupportmessage/dto"
 )
 
-func ValidateClientCommunicationReplyRequest(request typing.ClientCommunicationReplyRequest) (typing.ClientCommunicationReplyRequest, error) {
+func ValidateClientCommunicationReplyRequest(request dto.ClientCommunicationReplyRequest) (dto.ClientCommunicationReplyRequest, error) {
 	v := valtra.NewCollector()
 
-	client_communication_reply_request := typing.ClientCommunicationReplyRequest{
+	client_communication_reply_request := dto.ClientCommunicationReplyRequest{
 		PublicId: valtra.Val(request.PublicId, "Public ID").
 			Transform(valtra.TrimSpace()).
 			Validate(
@@ -31,10 +31,10 @@ func ValidateClientCommunicationReplyRequest(request typing.ClientCommunicationR
 	return client_communication_reply_request, nil
 }
 
-func ValidateClientCommunicateRequest(request typing.ClientCommunicateRequest) (typing.ClientCommunicateRequest, error) {
+func ValidateClientCommunicateRequest(request dto.ClientCommunicateRequest) (dto.ClientCommunicateRequest, error) {
 	v := valtra.NewCollector()
 
-	client_communicate_request := typing.ClientCommunicateRequest{
+	client_communicate_request := dto.ClientCommunicateRequest{
 		Type: valtra.Val(request.Type, "Message type").
 			Transform(valtra.TrimSpace()).
 			Validate(

@@ -3,7 +3,7 @@ package service
 import (
 	twilio "github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func SendSMS(receipient_phone_number, subject, body string) error {

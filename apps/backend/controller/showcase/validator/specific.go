@@ -2,13 +2,13 @@ package showcase_validator
 
 import (
 	"github.com/bobch27/valtra-go"
-	typing "resuming/controller/showcase/dto"
+	dto "resuming/controller/showcase/dto"
 )
 
-func ValidateSpecificPortfolioDataRequest(request typing.SpecificPortoflioDataRequest) (typing.SpecificPortoflioDataRequest, error) {
+func ValidateSpecificPortfolioDataRequest(request dto.SpecificPortoflioDataRequest) (dto.SpecificPortoflioDataRequest, error) {
 	v := valtra.NewCollector()
 
-	specific_portfolio_request := typing.SpecificPortoflioDataRequest{
+	specific_portfolio_request := dto.SpecificPortoflioDataRequest{
 		SectionTitle: valtra.Val(request.SectionTitle, "Section title").
 			Transform(valtra.TrimSpace(), valtra.Lowercase()).
 			Validate(

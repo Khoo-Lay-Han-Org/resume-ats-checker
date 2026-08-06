@@ -1,4 +1,4 @@
-package api
+package controller
 
 // @title           Resume Builder API
 // @version         1.0

@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	typing "resuming/controller/clientreportlog/dto"
+	dto "resuming/controller/clientreportlog/dto"
 	validator "resuming/controller/clientreportlog/validator"
 	"resuming/service"
 )
@@ -20,7 +20,7 @@ func ClientReportOtherClient() echo.HandlerFunc {
 
 		reporting_public_user_id := retrieved_reporting_public_user_id.(string)
 
-		var request typing.ClientReportRequest
+		var request dto.ClientReportRequest
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to retrieve request."})
 		}

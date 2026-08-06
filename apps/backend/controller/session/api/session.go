@@ -9,9 +9,9 @@ import (
 	jose "github.com/go-jose/go-jose/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/segmentio/ksuid"
-	auth_find "resuming/controller/user/find"
+	find "resuming/controller/user/find"
 	"resuming/service"
-	systemconfig "resuming/system-config"
+	"resuming/systemconfig"
 )
 
 func SetSession() echo.HandlerFunc {
@@ -23,7 +23,7 @@ func SetSession() echo.HandlerFunc {
 
 		private_id := retrieved_data.(int32)
 
-		user_pointer, err := auth_find.FindUser(private_id)
+		user_pointer, err := find.FindUser(private_id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "User not found."})
 		}
