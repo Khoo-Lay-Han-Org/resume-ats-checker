@@ -1067,7 +1067,7 @@ paths:
       summary: Complete login
       tags:
       - Authentication
-  /prepare-change-email:
+  /prepare-change-email/{2fa-type}:
     post:
       consumes:
       - application/json
@@ -1113,7 +1113,7 @@ paths:
       summary: Prepare email change
       tags:
       - Setting
-  /prepare-change-password:
+  /prepare-change-password/{2fa-type}:
     post:
       consumes:
       - application/json
@@ -1155,7 +1155,7 @@ paths:
       summary: Prepare password change
       tags:
       - Setting
-  /prepare-delete-account:
+  /prepare-delete-account/{2fa-type}:
     post:
       description: Sends OTP to user's email for account deletion verification
       produces:
@@ -1180,7 +1180,7 @@ paths:
       summary: Prepare account deletion
       tags:
       - Setting
-  /prepare-login:
+  /prepare-login/{2fa-type}:
     post:
       consumes:
       - application/json
@@ -1218,7 +1218,7 @@ paths:
       summary: Prepare login
       tags:
       - Authentication
-  /prepare-registeration:
+  /prepare-registeration/{2fa-type}:
     post:
       consumes:
       - application/json
@@ -1252,18 +1252,12 @@ paths:
       summary: Prepare registration
       tags:
       - Authentication
-  /register/{type-of-user}:
+  /register:
     post:
       consumes:
       - application/json
-      description: 'Verifies OTP and creates user account (path param: type-of-user
-        = "client" or "admin")'
+      description: Verifies OTP and creates a client user account
       parameters:
-      - description: User type (client or admin)
-        in: path
-        name: type-of-user
-        required: true
-        type: string
       - description: OTP verification
         in: body
         name: request
@@ -1293,7 +1287,45 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.ErrorResponse'
-      summary: Complete registration
+      summary: Complete client registration
+      tags:
+      - Authentication
+  /register-admin:
+    post:
+      consumes:
+      - application/json
+      description: Verifies OTP and creates the super admin user account
+      parameters:
+      - description: OTP verification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Complete admin registration
       tags:
       - Authentication
   /remove_admin:

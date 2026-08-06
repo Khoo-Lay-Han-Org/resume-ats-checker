@@ -60,7 +60,7 @@ func TestPrepareRegistration_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-registeration", tt.body)
+			resp, err := makePostRequest("/prepare-registeration/email", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -78,14 +78,19 @@ func TestRegisterFlow_RequiresCookie(t *testing.T) {
 		path string
 	}{
 		{
-			name: "invalid type-of-user",
+			name: "client register without cookie",
 			body: map[string]string{"otp": "123456"},
-			path: "/register/superadmin",
+			path: "/register",
+		},
+		{
+			name: "admin register without cookie",
+			body: map[string]string{"otp": "123456"},
+			path: "/register-admin",
 		},
 		{
 			name: "malformed JSON",
 			body: "not-json",
-			path: "/register/client",
+			path: "/register",
 		},
 	}
 
@@ -132,7 +137,7 @@ func TestPrepareLogin_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-login", tt.body)
+			resp, err := makePostRequest("/prepare-login/email", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -159,7 +164,7 @@ func TestAuthSuccessFlow(t *testing.T) {
 	email := fmt.Sprintf("testuser_%d@example.com", epochMs())
 	username := fmt.Sprintf("testuser%d", epochMs())
 
-	resp, err := makePostRequest("/prepare-registeration", map[string]string{
+	resp, err := makePostRequest("/prepare-registeration/email", map[string]string{
 		"username":    username,
 		"displayname": "Test User",
 		"email":       email,
@@ -180,7 +185,7 @@ func TestDuplicateRegister(t *testing.T) {
 	username := fmt.Sprintf("dupe%d", epochMs())
 
 	for i := 0; i < 2; i++ {
-		resp, err := makePostRequest("/prepare-registeration", map[string]string{
+		resp, err := makePostRequest("/prepare-registeration/email", map[string]string{
 			"username":    username,
 			"displayname": "Test User",
 			"email":       email,

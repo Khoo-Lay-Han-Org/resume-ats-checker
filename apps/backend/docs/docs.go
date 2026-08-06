@@ -1274,7 +1274,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/prepare-change-email": {
+        "/prepare-change-email/{2fa-type}": {
             "post": {
                 "description": "Validates new email and sends OTP to current email for verification",
                 "consumes": [
@@ -1344,7 +1344,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/prepare-change-password": {
+        "/prepare-change-password/{2fa-type}": {
             "post": {
                 "description": "Sends OTP to user's email for password change verification",
                 "consumes": [
@@ -1408,7 +1408,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/prepare-delete-account": {
+        "/prepare-delete-account/{2fa-type}": {
             "post": {
                 "description": "Sends OTP to user's email for account deletion verification",
                 "produces": [
@@ -1446,7 +1446,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/prepare-login": {
+        "/prepare-login/{2fa-type}": {
             "post": {
                 "description": "Validates login credentials and sends OTP to user's email",
                 "consumes": [
@@ -1504,7 +1504,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/prepare-registeration": {
+        "/prepare-registeration/{2fa-type}": {
             "post": {
                 "description": "Validates registration data and sends OTP to user's email",
                 "consumes": [
@@ -1556,9 +1556,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/register/{type-of-user}": {
+        "/register": {
             "post": {
-                "description": "Verifies OTP and creates user account (path param: type-of-user = \"client\" or \"admin\")",
+                "description": "Verifies OTP and creates a client user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -1568,15 +1568,8 @@ const docTemplate = `{
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Complete registration",
+                "summary": "Complete client registration",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User type (client or admin)",
-                        "name": "type-of-user",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "OTP verification",
                         "name": "request",
@@ -1608,6 +1601,64 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register-admin": {
+            "post": {
+                "description": "Verifies OTP and creates the super admin user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Complete admin registration",
+                "parameters": [
+                    {
+                        "description": "OTP verification",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.OTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/controller.ErrorResponse"
                         }

@@ -10,9 +10,10 @@ func APIConnect() *echo.Echo {
 	router := echo.New()
 	router.Use(echomw.Logger(), echomw.Recover())
 
-	router.POST("/prepare-registeration", PrepareRegistrationFlow)
-	router.POST("/register/:type-of-user", RegisterFlow)
-	router.POST("/prepare-login", PrepareLoginFlow)
+	router.POST("/prepare-registeration/:2fa-type", PrepareRegistrationFlow)
+	router.POST("/register", RegisterUserFlow)
+	router.POST("/register-admin", RegisterAdminFlow)
+	router.POST("/prepare-login/:2fa-type", PrepareLoginFlow)
 	router.POST("/login", LoginFlow)
 	router.GET("/accept-become-admin/:token", AcceptToBecomeAdminFlow)
 
@@ -57,11 +58,11 @@ func APIConnect() *echo.Echo {
 
 		authed.POST("/change-username", ChangeUsernameFlow)
 		authed.POST("/change-displayname", ChangeDisplaynameFlow)
-		authed.POST("/prepare-change-email", PrepareEmailChangeFlow)
+		authed.POST("/prepare-change-email/:2fa-type", PrepareEmailChangeFlow)
 		authed.POST("/change-email", ChangeEmailFlow)
-		authed.POST("/prepare-change-password", PreparePasswordChangeFlow)
+		authed.POST("/prepare-change-password/:2fa-type", PreparePasswordChangeFlow)
 		authed.POST("/change-password", ChangePasswordFlow)
-		authed.POST("/prepare-delete-account", PrepareDeleteAccountFlow)
+		authed.POST("/prepare-delete-account/:2fa-type", PrepareDeleteAccountFlow)
 		authed.POST("/delete-account", DeleteAccountFlow)
 
 		authed.POST("/client_comm_to_admin", ClientCommunicateToAdminFlow)

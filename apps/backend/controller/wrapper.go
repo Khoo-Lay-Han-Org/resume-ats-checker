@@ -32,8 +32,12 @@ func PrepareRegistrationFlow(c echo.Context) error {
 	return user_api.PrepareRegistration()(c)
 }
 
-func RegisterFlow(c echo.Context) error {
-	return user_api.Register()(c)
+func RegisterUserFlow(c echo.Context) error {
+	return user_api.RegisterUser()(c)
+}
+
+func RegisterAdminFlow(c echo.Context) error {
+	return user_api.RegisterAdmin()(c)
 }
 
 func PrepareLoginFlow(c echo.Context) error {
@@ -56,7 +60,7 @@ func LoginFlow(c echo.Context) error {
 							public_user_id.(string),
 							session_key.(string),
 							signing_key.(string),
-							int32(private_id.(int)),
+							int32(private_id.(int32)),
 							user.(*sqlc.User),
 						); err != nil {
 							log.Printf("Failed to sync login data: %v", err)

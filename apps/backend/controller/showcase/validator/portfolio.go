@@ -1,394 +1,94 @@
 package showcase_validator
 
 import (
-	"context"
-	"fmt"
-	"net"
-	"strings"
-	"time"
-
-	"github.com/bobch27/valtra-go"
 	dto "resuming/controller/showcase/dto"
+	"resuming/controller/validation"
 )
 
 func ValidateNamePortfolioData(request dto.NameSection) (dto.NameSection, error) {
-	v := valtra.NewCollector()
-
-	name := dto.NameSection{
-		Name: valtra.Val(request.Name, "Name").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Name is required."),
-				valtra.MinLengthString(3, "Name must be at least 3 characters"),
-				valtra.MaxLengthString(50, "Name must be at most 50 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.NameSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.NameSection{}, v.Errors()[0]
-	}
-
-	return name, nil
+	return cleaned.(dto.NameSection), nil
 }
 
 func ValidateEmailPortfolioData(request dto.EmailSection) (dto.EmailSection, error) {
-	v := valtra.NewCollector()
-
-	email := dto.EmailSection{
-		Email: valtra.Val(request.Email, "Email").
-			Transform(valtra.TrimSpace(), valtra.Lowercase()).
-			Validate(
-				valtra.Required[string]("Email is required."),
-				valtra.MinLengthString(4, "Email must be at least 4 characters"),
-				valtra.MaxLengthString(30, "Email must be at most 30 characters"),
-				valtra.Email("Email must be in correct email format"),
-				func(v valtra.Value[string]) error {
-					if !validateEmailMX(v.Value()) {
-						return fmt.Errorf("Email domain must have valid MX or A records")
-					}
-					return nil
-				},
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.EmailSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.EmailSection{}, v.Errors()[0]
-	}
-
-	return email, nil
+	return cleaned.(dto.EmailSection), nil
 }
 
 func ValidatePhoneNumberPortfolioData(request dto.PhoneNumberSection) (dto.PhoneNumberSection, error) {
-	v := valtra.NewCollector()
-
-	phone_number := dto.PhoneNumberSection{
-		PhoneNumber: valtra.Val(request.PhoneNumber, "Phone number").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Phone number is required."),
-				valtra.MinLengthString(3, "Phone number must be at least 3 characters"),
-				valtra.MaxLengthString(17, "Phone number must be at most 17 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.PhoneNumberSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.PhoneNumberSection{}, v.Errors()[0]
-	}
-
-	return phone_number, nil
+	return cleaned.(dto.PhoneNumberSection), nil
 }
 
 func ValidateAddressPortfolioData(request dto.AddressSection) (dto.AddressSection, error) {
-	v := valtra.NewCollector()
-
-	address := dto.AddressSection{
-		Address: valtra.Val(request.Address, "Address").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Address is required."),
-				valtra.MinLengthString(3, "Address must be at least 3 characters"),
-				valtra.MaxLengthString(300, "Address must be at most 300 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.AddressSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.AddressSection{}, v.Errors()[0]
-	}
-
-	return address, nil
+	return cleaned.(dto.AddressSection), nil
 }
 
 func ValidateSocialMediaPortfolioData(request dto.SocialMediaSection) (dto.SocialMediaSection, error) {
-	v := valtra.NewCollector()
-
-	social_media := dto.SocialMediaSection{
-		SocialMedia: valtra.Val(request.SocialMedia, "Social media").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Social media is required."),
-				valtra.MinLengthString(3, "Social media must be at least 3 characters"),
-				valtra.MaxLengthString(100, "Social media must be at most 100 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.SocialMediaSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.SocialMediaSection{}, v.Errors()[0]
-	}
-
-	return social_media, nil
+	return cleaned.(dto.SocialMediaSection), nil
 }
 
 func ValidateJobExperiencePortfolioData(request dto.JobExperienceSection) (dto.JobExperienceSection, error) {
-	v := valtra.NewCollector()
-
-	job_experience := dto.JobExperienceSection{
-		CompanyName: valtra.Val(request.CompanyName, "Company name").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Company name is required."),
-				valtra.MinLengthString(3, "Company name must be at least 3 characters"),
-				valtra.MaxLengthString(100, "Company name must be at most 100 characters"),
-			).
-			Collect(v),
-
-		JobTitle: valtra.Val(request.JobTitle, "Job title").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Job title is required."),
-				valtra.MinLengthString(3, "Job title must be at least 3 characters"),
-				valtra.MaxLengthString(100, "Job title must be at most 100 characters"),
-			).
-			Collect(v),
-
-		JobDescription: valtra.Val(request.JobDescription, "Job description").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Job description is required."),
-				valtra.MinLengthString(3, "Job description must be at least 3 characters"),
-				valtra.MaxLengthString(1000, "Job description must be at most 1000 characters"),
-			).
-			Collect(v),
-
-		StartDate: valtra.Val(request.StartDate, "Start date").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Start date is required."),
-				valtra.MinLengthString(3, "Start date must be at least 3 characters"),
-				valtra.MaxLengthString(50, "Start date must be at most 50 characters"),
-			).
-			Collect(v),
-
-		EndDate: valtra.Val(request.EndDate, "End date").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("End date is required."),
-				valtra.MinLengthString(3, "End date must be at least 3 characters"),
-				valtra.MaxLengthString(50, "End date must be at most 50 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.JobExperienceSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.JobExperienceSection{}, v.Errors()[0]
-	}
-
-	return job_experience, nil
+	return cleaned.(dto.JobExperienceSection), nil
 }
 
 func ValidateEducationPortfolioData(request dto.EducationSection) (dto.EducationSection, error) {
-	v := valtra.NewCollector()
-
-	education := dto.EducationSection{
-		InstitutionName: valtra.Val(request.InstitutionName, "Institution name").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Institution name is required."),
-				valtra.MinLengthString(3, "Institution name must be at least 3 characters"),
-				valtra.MaxLengthString(100, "Institution name must be at most 100 characters"),
-			).
-			Collect(v),
-
-		DegreeType: valtra.Val(request.DegreeType, "Degree type").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Degree type is required."),
-				valtra.MinLengthString(3, "Degree type must be at least 3 characters"),
-				valtra.MaxLengthString(100, "Degree type must be at most 100 characters"),
-			).
-			Collect(v),
-
-		Score: valtra.Val(request.Score, "Score").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.MinLengthString(3, "Score must be at least 3 characters"),
-				valtra.MaxLengthString(20, "Score must be at most 20 characters"),
-			).
-			Collect(v),
-
-		StartDate: valtra.Val(request.StartDate, "Start date").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Start date is required."),
-				valtra.MinLengthString(3, "Start date must be at least 3 characters"),
-				valtra.MaxLengthString(50, "Start date must be at most 50 characters"),
-			).
-			Collect(v),
-
-		EndDate: valtra.Val(request.EndDate, "End date").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("End date is required."),
-				valtra.MinLengthString(3, "End date must be at least 3 characters"),
-				valtra.MaxLengthString(50, "End date must be at most 50 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.EducationSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.EducationSection{}, v.Errors()[0]
-	}
-
-	return education, nil
+	return cleaned.(dto.EducationSection), nil
 }
 
 func ValidateSkillPortfolioData(request dto.SkillSection) (dto.SkillSection, error) {
-	v := valtra.NewCollector()
-
-	skill := dto.SkillSection{
-		Skill: valtra.Val(request.Skill, "Skill").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Skill is required."),
-				valtra.MinLengthString(3, "Skill must be at least 3 characters"),
-				valtra.MaxLengthString(30, "Skill must be at most 30 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.SkillSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.SkillSection{}, v.Errors()[0]
-	}
-
-	return skill, nil
+	return cleaned.(dto.SkillSection), nil
 }
 
 func ValidateLanguagePortfolioData(request dto.LanguageSection) (dto.LanguageSection, error) {
-	v := valtra.NewCollector()
-
-	language := dto.LanguageSection{
-		Language: valtra.Val(request.Language, "Language").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Language is required."),
-				valtra.MinLengthString(3, "Language must be at least 3 characters"),
-				valtra.MaxLengthString(30, "Language must be at most 30 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.LanguageSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.LanguageSection{}, v.Errors()[0]
-	}
-
-	return language, nil
+	return cleaned.(dto.LanguageSection), nil
 }
 
 func ValidateCertificatePortfolioData(request dto.CertificateSection) (dto.CertificateSection, error) {
-	v := valtra.NewCollector()
-
-	certificate := dto.CertificateSection{
-		Certificate: valtra.Val(request.Certificate, "Certificate").
-			Transform(valtra.TrimSpace(), valtra.Uppercase()).
-			Validate(
-				valtra.Required[string]("Certificate is required."),
-				valtra.MinLengthString(3, "Certificate must be at least 3 characters"),
-				valtra.MaxLengthString(30, "Certificate must be at most 30 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.CertificateSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.CertificateSection{}, v.Errors()[0]
-	}
-
-	return certificate, nil
+	return cleaned.(dto.CertificateSection), nil
 }
 
 func ValidateProjectPortfolioData(request dto.ProjectSection) (dto.ProjectSection, error) {
-	v := valtra.NewCollector()
-
-	project := dto.ProjectSection{
-		ProjectTitle: valtra.Val(request.ProjectTitle, "Project title").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Project title is required."),
-				valtra.MinLengthString(3, "Project title must be at least 3 characters"),
-				valtra.MaxLengthString(30, "Project title must be at most 30 characters"),
-			).
-			Collect(v),
-
-		ProjectDescription: valtra.Val(request.ProjectDescription, "Project description").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Project description is required."),
-				valtra.MinLengthString(3, "Project description must be at least 3 characters"),
-				valtra.MaxLengthString(1000, "Project description must be at most 1000 characters"),
-			).
-			Collect(v),
-
-		StartDate: valtra.Val(request.StartDate, "Start date").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("Start date is required."),
-				valtra.MinLengthString(3, "Start date must be at least 3 characters"),
-				valtra.MaxLengthString(50, "Start date must be at most 50 characters"),
-			).
-			Collect(v),
-
-		EndDate: valtra.Val(request.EndDate, "End date").
-			Transform(valtra.TrimSpace()).
-			Validate(
-				valtra.Required[string]("End date is required."),
-				valtra.MinLengthString(3, "End date must be at least 3 characters"),
-				valtra.MaxLengthString(50, "End date must be at most 50 characters"),
-			).
-			Collect(v),
-
-		Index: request.Index,
+	cleaned, err := validation.TransformAndValidate(request)
+	if err != nil {
+		return dto.ProjectSection{}, err
 	}
-
-	if !v.IsValid() {
-		return dto.ProjectSection{}, v.Errors()[0]
-	}
-
-	return project, nil
-}
-
-func validateEmailMX(email string) bool {
-	parts := strings.Split(email, "@")
-	if len(parts) != 2 {
-		return false
-	}
-	domain := parts[1]
-
-	resolver := net.Resolver{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	mx, err := resolver.LookupMX(ctx, domain)
-	if err == nil && len(mx) > 0 {
-		return true
-	}
-
-	ips, err := resolver.LookupIPAddr(ctx, domain)
-	if err == nil && len(ips) > 0 {
-		return true
-	}
-
-	return false
+	return cleaned.(dto.ProjectSection), nil
 }

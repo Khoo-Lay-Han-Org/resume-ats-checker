@@ -8,6 +8,7 @@ import (
 	dto "resuming/controller/user/dto"
 	email "resuming/controller/user/email"
 	otp "resuming/controller/user/otp"
+	sms "resuming/controller/user/sms"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
@@ -17,6 +18,14 @@ import (
 
 func PrepareRegistration() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		factor, ok := supportedTwoFactorType(c)
+		if !ok {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
+		}
+		if factor != two_factor_email {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Registration only supports email 2FA."})
+		}
+
 		var request dto.Register
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
@@ -60,6 +69,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
+		setTwoFactorCookie(c, two_factor_email)
 		c.SetCookie(&http.Cookie{
 			Name:     "email_for_otp",
 			Value:    validated_request.Email,
@@ -74,10 +84,8 @@ func PrepareRegistration() echo.HandlerFunc {
 	}
 }
 
-func Register() echo.HandlerFunc {
+func RegisterUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		type_of_user := c.Param("type-of-user")
-
 		cookie, err := c.Cookie("email_for_otp")
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve cookie."})
@@ -101,47 +109,23 @@ func Register() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user detail."})
 		}
 
-		usernameMsg := user_details["username"]
-		displaynameMsg := user_details["displayname"]
-		passwordMsg := user_details["password"]
+		username_msg := user_details["username"]
+		displayname_msg := user_details["displayname"]
+		password_msg := user_details["password"]
 
-		username, err := (&usernameMsg).ToString()
+		username, err := (&username_msg).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse username."})
 		}
 
-		displayname, err := (&displaynameMsg).ToString()
+		displayname, err := (&displayname_msg).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse displayname."})
 		}
 
-		hashed_password, err := (&passwordMsg).ToString()
+		hashed_password, err := (&password_msg).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse password."})
-		}
-
-		var user_type sqlc.UserType
-		switch type_of_user {
-		case "client":
-			user_type = sqlc.UserTypeClient
-		case "admin":
-			if email != systemconfig.Email {
-				return c.JSON(http.StatusForbidden, echo.Map{"message": "Only the system admin can register as admin."})
-			}
-			count, err := database.Queries.CountUsersByType(c.Request().Context(), sqlc.UserTypeAdmin)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to check admin count."})
-			}
-			superAdminCount, err := database.Queries.CountUsersByType(c.Request().Context(), sqlc.UserTypeSuperAdmin)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to check admin count."})
-			}
-			if count+superAdminCount > 0 {
-				return c.JSON(http.StatusForbidden, echo.Map{"message": "Admin already registered."})
-			}
-			user_type = sqlc.UserTypeSuperAdmin
-		default:
-			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid account type."})
 		}
 
 		_, err = database.Queries.CreateUser(c.Request().Context(), sqlc.CreateUserParams{
@@ -149,7 +133,82 @@ func Register() echo.HandlerFunc {
 			Email:       email,
 			Password:    []byte(hashed_password),
 			Displayname: displayname,
-			UserType:    user_type,
+			UserType:    sqlc.UserTypeClient,
+		})
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to create user."})
+		}
+
+		return nil
+	}
+}
+
+func RegisterAdmin() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cookie, err := c.Cookie("email_for_otp")
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve cookie."})
+		}
+		email := cookie.Value
+
+		var request dto.OTP
+		if err := c.Bind(&request); err != nil {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
+		}
+
+		err = otp.CheckEmailOTP(email, request.OTP)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
+		}
+
+		if email != systemconfig.Email {
+			return c.JSON(http.StatusForbidden, echo.Map{"message": "Only the system admin can register as admin."})
+		}
+
+		count, err := database.Queries.CountUsersByType(c.Request().Context(), sqlc.UserTypeAdmin)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to check admin count."})
+		}
+		super_admin_count, err := database.Queries.CountUsersByType(c.Request().Context(), sqlc.UserTypeSuperAdmin)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to check admin count."})
+		}
+		if count+super_admin_count > 0 {
+			return c.JSON(http.StatusForbidden, echo.Map{"message": "Admin already registered."})
+		}
+
+		user_details, err := service.Valkey.Do(c.Request().Context(),
+			service.Valkey.B().Hgetall().Key(email+":session").Build()).
+			ToMap()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user detail."})
+		}
+
+		username_msg := user_details["username"]
+		displayname_msg := user_details["displayname"]
+		password_msg := user_details["password"]
+
+		username, err := (&username_msg).ToString()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse username."})
+		}
+
+		displayname, err := (&displayname_msg).ToString()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse displayname."})
+		}
+
+		hashed_password, err := (&password_msg).ToString()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse password."})
+		}
+
+		_, err = database.Queries.CreateUser(c.Request().Context(), sqlc.CreateUserParams{
+			Username:    username,
+			Email:       email,
+			Password:    []byte(hashed_password),
+			Displayname: displayname,
+			UserType:    sqlc.UserTypeSuperAdmin,
 		})
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to create user."})
@@ -161,6 +220,11 @@ func Register() echo.HandlerFunc {
 
 func PrepareLogin() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		factor, ok := supportedTwoFactorType(c)
+		if !ok {
+			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
+		}
+
 		var request dto.Login
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
@@ -181,11 +245,33 @@ func PrepareLogin() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid password."})
 		}
 
+		if factor == two_factor_sms {
+			if user.PhoneNumber == "" {
+				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "No phone number on file."})
+			}
+			err = sms.SendSMSOTP(user.PhoneNumber)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
+			}
+			setTwoFactorCookie(c, two_factor_sms)
+			c.SetCookie(&http.Cookie{
+				Name:     "email_for_otp",
+				Value:    validated_request.Email,
+				MaxAge:   int(systemconfig.OtpExpiryDuration.Seconds()),
+				Path:     "/",
+				Domain:   "",
+				Secure:   systemconfig.ApplicationHosted,
+				HttpOnly: true,
+			})
+			return nil
+		}
+
 		err = email.SendEmailOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
+		setTwoFactorCookie(c, two_factor_email)
 		c.SetCookie(&http.Cookie{
 			Name:     "email_for_otp",
 			Value:    validated_request.Email,
@@ -208,29 +294,29 @@ func Login() echo.HandlerFunc {
 		}
 		email := cookie.Value
 
+		factor, err := twoFactorFromCookie(c)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve 2FA type."})
+		}
+
 		var request dto.OTP
 		if err := c.Bind(&request); err != nil {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
 		ctx := c.Request().Context()
-		value, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(email+":otp").Build()).ToString()
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process OTP."})
-		}
-		err = bcrypt.CompareHashAndPassword([]byte(value), []byte(request.OTP))
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid OTP"})
-		}
-
-		err = service.Valkey.Do(ctx, service.Valkey.B().Del().Key(email+":otp").Build()).Error()
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process OTP"})
-		}
-
 		user, err := database.Queries.FindUserByEmail(ctx, email)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve user."})
+		}
+
+		if factor == two_factor_sms {
+			err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
+		} else {
+			err = otp.CheckEmailOTP(email, request.OTP)
+		}
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid OTP"})
 		}
 
 		c.Set("private_id", user.ID)

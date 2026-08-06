@@ -1268,7 +1268,7 @@
                 }
             }
         },
-        "/prepare-change-email": {
+        "/prepare-change-email/{2fa-type}": {
             "post": {
                 "description": "Validates new email and sends OTP to current email for verification",
                 "consumes": [
@@ -1338,7 +1338,7 @@
                 }
             }
         },
-        "/prepare-change-password": {
+        "/prepare-change-password/{2fa-type}": {
             "post": {
                 "description": "Sends OTP to user's email for password change verification",
                 "consumes": [
@@ -1402,7 +1402,7 @@
                 }
             }
         },
-        "/prepare-delete-account": {
+        "/prepare-delete-account/{2fa-type}": {
             "post": {
                 "description": "Sends OTP to user's email for account deletion verification",
                 "produces": [
@@ -1440,7 +1440,7 @@
                 }
             }
         },
-        "/prepare-login": {
+        "/prepare-login/{2fa-type}": {
             "post": {
                 "description": "Validates login credentials and sends OTP to user's email",
                 "consumes": [
@@ -1498,7 +1498,7 @@
                 }
             }
         },
-        "/prepare-registeration": {
+        "/prepare-registeration/{2fa-type}": {
             "post": {
                 "description": "Validates registration data and sends OTP to user's email",
                 "consumes": [
@@ -1550,9 +1550,9 @@
                 }
             }
         },
-        "/register/{type-of-user}": {
+        "/register": {
             "post": {
-                "description": "Verifies OTP and creates user account (path param: type-of-user = \"client\" or \"admin\")",
+                "description": "Verifies OTP and creates a client user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -1562,15 +1562,8 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Complete registration",
+                "summary": "Complete client registration",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User type (client or admin)",
-                        "name": "type-of-user",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "OTP verification",
                         "name": "request",
@@ -1602,6 +1595,64 @@
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register-admin": {
+            "post": {
+                "description": "Verifies OTP and creates the super admin user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Complete admin registration",
+                "parameters": [
+                    {
+                        "description": "OTP verification",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.OTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/api.ErrorResponse"
                         }
@@ -1999,7 +2050,7 @@
         }
     },
     "definitions": {
-        "api.ATSScoreResponse": {
+        "controller.ATSScoreResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -2010,7 +2061,7 @@
                 }
             }
         },
-        "api.ChangeDisplaynameRequest": {
+        "controller.ChangeDisplaynameRequest": {
             "type": "object",
             "required": [
                 "displayname"
@@ -2021,7 +2072,7 @@
                 }
             }
         },
-        "api.ChangeEmailRequest": {
+        "controller.ChangeEmailRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -2032,7 +2083,7 @@
                 }
             }
         },
-        "api.ChangePasswordRequest": {
+        "controller.ChangePasswordRequest": {
             "type": "object",
             "required": [
                 "password"
@@ -2043,7 +2094,7 @@
                 }
             }
         },
-        "api.ChangeUsernameRequest": {
+        "controller.ChangeUsernameRequest": {
             "type": "object",
             "required": [
                 "username"
@@ -2054,7 +2105,7 @@
                 }
             }
         },
-        "api.ChoosePortfolioRequest": {
+        "controller.ChoosePortfolioRequest": {
             "type": "object",
             "required": [
                 "template_id"
@@ -2065,7 +2116,7 @@
                 }
             }
         },
-        "api.ChooseResumeRequest": {
+        "controller.ChooseResumeRequest": {
             "type": "object",
             "required": [
                 "template_id"
@@ -2076,7 +2127,7 @@
                 }
             }
         },
-        "api.ClientCommunicateRequest": {
+        "controller.ClientCommunicateRequest": {
             "type": "object",
             "required": [
                 "message",
@@ -2091,7 +2142,7 @@
                 }
             }
         },
-        "api.ClientCommunicationReplyRequest": {
+        "controller.ClientCommunicationReplyRequest": {
             "type": "object",
             "required": [
                 "message",
@@ -2106,7 +2157,7 @@
                 }
             }
         },
-        "api.ClientReportRequest": {
+        "controller.ClientReportRequest": {
             "type": "object",
             "required": [
                 "report type",
@@ -2121,7 +2172,7 @@
                 }
             }
         },
-        "api.ErrorResponse": {
+        "controller.ErrorResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -2129,7 +2180,7 @@
                 }
             }
         },
-        "api.LoginRequest": {
+        "controller.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -2144,7 +2195,7 @@
                 }
             }
         },
-        "api.OTPRequest": {
+        "controller.OTPRequest": {
             "type": "object",
             "required": [
                 "otp"
@@ -2155,7 +2206,7 @@
                 }
             }
         },
-        "api.PortfolioDataResponse": {
+        "controller.PortfolioDataResponse": {
             "type": "object",
             "properties": {
                 "address": {
@@ -2209,7 +2260,7 @@
                 }
             }
         },
-        "api.PortfolioResponse": {
+        "controller.PortfolioResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -2220,7 +2271,7 @@
                 }
             }
         },
-        "api.RegisterRequest": {
+        "controller.RegisterRequest": {
             "type": "object",
             "required": [
                 "displayname",
@@ -2243,7 +2294,7 @@
                 }
             }
         },
-        "api.ResumeDataResponse": {
+        "controller.ResumeDataResponse": {
             "type": "object",
             "properties": {
                 "address": {
@@ -2297,7 +2348,7 @@
                 }
             }
         },
-        "api.ResumeResponse": {
+        "controller.ResumeResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -2308,7 +2359,7 @@
                 }
             }
         },
-        "api.ShowCaseRecordDeleteRequest": {
+        "controller.ShowCaseRecordDeleteRequest": {
             "type": "object",
             "required": [
                 "index",
@@ -2323,7 +2374,7 @@
                 }
             }
         },
-        "api.SuccessResponse": {
+        "controller.SuccessResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -2332,7 +2383,7 @@
                 }
             }
         },
-        "api.UserControlRequest": {
+        "controller.UserControlRequest": {
             "type": "object",
             "required": [
                 "public_user_id"
