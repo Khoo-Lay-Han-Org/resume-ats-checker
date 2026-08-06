@@ -5,7 +5,6 @@ import (
 
 	"github.com/bobch27/valtra-go"
 	typing "resuming/controller/user/dto"
-	setting_otp "resuming/controller/user/otp"
 )
 
 func ValidateUsernameRequest(request typing.ChangeUsernameRequest) (typing.ChangeUsernameRequest, error) {
@@ -58,7 +57,7 @@ func ValidateEmailRequest(request typing.ChangeEmailRequest) (typing.ChangeEmail
 				valtra.Required[string]("Email is required."),
 				valtra.Email("Email must be in correct email format"),
 				func(v valtra.Value[string]) error {
-					if !setting_otp.ValidateEmailMX(v.Value()) {
+					if !ValidateEmailMX(v.Value()) {
 						return fmt.Errorf("Email domain must have valid MX or A records")
 					}
 					return nil

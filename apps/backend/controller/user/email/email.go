@@ -1,32 +1,17 @@
 package user_email
 
 import (
-	"context"
-	"net"
-	"strings"
-	"time"
+	"errors"
+	"log"
+
+	"resuming/service"
 )
 
-func ValidateEmailMX(email string) bool {
-	parts := strings.Split(email, "@")
-	if len(parts) != 2 {
-		return false
-	}
-	domain := parts[1]
-
-	resolver := net.Resolver{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	mx, err := resolver.LookupMX(ctx, domain)
-	if err == nil && len(mx) > 0 {
-		return true
+func SendOTPEmail(email, otp string) error {
+	if err := service.SendEmail(email, "Your OTP for Resuming", "Here is your OTP: "+otp, false); err != nil {
+		log.Printf("Failed to send OTP: %v", err)
+		return errors.New("failed to send OTP")
 	}
 
-	ips, err := resolver.LookupIPAddr(ctx, domain)
-	if err == nil && len(ips) > 0 {
-		return true
-	}
-
-	return false
+	return nil
 }

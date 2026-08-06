@@ -6,43 +6,48 @@ import (
 	"errors"
 	"log"
 	"math/big"
-	"net"
 	"strconv"
-	"strings"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	"resuming/controller/user/email"
 	"resuming/service"
 	systemconfig "resuming/system-config"
 )
 
-func SendOTP(email string) error {
+func GenerateOTP() (string, string, error) {
 	n, err := rand.Int(rand.Reader, big.NewInt(900000))
 	if err != nil {
 		log.Printf("Failed to generate OTP: %v", err)
-		return errors.New("failed to process OTP")
+		return "", "", errors.New("failed to process OTP")
 	}
-	otp := n.Int64() + 100000
 
+	otp := n.Int64() + 100000
 	otp_string := strconv.FormatInt(otp, 10)
 
 	hashed_otp, err := bcrypt.GenerateFromPassword([]byte(otp_string), bcrypt.MinCost)
 	if err != nil {
 		log.Printf("Failed to hash OTP: %v", err)
-		return errors.New("failed to process OTP")
+		return "", "", errors.New("failed to process OTP")
+	}
+
+	return otp_string, string(hashed_otp), nil
+}
+
+func SendOTP(recipient_email string) error {
+	otp_string, hashed_otp, err := GenerateOTP()
+	if err != nil {
+		return err
 	}
 
 	ctx := context.Background()
-	err = service.Valkey.Do(ctx, service.Valkey.B().Set().Key(email+":otp").Value(string(hashed_otp)).Ex(systemconfig.OtpExpiryDuration).Build()).Error()
-
+	err = service.Valkey.Do(ctx, service.Valkey.B().Set().Key(recipient_email+":otp").Value(hashed_otp).Ex(systemconfig.OtpExpiryDuration).Build()).Error()
 	if err != nil {
 		log.Printf("Failed to store OTP in Valkey: %v", err)
 		return errors.New("failed to process OTP")
 	}
 
-	if err := service.SendEmail(email, "Your OTP for Resuming", "Here is your OTP: "+otp_string, false); err != nil {
-		log.Printf("Failed to send OTP: %v", err)
-		return errors.New("failed to send OTP")
+	if err := user_email.SendOTPEmail(recipient_email, otp_string); err != nil {
+		return err
 	}
 
 	return nil
@@ -65,28 +70,4 @@ func CheckOTP(email, otp string) error {
 	}
 
 	return nil
-}
-
-func ValidateEmailMX(email string) bool {
-	parts := strings.Split(email, "@")
-	if len(parts) != 2 {
-		return false
-	}
-	domain := parts[1]
-
-	resolver := net.Resolver{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	mx, err := resolver.LookupMX(ctx, domain)
-	if err == nil && len(mx) > 0 {
-		return true
-	}
-
-	ips, err := resolver.LookupIPAddr(ctx, domain)
-	if err == nil && len(ips) > 0 {
-		return true
-	}
-
-	return false
 }

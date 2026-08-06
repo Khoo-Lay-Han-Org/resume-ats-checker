@@ -5,7 +5,6 @@ import (
 
 	"github.com/bobch27/valtra-go"
 	typing "resuming/controller/user/dto"
-	auth_email "resuming/controller/user/email"
 )
 
 func ValidateRegistration(request typing.Register) (typing.Register, error) {
@@ -34,7 +33,7 @@ func ValidateRegistration(request typing.Register) (typing.Register, error) {
 				valtra.Required[string]("Email is required."),
 				valtra.Email("Email must be in correct email format"),
 				func(v valtra.Value[string]) error {
-					if !auth_email.ValidateEmailMX(v.Value()) {
+					if !ValidateEmailMX(v.Value()) {
 						return fmt.Errorf("Email domain must have valid MX or A records")
 					}
 					return nil
