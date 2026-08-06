@@ -13,7 +13,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"resuming/backend-api"
+	"resuming/controller"
 	"resuming/database"
 	"resuming/service"
 )

@@ -3,14 +3,14 @@ package test
 import (
 	"testing"
 
-	clientreportlog_dto "resuming/backend-api/clientreportlog/dto"
-	clientreportlog_validator "resuming/backend-api/clientreportlog/validator"
-	clientsupportmessage_dto "resuming/backend-api/clientsupportmessage/dto"
-	clientsupportmessage_validator "resuming/backend-api/clientsupportmessage/validator"
-	session_dto "resuming/backend-api/session/dto"
-	session_validator "resuming/backend-api/session/validator"
-	user_dto "resuming/backend-api/user/dto"
-	user_validator "resuming/backend-api/user/validator"
+	clientreportlog_dto "resuming/controller/clientreportlog/dto"
+	clientreportlog_validator "resuming/controller/clientreportlog/validator"
+	clientsupportmessage_dto "resuming/controller/clientsupportmessage/dto"
+	clientsupportmessage_validator "resuming/controller/clientsupportmessage/validator"
+	session_dto "resuming/controller/session/dto"
+	session_validator "resuming/controller/session/validator"
+	user_dto "resuming/controller/user/dto"
+	user_validator "resuming/controller/user/validator"
 )
 
 func TestValidateRegistration(t *testing.T) {

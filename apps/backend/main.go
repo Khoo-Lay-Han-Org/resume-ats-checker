@@ -5,7 +5,7 @@ import (
 	"time"
 
 	echomw "github.com/labstack/echo/v4/middleware"
-	"resuming/backend-api"
+	"resuming/controller"
 	"resuming/database"
 	"resuming/scheduler"
 	"resuming/service"
