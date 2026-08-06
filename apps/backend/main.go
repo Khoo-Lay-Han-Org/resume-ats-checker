@@ -8,8 +8,8 @@ import (
 	"resuming/backend-api"
 	"resuming/database"
 	"resuming/scheduler"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func main() {

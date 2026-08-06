@@ -9,9 +9,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/ledongthuc/pdf"
-	ats_webscrape "resuming/backend-api/ats/webscrape"
-	ats_validator "resuming/backend-api/ats/validator"
 	"resuming/ai"
+	ats_validator "resuming/backend-api/ats/validator"
+	ats_webscrape "resuming/backend-api/ats/webscrape"
 )
 
 func ExtractResume() echo.HandlerFunc {
@@ -88,7 +88,7 @@ func ParseResume() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process resume data."})
 		}
 
-		resume_sections, err := 		ai.ResumeSectionModelPredict(resume_content_str)
+		resume_sections, err := ai.ResumeSectionModelPredict(resume_content_str)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve resume data."})
 		}

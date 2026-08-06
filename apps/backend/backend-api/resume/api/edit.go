@@ -9,8 +9,8 @@ import (
 	typing "resuming/backend-api/resume/dto"
 	validator "resuming/backend-api/resume/validator"
 	"resuming/database"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func ChooseTemplate() echo.HandlerFunc {

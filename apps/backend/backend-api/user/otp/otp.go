@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func SendOTP(email string) error {

@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"resuming/database/sqlc"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func SyncGroupErrorLogSessionStore() error {

@@ -9,8 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/clientsupportmessage/dto"
 	validator "resuming/backend-api/clientsupportmessage/validator"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func ClientCommunicateToAdmin() echo.HandlerFunc {

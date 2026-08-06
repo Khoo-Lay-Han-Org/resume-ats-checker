@@ -13,8 +13,8 @@ import (
 	validator "resuming/backend-api/user/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func RemoveAdmin() echo.HandlerFunc {

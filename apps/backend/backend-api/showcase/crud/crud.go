@@ -10,8 +10,8 @@ import (
 	typing "resuming/backend-api/showcase/dto"
 	validator "resuming/backend-api/showcase/validator"
 	"resuming/database"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func InsertShowCaseRecordData(request any, public_user_id string) error {

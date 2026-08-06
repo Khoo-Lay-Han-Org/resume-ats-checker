@@ -281,7 +281,7 @@ WHERE id = $8
 type UpdateUserParams struct {
 	Username    string             `json:"username"`
 	Email       string             `json:"email"`
-	PhoneNumber string `json:"phone_number"`
+	PhoneNumber string             `json:"phone_number"`
 	Displayname string             `json:"displayname"`
 	Password    []byte             `json:"password"`
 	UserType    UserType           `json:"user_type"`

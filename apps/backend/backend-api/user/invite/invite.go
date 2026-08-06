@@ -1,8 +1,8 @@
 package user_invite
 
 import (
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func EmailInvitationToBecomeAdmin(email, token string) error {

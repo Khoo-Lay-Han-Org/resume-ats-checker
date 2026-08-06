@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"resuming/database/sqlc"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func SyncIndividualUserDataSessionStore(public_user_id string, user *sqlc.User) error {

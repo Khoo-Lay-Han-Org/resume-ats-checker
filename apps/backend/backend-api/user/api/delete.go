@@ -12,8 +12,8 @@ import (
 	setting_otp "resuming/backend-api/user/otp"
 	"resuming/database"
 	"resuming/database/sqlc"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func PrepareDeleteAccount() echo.HandlerFunc {

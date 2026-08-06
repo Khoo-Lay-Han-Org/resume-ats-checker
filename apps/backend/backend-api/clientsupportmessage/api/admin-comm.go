@@ -12,8 +12,8 @@ import (
 	validator "resuming/backend-api/clientsupportmessage/validator"
 	"resuming/database"
 	"resuming/database/sqlc"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func GetSupportMessages() echo.HandlerFunc {

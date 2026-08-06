@@ -10,8 +10,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/segmentio/ksuid"
 	auth_find "resuming/backend-api/user/find"
-	systemconfig "resuming/system-config"
 	"resuming/service"
+	systemconfig "resuming/system-config"
 )
 
 func SetSession() echo.HandlerFunc {
