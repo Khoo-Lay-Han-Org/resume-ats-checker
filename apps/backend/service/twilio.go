@@ -7,7 +7,10 @@ import (
 )
 
 func SendSMS(receipient_phone_number, subject, body string) error {
-	client := twilio.NewRestClient()
+	client := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username: systemconfig.TWILIOAccountSID,
+		Password: systemconfig.TWILIOAuthToken,
+	})
 
 	params := &openapi.CreateMessageParams{}
 	params.SetTo(receipient_phone_number)
@@ -15,9 +18,5 @@ func SendSMS(receipient_phone_number, subject, body string) error {
 	params.SetBody(body)
 
 	_, err := client.Api.CreateMessage(params)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
