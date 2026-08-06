@@ -1,4 +1,4 @@
-package tool
+package service
 
 import (
 	"golang.org/x/oauth2"

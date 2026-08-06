@@ -339,6 +339,12 @@ func ChangeEmail() echo.HandlerFunc {
 	}
 }
 
+func ChangePhoneNumber() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return nil
+	}
+}
+
 func PrepareChangePassword() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		retrieved_public_user_id := c.Get("public_user_id")
