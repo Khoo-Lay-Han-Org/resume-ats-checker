@@ -11,12 +11,12 @@ import (
 	validator "resuming/backend-api/showcase/validator"
 	"resuming/database"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func InsertShowCaseRecordData(request any, public_user_id string) error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -30,7 +30,7 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 				return syncErr
 			}
-			data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+			data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 			if err != nil {
 				return err
 			}
@@ -71,9 +71,9 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 		return err
 	}
 
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":showcaserecord_data").Value(string(serialised_showcaserecord_data)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -87,7 +87,7 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 
 func EditShowCaseRecordData[T any](request T, index int, public_user_id string) error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -101,7 +101,7 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 				return syncErr
 			}
-			data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+			data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 			if err != nil {
 				return err
 			}
@@ -143,9 +143,9 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 		return err
 	}
 
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":showcaserecord_data").Value(string(serialised_showcaserecord_data)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -159,7 +159,7 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 
 func DeleteShowCaseRecordData(field_name string, index int, public_user_id string) error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -173,7 +173,7 @@ func DeleteShowCaseRecordData(field_name string, index int, public_user_id strin
 			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 				return syncErr
 			}
-			data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+			data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 			if err != nil {
 				return err
 			}
@@ -198,9 +198,9 @@ func DeleteShowCaseRecordData(field_name string, index int, public_user_id strin
 		return err
 	}
 
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":showcaserecord_data").Value(string(serialised_showcaserecord_data)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),

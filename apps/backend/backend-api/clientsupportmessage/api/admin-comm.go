@@ -13,13 +13,13 @@ import (
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func GetSupportMessages() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve support messages."})
 		}
@@ -36,7 +36,7 @@ func GetSupportMessages() echo.HandlerFunc {
 			message, _ := item["message"].(string)
 			sender_type, _ := item["sender_type"].(string)
 
-			user_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+			user_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 			if err != nil {
 				if valkey.IsValkeyNil(err) {
 					user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -46,7 +46,7 @@ func GetSupportMessages() echo.HandlerFunc {
 					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 						continue
 					}
-					user_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+					user_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 					if err != nil {
 						continue
 					}
@@ -100,7 +100,7 @@ func ClientCommunicationReply() echo.HandlerFunc {
 		message := polished_request.Message
 
 		ctx := c.Request().Context()
-		retrieved_comms_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
+		retrieved_comms_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve support messages."})
 		}
@@ -118,7 +118,7 @@ func ClientCommunicationReply() echo.HandlerFunc {
 			}
 		}
 
-		retrieved_user_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_user_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -128,7 +128,7 @@ func ClientCommunicationReply() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
 				}
-				retrieved_user_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_user_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
 				}
@@ -159,9 +159,9 @@ func ClientCommunicationReply() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise support message data"})
 		}
 
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("client_support_messages").Value(string(serialised_data)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),

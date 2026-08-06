@@ -13,7 +13,7 @@ import (
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func BanClient() echo.HandlerFunc {
@@ -31,9 +31,9 @@ func BanClient() echo.HandlerFunc {
 		public_user_id := polished_request.PublicUserId
 
 		ctx := c.Request().Context()
-		group_data, err := tool.Valkey.Do(
+		group_data, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Get().Key("user_data").Build(),
+			service.Valkey.B().Get().Key("user_data").Build(),
 		).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve cached data."})
@@ -62,9 +62,9 @@ func BanClient() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process updated data."})
 		}
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("user_data").Value(string(serialised_group)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
@@ -76,9 +76,9 @@ func BanClient() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise user data"})
 		}
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":user_data").
 				Value(string(individual_data)).
 				Ex(systemconfig.SessionExpiryDuration).

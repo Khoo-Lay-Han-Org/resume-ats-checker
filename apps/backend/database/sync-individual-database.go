@@ -8,7 +8,7 @@ import (
 
 	valkey "github.com/valkey-io/valkey-go"
 	"resuming/database/sqlc"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func SyncIndividualShowCaseRecordDatabase(public_user_id string) error {
@@ -21,7 +21,7 @@ func SyncIndividualShowCaseRecordDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No showcase record data in Valkey — nothing to sync.")
@@ -88,7 +88,7 @@ func SyncIndividualUserDataDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No user data in Valkey — nothing to sync.")
@@ -137,7 +137,7 @@ func SyncIndividualSessionDataDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":session_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":session_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No session data in Valkey — nothing to sync.")
@@ -174,7 +174,7 @@ func SyncIndividualResumeDataDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No resume data in Valkey — nothing to sync.")
@@ -208,7 +208,7 @@ func SyncIndividualPortfolioDataDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No portfolio data in Valkey — nothing to sync.")
@@ -242,7 +242,7 @@ func SyncIndividualJWTDataDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":jwt_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":jwt_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No JWT data in Valkey — nothing to sync.")
@@ -277,7 +277,7 @@ func SyncIndividualClientAuditLogDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_audit_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":client_audit_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No client audit log data in Valkey — nothing to sync.")
@@ -315,7 +315,7 @@ func SyncIndividualAdminAuditLogDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":admin_audit_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":admin_audit_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No admin audit log data in Valkey — nothing to sync.")
@@ -353,7 +353,7 @@ func SyncIndividualClientReportLogDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_report_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":client_report_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No client report log data in Valkey — nothing to sync.")
@@ -390,7 +390,7 @@ func SyncIndividualErrorLogDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":error_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":error_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No error log data in Valkey — nothing to sync.")
@@ -428,7 +428,7 @@ func SyncIndividualClientSupportMessagingDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":client_support_messages").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":client_support_messages").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No support message data in Valkey — nothing to sync.")
@@ -466,7 +466,7 @@ func SyncIndividualATSDataDatabase(public_user_id string) error {
 	}
 
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":ats_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":ats_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No ATS data in Valkey — nothing to sync.")

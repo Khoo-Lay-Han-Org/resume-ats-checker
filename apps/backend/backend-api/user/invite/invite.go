@@ -2,7 +2,7 @@ package user_invite
 
 import (
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func EmailInvitationToBecomeAdmin(email, token string) error {
@@ -16,5 +16,5 @@ func EmailInvitationToBecomeAdmin(email, token string) error {
 		</html>
 	`
 
-	return tool.SendEmail(email, "Your Invitation to Become an Admin for Resuming", email_message, true)
+	return service.SendEmail(email, "Your Invitation to Become an Admin for Resuming", email_message, true)
 }

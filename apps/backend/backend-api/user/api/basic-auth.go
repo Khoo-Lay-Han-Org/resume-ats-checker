@@ -11,7 +11,7 @@ import (
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func PrepareRegistration() echo.HandlerFunc {
@@ -31,7 +31,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
 			Hset().
 			Key(request.Email+":session").
 			FieldValue().
@@ -44,7 +44,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
 			Expire().
 			Key(request.Email+":session").
 			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
@@ -93,8 +93,8 @@ func Register() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
 
-		user_details, err := tool.Valkey.Do(c.Request().Context(),
-			tool.Valkey.B().Hgetall().Key(email+":session").Build()).
+		user_details, err := service.Valkey.Do(c.Request().Context(),
+			service.Valkey.B().Hgetall().Key(email+":session").Build()).
 			ToMap()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user detail."})
@@ -213,7 +213,7 @@ func Login() echo.HandlerFunc {
 		}
 
 		ctx := c.Request().Context()
-		value, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(email+":otp").Build()).ToString()
+		value, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(email+":otp").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process OTP."})
 		}
@@ -222,7 +222,7 @@ func Login() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid OTP"})
 		}
 
-		err = tool.Valkey.Do(ctx, tool.Valkey.B().Del().Key(email+":otp").Build()).Error()
+		err = service.Valkey.Do(ctx, service.Valkey.B().Del().Key(email+":otp").Build()).Error()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process OTP"})
 		}

@@ -8,7 +8,7 @@ import (
 
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func SyncGroupErrorLogSessionStore() error {
@@ -23,9 +23,9 @@ func SyncGroupErrorLogSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("error_log_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("error_log_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -42,9 +42,9 @@ func SyncGroupClientAuditLogSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("client_audit_log_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("client_audit_log_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -61,9 +61,9 @@ func SyncGroupAdminAuditLogSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("admin_audit_log_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("admin_audit_log_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -97,9 +97,9 @@ func SyncGroupClientsConfigSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("client_configs").Value(string(serialised)).
+		service.Valkey.B().Set().Key("client_configs").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -133,9 +133,9 @@ func SyncGroupAdminsConfigSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("admin_configs").Value(string(serialised)).
+		service.Valkey.B().Set().Key("admin_configs").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -169,9 +169,9 @@ func SyncGroupClientReportLogSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("client_report_logs").Value(string(serialised)).
+		service.Valkey.B().Set().Key("client_report_logs").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -229,9 +229,9 @@ func SyncGroupClientSupportMessagingSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("client_support_messages").Value(string(serialised)).
+		service.Valkey.B().Set().Key("client_support_messages").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -267,9 +267,9 @@ func SyncGroupUsersSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("user_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("user_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -286,9 +286,9 @@ func SyncGroupShowCaseRecordsSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("showcaserecord_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("showcaserecord_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -305,9 +305,9 @@ func SyncGroupPortfoliosSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("portfolio_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("portfolio_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -324,9 +324,9 @@ func SyncGroupResumesSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("resume_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("resume_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -343,9 +343,9 @@ func SyncGroupAtsSessionStore() error {
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().Key("ats_data").Value(string(serialised)).
+		service.Valkey.B().Set().Key("ats_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).Build(),
 	).Error()
 }
@@ -371,9 +371,9 @@ func SyncGroupSessionsSessionStore() error {
 		psid := session.PublicID.String()
 
 		sessionData, _ := json.Marshal(map[string]string{"session_key": session.SessionKey})
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().Key(psid+":session_data").Value(string(sessionData)).
+			service.Valkey.B().Set().Key(psid+":session_data").Value(string(sessionData)).
 				Ex(systemconfig.SessionExpiryDuration).Build(),
 		).Error(); err != nil {
 			return fmt.Errorf("failed to store session data for %s: %w", psid, err)
@@ -384,9 +384,9 @@ func SyncGroupSessionsSessionStore() error {
 			if err != nil {
 				return fmt.Errorf("failed to marshal jwt key: %w", err)
 			}
-			if err := tool.Valkey.Do(
+			if err := service.Valkey.Do(
 				ctx,
-				tool.Valkey.B().Set().Key(psid+":jwt_data").Value(string(jwtData)).
+				service.Valkey.B().Set().Key(psid+":jwt_data").Value(string(jwtData)).
 					Ex(systemconfig.SessionExpiryDuration).Build(),
 			).Error(); err != nil {
 				return fmt.Errorf("failed to store jwt data for %s: %w", psid, err)

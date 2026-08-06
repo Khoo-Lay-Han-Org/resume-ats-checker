@@ -8,7 +8,7 @@ import (
 	valkey "github.com/valkey-io/valkey-go"
 	showcaserecord_convert "resuming/backend-api/showcase/convert"
 	"resuming/database"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func RetrieveShowCaseRecordData() echo.HandlerFunc {
@@ -21,7 +21,7 @@ func RetrieveShowCaseRecordData() echo.HandlerFunc {
 		public_user_id := retrieved_public_user_id.(string)
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -35,7 +35,7 @@ func RetrieveShowCaseRecordData() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve showcase record data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
 				}

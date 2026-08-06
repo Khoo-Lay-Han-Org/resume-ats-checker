@@ -14,7 +14,7 @@ import (
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func RemoveAdmin() echo.HandlerFunc {
@@ -32,9 +32,9 @@ func RemoveAdmin() echo.HandlerFunc {
 		public_user_id := polished_request.PublicUserId
 
 		ctx := c.Request().Context()
-		group_data, err := tool.Valkey.Do(
+		group_data, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Get().Key("user_data").Build(),
+			service.Valkey.B().Get().Key("user_data").Build(),
 		).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve cached data."})
@@ -62,9 +62,9 @@ func RemoveAdmin() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process updated data."})
 		}
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("user_data").Value(string(serialised_group)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
@@ -76,9 +76,9 @@ func RemoveAdmin() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise user data"})
 		}
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":user_data").
 				Value(string(individual_data)).
 				Ex(systemconfig.SessionExpiryDuration).
@@ -118,9 +118,9 @@ func InvitationToBecomeAdmin() echo.HandlerFunc {
 		public_user_id := polished_request.PublicUserId
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(
+		retrieved_data, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Get().Key("user_data").Build(),
+			service.Valkey.B().Get().Key("user_data").Build(),
 		).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve cached data."})
@@ -158,9 +158,9 @@ func InvitationToBecomeAdmin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to create invite token."})
 		}
 
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("invite_token:"+token).
 				Value(string(serialised_invite)).
 				Ex(48*time.Hour).
@@ -185,9 +185,9 @@ func AcceptToBecomeAdmin() echo.HandlerFunc {
 		}
 
 		ctx := c.Request().Context()
-		invite_raw, err := tool.Valkey.Do(
+		invite_raw, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Get().Key("invite_token:"+token).Build(),
+			service.Valkey.B().Get().Key("invite_token:"+token).Build(),
 		).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Invalid or expired invite token."})
@@ -207,9 +207,9 @@ func AcceptToBecomeAdmin() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to update invite token."})
 		}
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("invite_token:"+token).Value(string(serialised_invite)).
 				Ex(48*time.Hour).
 				Build(),
@@ -217,9 +217,9 @@ func AcceptToBecomeAdmin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to mark invite as used."})
 		}
 
-		user_data_raw, err := tool.Valkey.Do(
+		user_data_raw, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Get().Key("user_data").Build(),
+			service.Valkey.B().Get().Key("user_data").Build(),
 		).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve cached data."})
@@ -247,9 +247,9 @@ func AcceptToBecomeAdmin() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process updated data."})
 		}
-		if err := tool.Valkey.Do(
+		if err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("user_data").Value(string(serialised_users)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),

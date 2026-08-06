@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	valkey "github.com/valkey-io/valkey-go"
 	"resuming/database/sqlc"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func FindUser(private_id int32) (*sqlc.User, error) {
@@ -33,7 +33,7 @@ func FindUserByPublicId(publicId string) (*sqlc.User, error) {
 
 func resolveUserId(public_user_id string) (int32, error) {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			return 0, nil

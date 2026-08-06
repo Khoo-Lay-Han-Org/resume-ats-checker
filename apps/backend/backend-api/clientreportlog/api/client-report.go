@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/clientreportlog/dto"
 	validator "resuming/backend-api/clientreportlog/validator"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func ClientReportOtherClient() echo.HandlerFunc {
@@ -34,7 +34,7 @@ func ClientReportOtherClient() echo.HandlerFunc {
 		target_public_user_id := polished_request.TargetClientPublicUserId
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_report_logs").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_report_logs").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to find user."})
 		}
@@ -59,9 +59,9 @@ func ClientReportOtherClient() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise new report log"})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("client_report_logs").
 				Value(string(serialised_data)).
 				Build()).

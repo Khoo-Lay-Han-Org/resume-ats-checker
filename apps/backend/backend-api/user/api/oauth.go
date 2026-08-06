@@ -23,7 +23,7 @@ import (
 	"resuming/database"
 	"resuming/env"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func InitiateOAuth() gin.HandlerFunc {
@@ -220,9 +220,9 @@ func OAuthLogin() gin.HandlerFunc {
 		}
 
 		ctx := context.Background()
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(session_store_id+":user_data").Value(string(serialised_user_data)).
 				Ex(session_expiry_time).
 				Build(),
@@ -232,9 +232,9 @@ func OAuthLogin() gin.HandlerFunc {
 			return
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(session_store_id+":portfolio_data").Value(string(serialised_portfolio_data)).
 				Ex(session_expiry_time).
 				Build(),
@@ -244,9 +244,9 @@ func OAuthLogin() gin.HandlerFunc {
 			return
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(session_store_id+":resume_data").Value(string(serialised_resume_data)).
 				Ex(session_expiry_time).
 				Build(),
@@ -256,9 +256,9 @@ func OAuthLogin() gin.HandlerFunc {
 			return
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(session_store_id+":ats_data").Value(string(serialised_ats_data)).
 				Ex(session_expiry_time).
 				Build(),

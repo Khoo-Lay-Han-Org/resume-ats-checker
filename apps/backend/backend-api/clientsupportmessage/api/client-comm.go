@@ -10,7 +10,7 @@ import (
 	typing "resuming/backend-api/clientsupportmessage/dto"
 	validator "resuming/backend-api/clientsupportmessage/validator"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func ClientCommunicateToAdmin() echo.HandlerFunc {
@@ -35,7 +35,7 @@ func ClientCommunicateToAdmin() echo.HandlerFunc {
 		client_message := polished_request.Message
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get support message data."})
 		}
@@ -62,9 +62,9 @@ func ClientCommunicateToAdmin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to serialise support message data."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key("client_support_messages").Value(string(serialised_data)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),

@@ -9,12 +9,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	valkey "github.com/valkey-io/valkey-go"
 	"resuming/database/sqlc"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func SyncGroupErrorLogDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("error_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("error_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No error log data in Valkey — nothing to sync.")
@@ -49,7 +49,7 @@ func SyncGroupErrorLogDatabase() error {
 
 func SyncGroupClientAuditLogDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_audit_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_audit_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No client audit log data in Valkey — nothing to sync.")
@@ -84,7 +84,7 @@ func SyncGroupClientAuditLogDatabase() error {
 
 func SyncGroupAdminAuditLogDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_audit_log_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("admin_audit_log_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No admin audit log data in Valkey — nothing to sync.")
@@ -119,7 +119,7 @@ func SyncGroupAdminAuditLogDatabase() error {
 
 func SyncGroupClientsConfigDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_configs").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_configs").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No client config data in Valkey — nothing to sync.")
@@ -165,7 +165,7 @@ func SyncGroupClientsConfigDatabase() error {
 
 func SyncGroupAdminsConfigDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_configs").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("admin_configs").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No admin config data in Valkey — nothing to sync.")
@@ -211,7 +211,7 @@ func SyncGroupAdminsConfigDatabase() error {
 
 func SyncGroupClientReportLogDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_report_logs").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_report_logs").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No client report log data in Valkey — nothing to sync.")
@@ -274,7 +274,7 @@ func SyncGroupClientReportLogDatabase() error {
 
 func SyncGroupClientSupportMessagingDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_support_messages").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No support message data in Valkey — nothing to sync.")
@@ -341,7 +341,7 @@ func SyncGroupClientSupportMessagingDatabase() error {
 
 func SyncGroupShowCaseRecordsDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("showcaserecord_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("showcaserecord_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No showcase record data in Valkey — nothing to sync.")
@@ -378,7 +378,7 @@ func SyncGroupShowCaseRecordsDatabase() error {
 
 func SyncGroupPortfoliosDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("portfolio_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("portfolio_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No portfolio data in Valkey — nothing to sync.")
@@ -404,7 +404,7 @@ func SyncGroupPortfoliosDatabase() error {
 
 func SyncGroupResumesDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("resume_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("resume_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No resume data in Valkey — nothing to sync.")
@@ -430,7 +430,7 @@ func SyncGroupResumesDatabase() error {
 
 func SyncGroupAtsDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("ats_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("ats_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No ATS data in Valkey — nothing to sync.")
@@ -460,7 +460,7 @@ func SyncGroupAtsDatabase() error {
 
 func SyncGroupUsersDatabase() error {
 	ctx := context.Background()
-	data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("user_data").Build()).ToString()
+	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("user_data").Build()).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
 			log.Println("No user data in Valkey — nothing to sync.")
@@ -520,9 +520,9 @@ func SyncGroupSessionsDatabase() error {
 	for _, session := range sessions {
 		psid := session.PublicID.String()
 
-		exists, err := tool.Valkey.Do(
+		exists, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Exists().Key(psid+":session_data").Build(),
+			service.Valkey.B().Exists().Key(psid+":session_data").Build(),
 		).AsInt64()
 		if err != nil {
 			return fmt.Errorf("failed to check session data in Valkey for %s: %w", psid, err)

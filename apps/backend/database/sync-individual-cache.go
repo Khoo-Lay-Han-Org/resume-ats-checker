@@ -8,7 +8,7 @@ import (
 
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func SyncIndividualUserDataSessionStore(public_user_id string, user *sqlc.User) error {
@@ -41,9 +41,9 @@ func SyncIndividualUserDataSessionStore(public_user_id string, user *sqlc.User) 
 	}
 
 	ctx := context.Background()
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":user_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -76,9 +76,9 @@ func SyncIndividualShowCaseRecordDataSessionStore(public_user_id string, showcas
 	}
 
 	ctx := context.Background()
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":showcaserecord_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -98,9 +98,9 @@ func SyncIndividualSessionDataSessionStore(public_user_id string, session_key st
 	}
 
 	ctx := context.Background()
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":session_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -119,9 +119,9 @@ func SyncIndividualJWTDataSessionStore(public_user_id string, jwt_key *sqlc.JwtK
 	}
 
 	ctx := context.Background()
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":jwt_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -140,9 +140,9 @@ func SyncIndividualATSDataSessionStore(public_user_id string, ats *sqlc.At) erro
 	}
 
 	ctx := context.Background()
-	err = tool.Valkey.Do(
+	err = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":ats_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -156,9 +156,9 @@ func SyncIndividualATSDataSessionStore(public_user_id string, ats *sqlc.At) erro
 
 func SyncIndividualUserSessionMapping(upid string, psid string) error {
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(upid+":session_id").Value(psid).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -259,9 +259,9 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signi
 
 func storeInValkey(key string, data []byte) {
 	ctx := context.Background()
-	_ = tool.Valkey.Do(
+	_ = service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(key).Value(string(data)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -280,9 +280,9 @@ func SyncIndividualResumeDataSessionStore(public_user_id string, resume *sqlc.Re
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":resume_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -301,9 +301,9 @@ func SyncIndividualPortfolioDataSessionStore(public_user_id string, portfolio *s
 	}
 
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(public_user_id+":portfolio_data").Value(string(serialised)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),
@@ -352,9 +352,9 @@ func SyncIndividualClientSupportMessagingSessionStore(public_user_id string, mes
 
 func storeInValkeyWithTTL(key string, data []byte) error {
 	ctx := context.Background()
-	return tool.Valkey.Do(
+	return service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Set().
+		service.Valkey.B().Set().
 			Key(key).Value(string(data)).
 			Ex(systemconfig.SessionExpiryDuration).
 			Build(),

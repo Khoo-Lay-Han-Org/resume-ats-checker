@@ -11,7 +11,7 @@ import (
 	"github.com/go-jose/go-jose/v4"
 	"github.com/google/uuid"
 	valkey "github.com/valkey-io/valkey-go"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func ExtractSessionCookie(cookie string) (uuid.UUID, string, error) {
@@ -33,9 +33,9 @@ func ExtractSessionCookie(cookie string) (uuid.UUID, string, error) {
 
 func ParseJWT(public_id uuid.UUID, token_string string) (map[string]any, error) {
 	ctx := context.Background()
-	jwt_data, err := tool.Valkey.Do(
+	jwt_data, err := service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Get().Key(public_id.String()+":jwt_data").Build(),
+		service.Valkey.B().Get().Key(public_id.String()+":jwt_data").Build(),
 	).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
@@ -93,9 +93,9 @@ func CheckSession(cookie string) (string, error) {
 	}
 
 	ctx := context.Background()
-	_, err := tool.Valkey.Do(
+	_, err := service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Get().
+		service.Valkey.B().Get().
 			Key(jwt_user_id+":session_data").
 			Build(),
 	).ToString()

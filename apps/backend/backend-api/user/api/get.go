@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func GetClients() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_configs").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_configs").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve clients config data."})
 		}
@@ -30,7 +30,7 @@ func GetClients() echo.HandlerFunc {
 func GetAdmins() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("admin_configs").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("admin_configs").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve admins config data."})
 		}

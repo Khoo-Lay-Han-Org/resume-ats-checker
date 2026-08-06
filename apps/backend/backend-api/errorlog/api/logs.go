@@ -6,13 +6,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"resuming/database/sqlc"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func GetErrorAuditLogs() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("error_log_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("error_log_data").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "failed to retrieve error logs."})
 		}

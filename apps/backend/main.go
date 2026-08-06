@@ -9,11 +9,11 @@ import (
 	"resuming/database"
 	"resuming/scheduler"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func main() {
-	if err := tool.SetupValkey(); err != nil {
+	if err := service.SetupValkey(); err != nil {
 		log.Fatalln("Failed to setup Valkey:", err)
 	}
 	if err := database.DatabaseConnect(); err != nil {

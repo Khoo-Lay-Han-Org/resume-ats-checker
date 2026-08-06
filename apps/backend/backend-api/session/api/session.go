@@ -11,7 +11,7 @@ import (
 	"github.com/segmentio/ksuid"
 	auth_find "resuming/backend-api/user/find"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func SetSession() echo.HandlerFunc {
@@ -74,7 +74,7 @@ func SetSession() echo.HandlerFunc {
 		psid := public_user_id
 		ctx := c.Request().Context()
 		session_store_data, _ := json.Marshal(map[string]string{"session_key": session_key})
-		if err := tool.Valkey.Do(ctx, tool.Valkey.B().Set().
+		if err := service.Valkey.Do(ctx, service.Valkey.B().Set().
 			Key(psid+":session_data").
 			Value(string(session_store_data)).
 			Ex(systemconfig.SessionExpiryDuration).

@@ -13,7 +13,7 @@ import (
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func ChangeUsername() echo.HandlerFunc {
@@ -38,7 +38,7 @@ func ChangeUsername() echo.HandlerFunc {
 		new_data := validated_request.Username
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -48,7 +48,7 @@ func ChangeUsername() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -81,9 +81,9 @@ func ChangeUsername() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":user_data").Value(string(serialised_new_user_struct)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
@@ -118,7 +118,7 @@ func ChangeDisplayname() echo.HandlerFunc {
 		new_data := validated_request.Displayname
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -128,7 +128,7 @@ func ChangeDisplayname() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -161,9 +161,9 @@ func ChangeDisplayname() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":user_data").Value(string(serialised_new_user_struct)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
@@ -198,7 +198,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 		new_data := validated_request.Email
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -208,7 +208,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -227,7 +227,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusConflict, echo.Map{"message": "Email is already in use."})
 		}
 
-		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
 			Set().
 			Key(user.Email+":change-email").
 			Value(new_data).
@@ -237,7 +237,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
 			Expire().
 			Key(user.Email+":change-email").
 			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
@@ -266,7 +266,7 @@ func ChangeEmail() echo.HandlerFunc {
 		public_user_id := retrieved_public_user_id.(string)
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -276,7 +276,7 @@ func ChangeEmail() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -301,7 +301,7 @@ func ChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
 
-		new_data, err := tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().Get().Key(user.Email+":change-email").Build()).ToString()
+		new_data, err := service.Valkey.Do(c.Request().Context(), service.Valkey.B().Get().Key(user.Email+":change-email").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Email change request expired or not found."})
 		}
@@ -324,9 +324,9 @@ func ChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":user_data").Value(string(serialised_new_user_struct)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),
@@ -367,7 +367,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 		new_data := validated_request.Password
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -377,7 +377,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -397,7 +397,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process request."})
 		}
 
-		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
 			Set().
 			Key(user.Email+":change-password").
 			Value(string(hashed_password)).
@@ -407,7 +407,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().
+		err = service.Valkey.Do(c.Request().Context(), service.Valkey.B().
 			Expire().
 			Key(user.Email+":change-password").
 			Seconds(int64(systemconfig.OtpExpiryDuration.Seconds())).
@@ -436,7 +436,7 @@ func ChangePassword() echo.HandlerFunc {
 		public_user_id := retrieved_public_user_id.(string)
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -446,7 +446,7 @@ func ChangePassword() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -471,7 +471,7 @@ func ChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid OTP."})
 		}
 
-		new_password, err := tool.Valkey.Do(c.Request().Context(), tool.Valkey.B().Get().Key(user.Email+":change-password").Build()).ToString()
+		new_password, err := service.Valkey.Do(c.Request().Context(), service.Valkey.B().Get().Key(user.Email+":change-password").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve new password."})
 		}

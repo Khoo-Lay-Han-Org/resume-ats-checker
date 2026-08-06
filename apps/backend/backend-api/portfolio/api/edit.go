@@ -10,7 +10,7 @@ import (
 	validator "resuming/backend-api/portfolio/validator"
 	"resuming/database"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func ChooseTemplate() echo.HandlerFunc {
@@ -33,7 +33,7 @@ func ChooseTemplate() echo.HandlerFunc {
 		}
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -47,7 +47,7 @@ func ChooseTemplate() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualPortfolioDataSessionStore(public_user_id, &portfolio); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve portfolio data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 				}
@@ -69,9 +69,9 @@ func ChooseTemplate() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to process portfolio data."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			c.Request().Context(),
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":portfolio_data").Value(string(serialised_data)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),

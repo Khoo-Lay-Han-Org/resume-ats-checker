@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func SendOTP(email string) error {
@@ -33,14 +33,14 @@ func SendOTP(email string) error {
 	}
 
 	ctx := context.Background()
-	err = tool.Valkey.Do(ctx, tool.Valkey.B().Set().Key(email+":otp").Value(string(hashed_otp)).Ex(systemconfig.OtpExpiryDuration).Build()).Error()
+	err = service.Valkey.Do(ctx, service.Valkey.B().Set().Key(email+":otp").Value(string(hashed_otp)).Ex(systemconfig.OtpExpiryDuration).Build()).Error()
 
 	if err != nil {
 		log.Printf("Failed to store OTP in Valkey: %v", err)
 		return errors.New("failed to process OTP")
 	}
 
-	if err := tool.SendEmail(email, "Your OTP for Resuming", "Here is your OTP: "+otp_string, false); err != nil {
+	if err := service.SendEmail(email, "Your OTP for Resuming", "Here is your OTP: "+otp_string, false); err != nil {
 		log.Printf("Failed to send OTP: %v", err)
 		return errors.New("failed to send OTP")
 	}
@@ -50,7 +50,7 @@ func SendOTP(email string) error {
 
 func CheckOTP(email, otp string) error {
 	ctx := context.Background()
-	value, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(email+":otp").Build()).ToString()
+	value, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(email+":otp").Build()).ToString()
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func CheckOTP(email, otp string) error {
 		return err
 	}
 
-	err = tool.Valkey.Do(ctx, tool.Valkey.B().Del().Key(email+":otp").Build()).Error()
+	err = service.Valkey.Do(ctx, service.Valkey.B().Del().Key(email+":otp").Build()).Error()
 	if err != nil {
 		return err
 	}

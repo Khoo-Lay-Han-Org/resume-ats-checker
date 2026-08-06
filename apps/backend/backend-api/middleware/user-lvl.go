@@ -9,7 +9,7 @@ import (
 	valkey "github.com/valkey-io/valkey-go"
 	"resuming/database"
 	"resuming/database/sqlc"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func OnlyAdmin() echo.MiddlewareFunc {
@@ -27,7 +27,7 @@ func OnlyAdmin() echo.MiddlewareFunc {
 			}
 
 			ctx := c.Request().Context()
-			retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+			retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 			if err != nil {
 				if valkey.IsValkeyNil(err) {
 					user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -37,7 +37,7 @@ func OnlyAdmin() echo.MiddlewareFunc {
 					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
 					}
-					retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+					retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 					if err != nil {
 						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
 					}
@@ -81,7 +81,7 @@ func OnlySuperAdmin() echo.MiddlewareFunc {
 			}
 
 			ctx := c.Request().Context()
-			retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+			retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 			if err != nil {
 				if valkey.IsValkeyNil(err) {
 					user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -91,7 +91,7 @@ func OnlySuperAdmin() echo.MiddlewareFunc {
 					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
 					}
-					retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+					retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 					if err != nil {
 						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
 					}

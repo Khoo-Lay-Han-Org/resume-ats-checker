@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	typing "resuming/backend-api/session/dto"
 	validator "resuming/backend-api/session/validator"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func RemoveIndividualUserSession() echo.HandlerFunc {
@@ -30,9 +30,9 @@ func RemoveIndividualUserSession() echo.HandlerFunc {
 		}
 
 		ctx := c.Request().Context()
-		exists, err := tool.Valkey.Do(
+		exists, err := service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Exists().Key(public_user_id+":session_data").Build(),
+			service.Valkey.B().Exists().Key(public_user_id+":session_data").Build(),
 		).AsInt64()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to verify session."})
@@ -41,9 +41,9 @@ func RemoveIndividualUserSession() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Session not found."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Del().
+			service.Valkey.B().Del().
 				Key(public_user_id+":session_data",
 					public_user_id+":jwt_data",
 					public_user_id+":user_data").
@@ -60,7 +60,7 @@ func RemoveIndividualUserSession() echo.HandlerFunc {
 func RemoveAllClientSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key("client_configs").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key("client_configs").Build()).ToString()
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to find client configs."})
 		}
@@ -78,9 +78,9 @@ func RemoveAllClientSession() echo.HandlerFunc {
 			}
 
 			ctx := c.Request().Context()
-			_, err := tool.Valkey.Do(
+			_, err := service.Valkey.Do(
 				ctx,
-				tool.Valkey.B().Del().
+				service.Valkey.B().Del().
 					Key(public_user_id+":session_data").
 					Build(),
 			).ToString()
@@ -92,9 +92,9 @@ func RemoveAllClientSession() echo.HandlerFunc {
 		admin_id := c.Get("public_user_id")
 		if admin_id != nil {
 			admin_key := admin_id.(string) + ":session_data"
-			ttl_seconds, err := tool.Valkey.Do(ctx, tool.Valkey.B().Ttl().Key(admin_key).Build()).AsInt64()
+			ttl_seconds, err := service.Valkey.Do(ctx, service.Valkey.B().Ttl().Key(admin_key).Build()).AsInt64()
 			if err == nil && ttl_seconds > 300 {
-				tool.Valkey.Do(ctx, tool.Valkey.B().Expire().Key(admin_key).Seconds(300).Build())
+				service.Valkey.Do(ctx, service.Valkey.B().Expire().Key(admin_key).Seconds(300).Build())
 			}
 		}
 

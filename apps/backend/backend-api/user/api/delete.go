@@ -13,7 +13,7 @@ import (
 	"resuming/database"
 	"resuming/database/sqlc"
 	systemconfig "resuming/system-config"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func PrepareDeleteAccount() echo.HandlerFunc {
@@ -26,7 +26,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 		public_user_id := retrieved_public_user_id.(string)
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -36,7 +36,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -70,7 +70,7 @@ func DeleteAccount() echo.HandlerFunc {
 		public_user_id := retrieved_public_user_id.(string)
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -80,7 +80,7 @@ func DeleteAccount() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 				}
@@ -124,9 +124,9 @@ func DeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data."})
 		}
 
-		err = tool.Valkey.Do(
+		err = service.Valkey.Do(
 			ctx,
-			tool.Valkey.B().Set().
+			service.Valkey.B().Set().
 				Key(public_user_id+":user_data").Value(string(serialised_new_user_struct)).
 				Ex(systemconfig.SessionExpiryDuration).
 				Build(),

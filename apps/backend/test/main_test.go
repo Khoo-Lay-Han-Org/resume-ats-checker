@@ -15,7 +15,7 @@ import (
 
 	"resuming/backend-api"
 	"resuming/database"
-	"resuming/tool"
+	"resuming/service"
 )
 
 var router *echo.Echo
@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	if err := os.Chdir(".."); err != nil {
 		log.Printf("Failed to change working directory: %v", err)
 	}
-	if err := tool.SetupValkey(); err != nil {
+	if err := service.SetupValkey(); err != nil {
 		log.Printf("Valkey not available, skipping integration tests: %v", err)
 		infraAvailable = false
 	} else if err := database.DatabaseConnect(); err != nil {

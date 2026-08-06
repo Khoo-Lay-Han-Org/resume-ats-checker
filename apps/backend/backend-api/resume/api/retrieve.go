@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	"resuming/database"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func RetrieveResumeData() echo.HandlerFunc {
@@ -20,7 +20,7 @@ func RetrieveResumeData() echo.HandlerFunc {
 		public_user_id := retrieved_public_user_id.(string)
 
 		ctx := c.Request().Context()
-		retrieved_data, err := tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
+		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
 		if err != nil {
 			if valkey.IsValkeyNil(err) {
 				user, dbErr := database.FindUserByPublicId(public_user_id)
@@ -34,7 +34,7 @@ func RetrieveResumeData() echo.HandlerFunc {
 				if syncErr := database.SyncIndividualResumeDataSessionStore(public_user_id, &resume); syncErr != nil {
 					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve resume data."})
 				}
-				retrieved_data, err = tool.Valkey.Do(ctx, tool.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
+				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
 				if err != nil {
 					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
 				}

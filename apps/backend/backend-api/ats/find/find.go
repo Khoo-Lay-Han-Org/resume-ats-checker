@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 
 	"resuming/database/sqlc"
-	"resuming/tool"
+	"resuming/service"
 )
 
 func FindUser(public_user_id string) (*sqlc.User, error) {
 	ctx := context.Background()
-	retrieved_data, err := tool.Valkey.Do(
+	retrieved_data, err := service.Valkey.Do(
 		ctx,
-		tool.Valkey.B().Get().
+		service.Valkey.B().Get().
 			Key(public_user_id+":user_data").
 			Build(),
 	).ToString()
