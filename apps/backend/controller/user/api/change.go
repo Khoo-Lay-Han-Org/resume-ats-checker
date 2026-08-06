@@ -8,6 +8,7 @@ import (
 	valkey "github.com/valkey-io/valkey-go"
 	"golang.org/x/crypto/bcrypt"
 	typing "resuming/controller/user/dto"
+	setting_email "resuming/controller/user/email"
 	setting_otp "resuming/controller/user/otp"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
@@ -247,7 +248,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = setting_otp.SendOTP(user.Email)
+		err = setting_email.SendEmailOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -417,7 +418,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = setting_otp.SendOTP(user.Email)
+		err = setting_email.SendEmailOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}

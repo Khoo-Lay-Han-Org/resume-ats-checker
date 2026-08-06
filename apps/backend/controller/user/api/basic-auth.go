@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	typing "resuming/controller/user/dto"
+	auth_email "resuming/controller/user/email"
 	auth_otp "resuming/controller/user/otp"
 	validator "resuming/controller/user/validator"
 	"resuming/database"
@@ -54,7 +55,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		err = auth_otp.SendOTP(validated_request.Email)
+		err = auth_email.SendEmailOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
@@ -180,7 +181,7 @@ func PrepareLogin() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid password."})
 		}
 
-		err = auth_otp.SendOTP(validated_request.Email)
+		err = auth_email.SendEmailOTP(validated_request.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}

@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	valkey "github.com/valkey-io/valkey-go"
 	typing "resuming/controller/user/dto"
+	setting_email "resuming/controller/user/email"
 	setting_otp "resuming/controller/user/otp"
 	"resuming/database"
 	"resuming/database/sqlc"
@@ -51,7 +52,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
 		}
 
-		err = setting_otp.SendOTP(user.Email)
+		err = setting_email.SendEmailOTP(user.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
