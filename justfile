@@ -41,5 +41,5 @@ ai-ml-format:
 
 [working-directory: 'apps/ai-ml']
 ai-ml-security:
-	uv run bandit -r
+	uv run bandit -r . -x ./.venv
 
