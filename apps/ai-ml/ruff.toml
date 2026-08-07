@@ -1,0 +1,13 @@
+target-version = "py313"
+line-length = 88
+
+select = ["E", "W", "F", "I", "N", "UP"]
+ignore = ["E501", "S101"]
+
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
