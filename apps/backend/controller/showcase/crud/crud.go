@@ -7,14 +7,14 @@ import (
 	"reflect"
 
 	dto "resuming/controller/showcase/dto"
+	showcase_find "resuming/controller/showcase/find"
 	validator "resuming/controller/showcase/validator"
 	"resuming/service"
-	shared_find "resuming/shared/find"
 	"resuming/systemconfig"
 )
 
 func InsertShowCaseRecordData(request any, public_user_id string) error {
-	data, err := shared_find.GetShowcaseRecordData(public_user_id)
+	data, err := showcase_find.GetShowcaseRecordData(public_user_id)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 }
 
 func EditShowCaseRecordData[T any](request T, index int, public_user_id string) error {
-	data, err := shared_find.GetShowcaseRecordData(public_user_id)
+	data, err := showcase_find.GetShowcaseRecordData(public_user_id)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 }
 
 func DeleteShowCaseRecordData(field_name string, index int, public_user_id string) error {
-	data, err := shared_find.GetShowcaseRecordData(public_user_id)
+	data, err := showcase_find.GetShowcaseRecordData(public_user_id)
 	if err != nil {
 		return err
 	}

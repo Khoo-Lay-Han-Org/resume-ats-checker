@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	shared_find "resuming/shared/find"
+	resume_find "resuming/controller/resume/find"
 )
 
 func RetrieveResumeData() echo.HandlerFunc {
@@ -17,7 +17,7 @@ func RetrieveResumeData() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		retrieved_data, err := shared_find.GetResumeData(public_user_id)
+		retrieved_data, err := resume_find.GetResumeData(public_user_id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
 		}

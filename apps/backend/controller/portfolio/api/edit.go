@@ -6,9 +6,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	dto "resuming/controller/portfolio/dto"
+	portfolio_find "resuming/controller/portfolio/find"
 	validator "resuming/controller/portfolio/validator"
 	"resuming/service"
-	shared_find "resuming/shared/find"
 	"resuming/systemconfig"
 )
 
@@ -31,7 +31,7 @@ func ChooseTemplate() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
-		retrieved_data, err := shared_find.GetPortfolioData(public_user_id)
+		retrieved_data, err := portfolio_find.GetPortfolioData(public_user_id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 		}

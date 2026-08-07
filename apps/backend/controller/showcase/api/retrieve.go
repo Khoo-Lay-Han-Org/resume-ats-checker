@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	convert "resuming/controller/showcase/convert"
-	shared_find "resuming/shared/find"
+	showcase_find "resuming/controller/showcase/find"
 )
 
 func RetrieveShowCaseRecordData() echo.HandlerFunc {
@@ -18,7 +18,7 @@ func RetrieveShowCaseRecordData() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		retrieved_data, err := shared_find.GetShowcaseRecordData(public_user_id)
+		retrieved_data, err := showcase_find.GetShowcaseRecordData(public_user_id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
 		}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	shared_find "resuming/shared/find"
+	portfolio_find "resuming/controller/portfolio/find"
 )
 
 func RetrievePortfolioData() echo.HandlerFunc {
@@ -17,7 +17,7 @@ func RetrievePortfolioData() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		retrieved_data, err := shared_find.GetPortfolioData(public_user_id)
+		retrieved_data, err := portfolio_find.GetPortfolioData(public_user_id)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 		}
