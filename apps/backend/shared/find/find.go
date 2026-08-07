@@ -1,4 +1,4 @@
-package user_find
+package shared_find
 
 import (
 	"resuming/database"

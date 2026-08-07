@@ -9,7 +9,7 @@ import (
 	jose "github.com/go-jose/go-jose/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/segmentio/ksuid"
-	find "resuming/controller/user/find"
+	find "resuming/shared/find"
 	"resuming/service"
 	"resuming/systemconfig"
 )
