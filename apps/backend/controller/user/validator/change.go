@@ -2,7 +2,7 @@ package user_validator
 
 import (
 	dto "resuming/controller/user/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateUsernameRequest(request dto.ChangeUsernameRequest) (dto.ChangeUsernameRequest, error) {

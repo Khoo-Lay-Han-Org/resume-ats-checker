@@ -2,7 +2,7 @@ package session_validator
 
 import (
 	dto "resuming/controller/session/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateSessionControlRequest(request dto.SessionControlRequest) (dto.SessionControlRequest, error) {

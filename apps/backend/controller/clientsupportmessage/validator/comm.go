@@ -2,7 +2,7 @@ package clientsupportmessage_validator
 
 import (
 	dto "resuming/controller/clientsupportmessage/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateClientCommunicationReplyRequest(request dto.ClientCommunicationReplyRequest) (dto.ClientCommunicationReplyRequest, error) {

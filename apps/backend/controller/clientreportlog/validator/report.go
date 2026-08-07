@@ -2,7 +2,7 @@ package clientreportlog_validator
 
 import (
 	dto "resuming/controller/clientreportlog/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateClientReportRequest(request dto.ClientReportRequest) (dto.ClientReportRequest, error) {

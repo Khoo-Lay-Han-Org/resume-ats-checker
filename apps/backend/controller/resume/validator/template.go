@@ -2,7 +2,7 @@ package resume_validator
 
 import (
 	dto "resuming/controller/resume/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateTemplateID(request dto.ChooseTemplateRequest) (dto.ChooseTemplateRequest, error) {

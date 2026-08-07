@@ -2,7 +2,7 @@ package user_validator
 
 import (
 	dto "resuming/controller/user/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateUserControlRequest(request dto.UserControlRequest) (dto.UserControlRequest, error) {

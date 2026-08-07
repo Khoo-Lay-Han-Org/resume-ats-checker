@@ -2,7 +2,7 @@ package showcase_validator
 
 import (
 	dto "resuming/controller/showcase/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateNamePortfolioData(request dto.NameSection) (dto.NameSection, error) {

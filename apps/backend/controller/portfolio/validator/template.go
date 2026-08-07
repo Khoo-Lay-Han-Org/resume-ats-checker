@@ -2,7 +2,7 @@ package portfolio_validator
 
 import (
 	dto "resuming/controller/portfolio/dto"
-	"resuming/controller/validation"
+	"resuming/shared/validation"
 )
 
 func ValidateTemplateID(request dto.ChooseTemplateRequest) (dto.ChooseTemplateRequest, error) {
