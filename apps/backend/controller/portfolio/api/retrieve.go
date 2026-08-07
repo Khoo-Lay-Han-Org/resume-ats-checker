@@ -5,9 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	valkey "github.com/valkey-io/valkey-go"
-	"resuming/database"
-	"resuming/service"
+	shared_find "resuming/shared/find"
 )
 
 func RetrievePortfolioData() echo.HandlerFunc {
@@ -19,28 +17,9 @@ func RetrievePortfolioData() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		ctx := c.Request().Context()
-		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
+		retrieved_data, err := shared_find.GetPortfolioData(public_user_id)
 		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				user, dbErr := database.FindUserByPublicId(public_user_id)
-				if dbErr != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
-				}
-				portfolio, dbErr := database.Queries.FindPortfolioByUserId(ctx, user.ID)
-				if dbErr != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
-				}
-				if syncErr := database.SyncIndividualPortfolioDataSessionStore(public_user_id, &portfolio); syncErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve portfolio data."})
-				}
-				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":portfolio_data").Build()).ToString()
-				if err != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
-				}
-			} else {
-				return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
-			}
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve portfolio data."})
 		}
 
 		var data map[string]any

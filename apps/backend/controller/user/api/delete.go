@@ -7,14 +7,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
-	valkey "github.com/valkey-io/valkey-go"
 	dto "resuming/controller/user/dto"
 	email "resuming/controller/user/email"
 	otp "resuming/controller/user/otp"
 	sms "resuming/controller/user/sms"
-	"resuming/database"
 	"resuming/database/sqlc"
 	"resuming/service"
+	shared_find "resuming/shared/find"
 	"resuming/systemconfig"
 )
 
@@ -32,30 +31,9 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		ctx := c.Request().Context()
-		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		user, err := shared_find.GetUser(public_user_id)
 		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				user, dbErr := database.FindUserByPublicId(public_user_id)
-				if dbErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-				}
-				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-				}
-				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
-				if err != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-				}
-			} else {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-			}
-		}
-
-		var user sqlc.User
-		err = json.Unmarshal([]byte(retrieved_data), &user)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 		}
 
 		if factor == two_factor_sms {
@@ -90,29 +68,9 @@ func DeleteAccount() echo.HandlerFunc {
 		}
 
 		ctx := c.Request().Context()
-		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		user, err := shared_find.GetUser(public_user_id)
 		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				user, dbErr := database.FindUserByPublicId(public_user_id)
-				if dbErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-				}
-				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-				}
-				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
-				if err != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-				}
-			} else {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
-			}
-		}
-
-		var user sqlc.User
-		err = json.Unmarshal([]byte(retrieved_data), &user)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 		}
 
 		var request dto.OTPRequest

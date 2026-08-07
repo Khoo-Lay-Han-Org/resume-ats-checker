@@ -1,15 +1,11 @@
 package middleware
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/casbin/casbin/v3"
 	"github.com/labstack/echo/v4"
-	valkey "github.com/valkey-io/valkey-go"
-	"resuming/database"
-	"resuming/database/sqlc"
-	"resuming/service"
+	find "resuming/shared/find"
 )
 
 func OnlyAdmin() echo.MiddlewareFunc {
@@ -26,30 +22,9 @@ func OnlyAdmin() echo.MiddlewareFunc {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve access control configurations."})
 			}
 
-			ctx := c.Request().Context()
-			retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+			user, err := find.GetUser(public_user_id)
 			if err != nil {
-				if valkey.IsValkeyNil(err) {
-					user, dbErr := database.FindUserByPublicId(public_user_id)
-					if dbErr != nil {
-						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-					}
-					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-					}
-					retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
-					if err != nil {
-						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-					}
-				} else {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-				}
-			}
-
-			var user sqlc.User
-			err = json.Unmarshal([]byte(retrieved_data), &user)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
 			}
 
 			ok, err := enforcer.Enforce(string(user.UserType))
@@ -80,30 +55,9 @@ func OnlySuperAdmin() echo.MiddlewareFunc {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve access control configurations."})
 			}
 
-			ctx := c.Request().Context()
-			retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+			user, err := find.GetUser(public_user_id)
 			if err != nil {
-				if valkey.IsValkeyNil(err) {
-					user, dbErr := database.FindUserByPublicId(public_user_id)
-					if dbErr != nil {
-						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-					}
-					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-					}
-					retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
-					if err != nil {
-						return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-					}
-				} else {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
-				}
-			}
-
-			var user sqlc.User
-			err = json.Unmarshal([]byte(retrieved_data), &user)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse user data."})
+				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve user data."})
 			}
 
 			ok, err := enforcer.Enforce(string(user.UserType))

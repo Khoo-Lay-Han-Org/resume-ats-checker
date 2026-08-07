@@ -7,12 +7,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	valkey "github.com/valkey-io/valkey-go"
 	dto "resuming/controller/clientsupportmessage/dto"
 	validator "resuming/controller/clientsupportmessage/validator"
-	"resuming/database"
-	"resuming/database/sqlc"
 	"resuming/service"
+	find "resuming/shared/find"
 	"resuming/systemconfig"
 )
 
@@ -36,27 +34,8 @@ func GetSupportMessages() echo.HandlerFunc {
 			message, _ := item["message"].(string)
 			sender_type, _ := item["sender_type"].(string)
 
-			user_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+			user, err := find.GetUser(public_user_id)
 			if err != nil {
-				if valkey.IsValkeyNil(err) {
-					user, dbErr := database.FindUserByPublicId(public_user_id)
-					if dbErr != nil {
-						continue
-					}
-					if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-						continue
-					}
-					user_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
-					if err != nil {
-						continue
-					}
-				} else {
-					continue
-				}
-			}
-
-			var user sqlc.User
-			if err := json.Unmarshal([]byte(user_data), &user); err != nil {
 				continue
 			}
 
@@ -118,33 +97,14 @@ func ClientCommunicationReply() echo.HandlerFunc {
 			}
 		}
 
-		retrieved_user_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
+		user, err := find.GetUser(public_user_id)
 		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				user, dbErr := database.FindUserByPublicId(public_user_id)
-				if dbErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
-				}
-				if syncErr := database.SyncIndividualUserDataSessionStore(public_user_id, user); syncErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
-				}
-				retrieved_user_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
-				if err != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
-				}
-			} else {
-				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
-			}
-		}
-
-		var user_data sqlc.User
-		if err := json.Unmarshal([]byte(retrieved_user_data), &user_data); err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse admin data"})
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve admin data"})
 		}
 
 		new_admin_comm := map[string]any{
 			"public_id":                 uuid.New().String(),
-			"user_id":                   user_data.PublicID.String(),
+			"user_id":                   user.PublicID.String(),
 			"type":                      original_type,
 			"message":                   message,
 			"sender_type":               "admin",

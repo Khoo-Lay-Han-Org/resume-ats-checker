@@ -6,38 +6,19 @@ import (
 	"errors"
 	"reflect"
 
-	valkey "github.com/valkey-io/valkey-go"
 	dto "resuming/controller/showcase/dto"
 	validator "resuming/controller/showcase/validator"
-	"resuming/database"
 	"resuming/service"
+	shared_find "resuming/shared/find"
 	"resuming/systemconfig"
 )
 
 func InsertShowCaseRecordData(request any, public_user_id string) error {
-	ctx := context.Background()
-	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := shared_find.GetShowcaseRecordData(public_user_id)
 	if err != nil {
-		if valkey.IsValkeyNil(err) {
-			user, dbErr := database.FindUserByPublicId(public_user_id)
-			if dbErr != nil {
-				return dbErr
-			}
-			showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
-			if scErr != nil {
-				return scErr
-			}
-			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
-				return syncErr
-			}
-			data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
+		return err
 	}
+	ctx := context.Background()
 
 	json_data := []byte(data)
 	var deserialised_data map[string]any
@@ -86,29 +67,11 @@ func InsertShowCaseRecordData(request any, public_user_id string) error {
 }
 
 func EditShowCaseRecordData[T any](request T, index int, public_user_id string) error {
-	ctx := context.Background()
-	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := shared_find.GetShowcaseRecordData(public_user_id)
 	if err != nil {
-		if valkey.IsValkeyNil(err) {
-			user, dbErr := database.FindUserByPublicId(public_user_id)
-			if dbErr != nil {
-				return dbErr
-			}
-			showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
-			if scErr != nil {
-				return scErr
-			}
-			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
-				return syncErr
-			}
-			data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
+		return err
 	}
+	ctx := context.Background()
 
 	json_data := []byte(data)
 	var deserialised_data map[string]any
@@ -158,29 +121,11 @@ func EditShowCaseRecordData[T any](request T, index int, public_user_id string) 
 }
 
 func DeleteShowCaseRecordData(field_name string, index int, public_user_id string) error {
-	ctx := context.Background()
-	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+	data, err := shared_find.GetShowcaseRecordData(public_user_id)
 	if err != nil {
-		if valkey.IsValkeyNil(err) {
-			user, dbErr := database.FindUserByPublicId(public_user_id)
-			if dbErr != nil {
-				return dbErr
-			}
-			showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
-			if scErr != nil {
-				return scErr
-			}
-			if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
-				return syncErr
-			}
-			data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
+		return err
 	}
+	ctx := context.Background()
 
 	json_data := []byte(data)
 	var deserialised_data map[string]any

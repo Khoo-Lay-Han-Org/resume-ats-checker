@@ -5,11 +5,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	valkey "github.com/valkey-io/valkey-go"
 	dto "resuming/controller/resume/dto"
 	validator "resuming/controller/resume/validator"
-	"resuming/database"
 	"resuming/service"
+	shared_find "resuming/shared/find"
 	"resuming/systemconfig"
 )
 
@@ -32,28 +31,9 @@ func ChooseTemplate() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
 		}
 
-		ctx := c.Request().Context()
-		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
+		retrieved_data, err := shared_find.GetResumeData(public_user_id)
 		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				user, dbErr := database.FindUserByPublicId(public_user_id)
-				if dbErr != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
-				}
-				resume, dbErr := database.Queries.FindResumeByUserId(ctx, user.ID)
-				if dbErr != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
-				}
-				if syncErr := database.SyncIndividualResumeDataSessionStore(public_user_id, &resume); syncErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve resume data."})
-				}
-				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":resume_data").Build()).ToString()
-				if err != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
-				}
-			} else {
-				return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
-			}
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve resume data."})
 		}
 
 		var data map[string]any

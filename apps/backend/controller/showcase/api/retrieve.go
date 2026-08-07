@@ -5,10 +5,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	valkey "github.com/valkey-io/valkey-go"
 	convert "resuming/controller/showcase/convert"
-	"resuming/database"
-	"resuming/service"
+	shared_find "resuming/shared/find"
 )
 
 func RetrieveShowCaseRecordData() echo.HandlerFunc {
@@ -20,28 +18,9 @@ func RetrieveShowCaseRecordData() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		ctx := c.Request().Context()
-		retrieved_data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
+		retrieved_data, err := shared_find.GetShowcaseRecordData(public_user_id)
 		if err != nil {
-			if valkey.IsValkeyNil(err) {
-				user, dbErr := database.FindUserByPublicId(public_user_id)
-				if dbErr != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
-				}
-				showcase, scErr := database.Queries.FindShowcaseRecordByUserId(ctx, user.ID)
-				if scErr != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
-				}
-				if syncErr := database.SyncIndividualShowCaseRecordDataSessionStore(public_user_id, &showcase); syncErr != nil {
-					return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve showcase record data."})
-				}
-				retrieved_data, err = service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":showcaserecord_data").Build()).ToString()
-				if err != nil {
-					return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
-				}
-			} else {
-				return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
-			}
+			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve showcase record data."})
 		}
 
 		var data map[string]any
