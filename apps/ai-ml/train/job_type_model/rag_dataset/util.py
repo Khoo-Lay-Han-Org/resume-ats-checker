@@ -228,6 +228,44 @@ def _extract_bing_links(page, existing_links):
     return links
 
 
+def _request_targets_internal_address(url: str) -> bool:
+    """True when an http(s) request resolves to loopback, link-local, or private space."""
+    parts = urlsplit(url)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        return False
+
+    hostname = parts.hostname.lower().rstrip(".")
+    if hostname == "localhost" or hostname.endswith(".localhost"):
+        return True
+
+    try:
+        addresses = [
+            info[4][0]
+            for info in socket.getaddrinfo(
+                hostname, parts.port or (443 if parts.scheme == "https" else 80)
+            )
+        ]
+    except OSError:
+        return True
+
+    for address in addresses:
+        try:
+            ip = ipaddress.ip_address(address)
+        except ValueError:
+            return True
+        if (
+            ip.is_loopback
+            or ip.is_link_local
+            or ip.is_private
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        ):
+            return True
+
+    return False
+
+
 def _is_safe_url(link: str) -> bool:
     """Reject URLs that resolve to loopback, link-local, private, or reserved address space.
 
@@ -238,39 +276,28 @@ def _is_safe_url(link: str) -> bool:
     if parts.scheme not in ("http", "https") or not parts.hostname:
         return False
 
-    hostname = parts.hostname.lower().rstrip(".")
-    if hostname == "localhost" or hostname.endswith(".localhost"):
-        return False
+    return not _request_targets_internal_address(link)
 
-    try:
-        addresses = [
-            info[4][0]
-            for info in socket.getaddrinfo(
-                hostname, parts.port or (443 if parts.scheme == "https" else 80)
-            )
-        ]
-    except OSError:
-        return False
 
-    if not addresses:
-        return False
+def _route_guard(route):
+    """Abort any request targeting loopback, link-local, or private address space.
 
-    for address in addresses:
-        try:
-            ip = ipaddress.ip_address(address)
-        except ValueError:
-            return False
-        if (
-            ip.is_loopback
-            or ip.is_link_local
-            or ip.is_private
-            or ip.is_multicast
-            or ip.is_reserved
-            or ip.is_unspecified
-        ):
-            return False
+    page.goto follows redirects, so check every request (including redirects and
+    sub-resources) rather than only the initial URL.
+    """
+    url = route.request.url
+    parts = urlsplit(url)
 
-    return True
+    if parts.scheme in ("data", "blob", "about", "javascript"):
+        route.continue_()
+        return
+
+    if url.startswith("file:") or _request_targets_internal_address(url):
+        print(f"\n\nBlocked non-public request (SSRF guard): \n{url[:120]}")
+        route.abort()
+        return
+
+    route.continue_()
 
 
 def _scrape_page_text(page, link: str) -> list[str]:
@@ -377,6 +404,7 @@ def scrape_content(modified_search_label, max_pages=10):
             for link in links:
                 if page is None:
                     page = context.new_page()
+                    page.route("**/*", _route_guard)
                 print(f"\n\nScraping content from: \n{link}")
                 random_delay(2.0, 5.0)
 
