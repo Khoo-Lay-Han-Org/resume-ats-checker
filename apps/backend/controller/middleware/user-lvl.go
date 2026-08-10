@@ -17,7 +17,7 @@ func OnlyAdmin() echo.MiddlewareFunc {
 			}
 			public_user_id := retrieved_user_id.(string)
 
-			enforcer, err := casbin.NewEnforcer("api/middleware/config/user-lvl.conf", "api/middleware/config/user-lvl.csv")
+			enforcer, err := casbin.NewEnforcer("controller/middleware/config/user-lvl.conf", "controller/middleware/config/user-lvl.csv")
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve access control configurations."})
 			}
@@ -50,7 +50,7 @@ func OnlySuperAdmin() echo.MiddlewareFunc {
 			}
 			public_user_id := retrieved_user_id.(string)
 
-			enforcer, err := casbin.NewEnforcer("api/middleware/config/super-admin-lvl.conf", "api/middleware/config/super-admin-lvl.csv")
+			enforcer, err := casbin.NewEnforcer("controller/middleware/config/super-admin-lvl.conf", "controller/middleware/config/super-admin-lvl.csv")
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to retrieve access control configurations."})
 			}

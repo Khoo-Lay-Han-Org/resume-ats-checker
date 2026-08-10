@@ -312,8 +312,8 @@ Uses **Casbin** with two policy files:
 
 | Middleware | Model File | Policy File | Purpose |
 |---|---|---|---|
-| `OnlyAdmin()` | `api/middleware/config/user-lvl.conf` | `api/middleware/config/user-lvl.csv` | Allows `admin` and `super-admin` |
-| `OnlySuperAdmin()` | `api/middleware/config/super-admin-lvl.conf` | `api/middleware/config/super-admin-lvl.csv` | Allows only `super-admin` |
+| `OnlyAdmin()` | `controller/middleware/config/user-lvl.conf` | `controller/middleware/config/user-lvl.csv` | Allows `admin` and `super-admin` |
+| `OnlySuperAdmin()` | `controller/middleware/config/super-admin-lvl.conf` | `controller/middleware/config/super-admin-lvl.csv` | Allows only `super-admin` |
 
 ### User Types (PostgreSQL Enum)
 

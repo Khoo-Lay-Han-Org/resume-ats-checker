@@ -1,8 +1,10 @@
+import ipaddress
 import json
 import os
 import random
+import socket
 import traceback
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 import requests
 
@@ -226,8 +228,57 @@ def _extract_bing_links(page, existing_links):
     return links
 
 
+def _is_safe_url(link: str) -> bool:
+    """Reject URLs that resolve to loopback, link-local, private, or reserved address space.
+
+    Search engines can surface URLs pointing at internal services (e.g. http://localhost,
+    http://169.254.169.254, http://10.x). This blocks SSRF to those targets.
+    """
+    parts = urlsplit(link)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        return False
+
+    hostname = parts.hostname.lower().rstrip(".")
+    if hostname == "localhost" or hostname.endswith(".localhost"):
+        return False
+
+    try:
+        addresses = [
+            info[4][0]
+            for info in socket.getaddrinfo(
+                hostname, parts.port or (443 if parts.scheme == "https" else 80)
+            )
+        ]
+    except OSError:
+        return False
+
+    if not addresses:
+        return False
+
+    for address in addresses:
+        try:
+            ip = ipaddress.ip_address(address)
+        except ValueError:
+            return False
+        if (
+            ip.is_loopback
+            or ip.is_link_local
+            or ip.is_private
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        ):
+            return False
+
+    return True
+
+
 def _scrape_page_text(page, link: str) -> list[str]:
     """Navigate to a URL and extract long paragraphs from it."""
+    if not _is_safe_url(link):
+        print(f"\n\nBlocked non-public URL (SSRF guard): \n{link[:120]}")
+        return []
+
     try:
         page.goto(link, wait_until="domcontentloaded", timeout=15000)
         page.wait_for_load_state("networkidle", timeout=10000)

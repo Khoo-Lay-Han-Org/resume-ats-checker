@@ -230,10 +230,12 @@ func AcceptToBecomeAdmin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to parse cached data."})
 		}
 
+		var target_user *sqlc.User
 		found := false
 		for i, user := range all_users {
 			if user.PublicID.String() == invite_data.PublicUserId {
 				all_users[i].UserType = sqlc.UserTypeAdmin
+				target_user = &all_users[i]
 				found = true
 				break
 			}
@@ -256,6 +258,27 @@ func AcceptToBecomeAdmin() echo.HandlerFunc {
 		).Error(); err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to update user data."})
 		}
+
+		individual_data, err := json.Marshal(target_user)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to serialise user data"})
+		}
+		if err := service.Valkey.Do(
+			ctx,
+			service.Valkey.B().Set().
+				Key(invite_data.PublicUserId+":user_data").
+				Value(string(individual_data)).
+				Ex(systemconfig.SessionExpiryDuration).
+				Build(),
+		).Error(); err != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to store user data"})
+		}
+
+		go func(psid string) {
+			if err := database.SyncIndividualUserDataDatabase(psid); err != nil {
+				log.Printf("Failed to sync user data: %v", err)
+			}
+		}(invite_data.PublicUserId)
 
 		return nil
 	}
