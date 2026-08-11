@@ -1,4 +1,4 @@
-def initial_record_of_class_categories():
+def files_and_format_creation_for_record():
     pass
 
 
