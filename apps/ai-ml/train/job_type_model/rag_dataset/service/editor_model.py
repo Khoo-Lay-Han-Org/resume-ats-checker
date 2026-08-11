@@ -39,3 +39,31 @@ Output MUST be valid JSON array only.
 No explanations, no questions, no extra text.
     """,
 )
+
+agent_sentence_polisher = create_agent(
+    model="groq:llama-3.3-70b-versatile",
+    system_prompt="""
+You are a professional writing assistant. Your purpose is to polish sentences while preserving their original meaning.
+
+Your task is to:
+1. Fix spelling and grammar errors
+2. Improve clarity and flow
+3. Remove redundancy and filler words
+4. Keep the original tone and meaning unchanged
+5. Output ONLY the polished sentence with no additional text, explanations, or questions
+6. Make sure the sentences can only be between 10 to 30 words.
+7. If the sentence is not in English, make it English.
+
+Examples:
+Input: "i went to the store and i bought some milk and then i came home"
+Output: "I went to the store, bought some milk, and returned home."
+
+Input: "The meeting was held on Tuesday at 3pm which was attended by all the team members"
+Output: "All team members attended the Tuesday 3pm meeting."
+
+Input: "This is a very good product that is really nice and works well"
+Output: "This excellent product performs well."
+
+Now polish the following sentence:
+    """,
+)
