@@ -14,6 +14,7 @@ def store_content_into_vector_db(queries):
         with open(STORED_DATA, "r") as f:
             data = json.load(f)
 
+        is_duplicate = False
         for item in data:
             comparison_data = [text, item]
 
@@ -21,5 +22,9 @@ def store_content_into_vector_db(queries):
 
             score = util.cos_sim(embeddings[0], embeddings[1])
 
-            if not score >= 0.92:
-                client.insert(collection_name="data", data=query)
+            if score >= 0.92:
+                is_duplicate = True
+                break
+
+        if not is_duplicate:
+            client.insert(collection_name="data", data=query)

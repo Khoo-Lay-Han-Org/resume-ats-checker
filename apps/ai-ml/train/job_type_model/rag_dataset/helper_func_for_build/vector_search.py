@@ -13,18 +13,16 @@ def vector_search_based_on_labels():
 
     dataset_data = []
     for i, label in enumerate(ALL_JOB_ROLES):
-        if not isinstance(data[i], list):
+        if not isinstance(data[i]["label"], list):
             raise Exception("data is not list")
 
-        label_ideation = []
-        for item in data[i]["label"]:
-            label_ideation.append(item)
+        label_ideation = list(data[i]["label"])
 
         random.shuffle(label_ideation)
 
         half_length = math.ceil(len(label_ideation) / 2)
 
-        shuffled_data = data[:half_length]
+        shuffled_data = label_ideation[:half_length]
 
         vectors = []
         for item in shuffled_data:
@@ -33,7 +31,7 @@ def vector_search_based_on_labels():
 
         results = client.search(
             collection_name="data",
-            data=[vectors],
+            data=vectors,
             limit=300,
             offset=0,
             output_fields=["text"],
@@ -42,7 +40,7 @@ def vector_search_based_on_labels():
         all_sentences = []
         for result in results:
             for item in result:
-                all_sentences.append(item)
+                all_sentences.append(item["entity"]["text"])
 
         random.shuffle(all_sentences)
 
