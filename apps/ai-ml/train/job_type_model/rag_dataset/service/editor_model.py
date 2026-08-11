@@ -1,3 +1,3 @@
-from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv, find_dotenv
 
-model = SentenceTransformer("BAAI/bge-m3")
+load_dotenv(find_dotenv())
