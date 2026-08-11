@@ -35,12 +35,15 @@ def generate_label_ideation(query):
 def polish_extracted_sentence(queries):
     polished_sentences = []
     for query in queries:
-        try:
-            result = agent_sentence_polisher.invoke(
-                {"messages": [{"role": "user", "content": query}]}
-            )
-        except Exception:
-            return []
+        while True:
+            try:
+                result = agent_sentence_polisher.invoke(
+                    {"messages": [{"role": "user", "content": query}]}
+                )
+                break
+            except:
+                print("Groq need rest, waiting 5 minutes...")
+                time.sleep(300)
 
         unparsed_sentence = None
         for block in result["messages"][-1].content_blocks:
