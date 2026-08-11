@@ -22,7 +22,7 @@ def store_content_into_vector_db(queries):
 
             score = util.cos_sim(embeddings[0], embeddings[1])
 
-            if score >= 0.92:
+            if score >= 0.98:
                 is_duplicate = True
                 break
 

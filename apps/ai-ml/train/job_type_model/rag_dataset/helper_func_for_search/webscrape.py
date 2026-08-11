@@ -10,7 +10,7 @@ load_dotenv(find_dotenv())
 
 
 def scrape_links(query, scraper_url=os.getenv("SEARXNG_URI"), search_type="general"):
-    params = {"q": query, "format": "json", "categories": search_type, "limit": 20}
+    params = {"q": query, "categories": search_type, "limit": 20}
     response = requests.get(f"{scraper_url}/search", params=params)
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -37,7 +37,7 @@ def scrape_links(query, scraper_url=os.getenv("SEARXNG_URI"), search_type="gener
 def scrape_dataset_contents(
     query, scraper_url=os.getenv("SEARXNG_URI"), search_type="general"
 ):
-    params = {"q": query, "format": "json", "categories": search_type, "limit": 100}
+    params = {"q": query, "categories": search_type, "limit": 100}
     response = requests.get(f"{scraper_url}/search", params=params)
     soup = BeautifulSoup(response.text, "html.parser")
 
