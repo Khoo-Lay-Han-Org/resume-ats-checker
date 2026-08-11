@@ -1,6 +1,7 @@
-def build_content_data_struct():
-    pass
+from ..storage.route_config import DATASET
+import json
 
 
-def store_extracted_content_to_dataset():
-    pass
+def store_extracted_content_to_dataset(query):
+    with open(DATASET, "w") as f:
+        json.dump(query, f)
