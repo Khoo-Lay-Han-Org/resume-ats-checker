@@ -7,11 +7,14 @@ def generate_label_ideation(query):
         {"messages": [{"role": "user", "content": query}]}
     )
 
+    unparsed_labels = None
     for block in result["messages"][-1].content_blocks:
         if block.get("type") == "text":
-            return block["text"]
+            unparsed_labels = block["text"]
+            break
 
-    unparsed_labels = result["messages"][-1].content_blocks[-1].get("text", "")
+    if unparsed_labels is None:
+        unparsed_labels = result["messages"][-1].content_blocks[-1].get("text", "")
 
     ideated_labels = json.loads(unparsed_labels)
 
