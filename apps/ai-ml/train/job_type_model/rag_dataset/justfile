@@ -1,0 +1,15 @@
+set dotenv-load := true
+set shell := ["bash", "-cu"]
+
+searxng-port := env_var("SEARXNG_PORT")
+
+start-webscraper:
+	docker run -d \
+		--restart unless-stopped \
+		-p 8080:`{{searxng-port}}` \
+		--name searxng-webscraper \
+		searxng/searxng:latest
+
+delete-webscraper:
+	docker stop searxng-webscraper
+	docker rm -f searxng-webscraper
