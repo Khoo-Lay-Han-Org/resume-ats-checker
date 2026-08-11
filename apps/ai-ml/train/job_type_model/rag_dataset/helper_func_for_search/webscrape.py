@@ -15,7 +15,7 @@ def scrape_links(query, scraper_url=os.getenv("SEARXNG_URI"), search_type="gener
     soup = BeautifulSoup(response.text, "html.parser")
 
     all_links = []
-    for link in soup.find_all("a", href=True):
+    for link in soup.find_all(LINK_ELEMENT, href=True):
         href = link.get("href")
 
         if isinstance(href, list):
