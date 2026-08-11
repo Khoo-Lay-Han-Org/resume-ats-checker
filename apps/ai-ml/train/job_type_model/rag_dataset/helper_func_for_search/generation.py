@@ -22,5 +22,21 @@ def generate_label_ideation(query):
     return search_labels
 
 
-def polish_extracted_sentence():
-    pass
+def polish_extracted_sentence(queries):
+    result = agent_sentence_polisher.invoke(
+        {"messages": [{"role": "user", "content": queries}]}
+    )
+
+    for block in result["messages"][-1].content_blocks:
+        if block.get("type") == "text":
+            return block["text"]
+
+    unparsed_sentences = result["messages"][-1].content_blocks[-1].get("text", "")
+
+    polished_sentences = json.loads(unparsed_sentences)
+
+    sentences = []
+    for item in polished_sentences:
+        sentences.append(item)
+
+    return sentences
