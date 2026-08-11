@@ -8,7 +8,7 @@ def files_creation_for_record():
         json.dump({}, f)
 
 
-def record_newly_generated_labels_ideation():
+def record_label_state():
     pass
 
 
