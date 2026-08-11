@@ -37,11 +37,13 @@ def generate():
 
             if scraped_content:
                 polished_content = polish_extracted_sentence("\n".join(scraped_content))
-                print(polished_content)
-                embedded_content = embed_scraped_content(polished_content)
 
-                store_content_into_vector_db(embedded_content)
-                record_each_polished_content(polished_content)
+                if polished_content:
+                    print("\n".join(polished_content))
+                    embedded_content = embed_scraped_content(polished_content)
+
+                    store_content_into_vector_db(embedded_content)
+                    record_each_polished_content(polished_content)
 
             record_label_indexing()
 

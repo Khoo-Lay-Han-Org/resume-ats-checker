@@ -26,20 +26,39 @@ def generate_label_ideation(query):
 
 
 def polish_extracted_sentence(queries):
-    result = agent_sentence_polisher.invoke(
-        {"messages": [{"role": "user", "content": queries}]}
-    )
+    try:
+        result = agent_sentence_polisher.invoke(
+            {"messages": [{"role": "user", "content": queries}]}
+        )
+    except Exception:
+        return []
 
+    unparsed_sentences = None
     for block in result["messages"][-1].content_blocks:
         if block.get("type") == "text":
-            return block["text"]
+            unparsed_sentences = block["text"]
+            break
 
-    unparsed_sentences = result["messages"][-1].content_blocks[-1].get("text", "")
+    if unparsed_sentences is None:
+        unparsed_sentences = result["messages"][-1].content_blocks[-1].get("text", "")
 
-    polished_sentences = json.loads(unparsed_sentences)
+    if isinstance(unparsed_sentences, str):
+        return [
+            sentence.strip()
+            for sentence in unparsed_sentences.splitlines()
+            if sentence.strip()
+        ]
 
-    sentences = []
-    for item in polished_sentences:
-        sentences.append(item)
+    try:
+        polished_sentences = json.loads(unparsed_sentences)
+    except (TypeError, ValueError):
+        return []
 
-    return sentences
+    if isinstance(polished_sentences, str):
+        return [
+            sentence.strip()
+            for sentence in polished_sentences.splitlines()
+            if sentence.strip()
+        ]
+
+    return polished_sentences
