@@ -1,6 +1,2 @@
-dataset/**
-!dataset/**/
-!dataset/**/*.md
-database.db/**
-!database.db/**/
-!database.db/**/*.md
+database.db
+storage/*.json
