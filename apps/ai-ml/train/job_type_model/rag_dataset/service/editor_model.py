@@ -14,6 +14,7 @@ Your task is to:
 3. Expand queries using different angles (question-based, long-tail, industry-specific, location-based)
 4. Consider different search intents (informational, navigational, transactional)
 5. Output ONLY a JSON array of keywords with NO additional text
+6. Generate only 7 of them
 
 Ideation strategies:
 - Synonym expansion: Find alternative words for the core concept
