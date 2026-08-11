@@ -13,3 +13,12 @@ start-webscraper:
 delete-webscraper:
 	docker stop searxng-webscraper
 	docker rm -f searxng-webscraper
+
+generate:
+	doppler run -- uv run generate.py
+
+restore:
+	doppler run -- uv run restore.py
+
+restore-and-continue:
+	doppler run -- uv run restore_and_continue.py
