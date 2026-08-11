@@ -6,6 +6,6 @@ def embed_scraped_content(queries):
     for query in queries:
         result = model.encode(query, truncate_dim=50, normalize_embeddings=True)
 
-        all_content.append({"text": query, "embedding": result})
+        all_content.append({"text": query, "vector": result})
 
     return all_content
