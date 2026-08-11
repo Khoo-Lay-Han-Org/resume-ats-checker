@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
     "basedpyright>=1.39.3",
+    "beautifulsoup4>=4.14.3",
     "bs4>=0.0.2",
     "datasets>=4.8.4",
     "docpluck>=2.4.17",
