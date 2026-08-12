@@ -56,12 +56,8 @@ def polish_extracted_sentence(queries):
                 result["messages"][-1].content_blocks[-1].get("text", "")
             )
 
-        try:
-            polished_sentence = json.loads(unparsed_sentence)
-        except (TypeError, ValueError):
-            return []
-
-        if isinstance(polished_sentence, str):
-            polished_sentences.append(polished_sentence.strip())
+        polished_sentence = unparsed_sentence.strip()
+        if polished_sentence:
+            polished_sentences.append(polished_sentence)
 
     return polished_sentences
