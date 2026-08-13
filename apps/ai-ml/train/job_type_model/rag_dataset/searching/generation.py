@@ -1,6 +1,8 @@
 import json
+import sys
 import time
 from ..config.generation import *
+import subprocess
 
 from ..service.editor_model import agent_label_ideator, agent_sentence_polisher
 
@@ -46,6 +48,7 @@ def polish_extracted_sentence(queries):
                 result = agent_sentence_polisher.invoke(
                     {"messages": [{"role": "user", "content": query}]}
                 )
+                print(result)
                 break
             except Exception as e:
                 print(
@@ -69,6 +72,11 @@ def polish_extracted_sentence(queries):
 
         polished_sentence = unparsed_sentence.strip()
         if polished_sentence:
+            rate_limit_wording = "Rate limit reached"
+            if rate_limit_wording in polished_sentence:
+                print("\n\n\nRate limit reached, model is resting for 10 minutes\n\n\n")
+                time.sleep(600)
+                sys.exit(1)
             polished_sentences.append(polished_sentence)
 
     return polished_sentences
