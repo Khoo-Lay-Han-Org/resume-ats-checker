@@ -3,14 +3,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from rag_dataset.helper_func_for_build.dataset_build import (
+from rag_dataset.building.dataset_build import (
     store_extracted_content_to_dataset,
 )
-from rag_dataset.helper_func_for_build.vector_search import (
+from rag_dataset.building.vector_search import (
     vector_search_based_on_labels,
 )
-from rag_dataset.helper_func_for_restoring.embed import embed_recorded_content
-from rag_dataset.helper_func_for_search.store import store_content_into_vector_db
+from rag_dataset.restoring.embed import embed_recorded_content
+from rag_dataset.searching.store import store_content_into_vector_db
 
 
 def restore():

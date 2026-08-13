@@ -4,25 +4,25 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from rag_dataset.helper_func_for_build.dataset_build import (
+from rag_dataset.building.dataset_build import (
     store_extracted_content_to_dataset,
 )
-from rag_dataset.helper_func_for_build.vector_search import (
+from rag_dataset.building.vector_search import (
     vector_search_based_on_labels,
 )
-from rag_dataset.helper_func_for_restoring.embed import embed_recorded_content
-from rag_dataset.helper_func_for_search.embed import embed_scraped_content
-from rag_dataset.helper_func_for_search.generation import (
+from rag_dataset.restoring.embed import embed_recorded_content
+from rag_dataset.searching.embed import embed_scraped_content
+from rag_dataset.searching.generation import (
     generate_label_ideation,
     polish_extracted_sentence,
 )
-from rag_dataset.helper_func_for_search.progress_record import (
+from rag_dataset.searching.progress_record import (
     record_each_polished_content,
     record_ideated_labels,
     record_label_indexing,
 )
-from rag_dataset.helper_func_for_search.store import store_content_into_vector_db
-from rag_dataset.helper_func_for_search.webscrape import scrape_dataset_contents
+from rag_dataset.searching.store import store_content_into_vector_db
+from rag_dataset.searching.webscrape import scrape_dataset_contents
 from rag_dataset.storage.route_config import CHECKPOINT_FILE
 from rag_dataset.targets.keywords import ALL_JOB_ROLES
 
