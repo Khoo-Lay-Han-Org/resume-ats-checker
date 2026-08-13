@@ -56,7 +56,7 @@ def restore_and_continue():
             scraped_content = scrape_dataset_contents(ideation)
 
             if scraped_content:
-                polished_content = polish_extracted_sentence("\n".join(scraped_content))
+                polished_content = polish_extracted_sentence(scraped_content)
 
                 if polished_content:
                     embedded_content = embed_scraped_content(polished_content)

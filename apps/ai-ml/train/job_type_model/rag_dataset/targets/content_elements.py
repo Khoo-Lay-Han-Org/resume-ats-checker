@@ -8,3 +8,5 @@ CONTENT_ELEMENTS = [
 NEXT_PAGE_ELEMENT = ""
 
 LINK_ELEMENT = "a"
+
+RESULT_LINK_SELECTOR = "article.result a[href]"

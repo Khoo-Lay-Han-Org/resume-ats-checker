@@ -1,6 +1,8 @@
-from ..service.editor_model import *
 import json
 import time
+from ..config.generation import *
+
+from ..service.editor_model import agent_label_ideator, agent_sentence_polisher
 
 
 def generate_label_ideation(query):
@@ -10,8 +12,8 @@ def generate_label_ideation(query):
                 {"messages": [{"role": "user", "content": query}]}
             )
             break
-        except:
-            print("Groq need rest, waiting 5 minutes...")
+        except Exception as e:
+            print(f"Groq need rest, waiting 5 minutes... ({e})")
             time.sleep(300)
 
     unparsed_labels = None
@@ -34,16 +36,25 @@ def generate_label_ideation(query):
 
 def polish_extracted_sentence(queries):
     polished_sentences = []
-    for query in queries:
-        while True:
+    total = len(queries)
+
+    for index, query in enumerate(queries, start=1):
+        print(f"Polishing {index}/{total}...")
+
+        for attempt in range(MAX_POLISH_ATTEMPTS):
             try:
                 result = agent_sentence_polisher.invoke(
                     {"messages": [{"role": "user", "content": query}]}
                 )
                 break
-            except:
-                print("Groq need rest, waiting 5 minutes...")
-                time.sleep(300)
+            except Exception as e:
+                print(
+                    f"  Groq error (attempt {attempt + 1}/{MAX_POLISH_ATTEMPTS}): {e}"
+                )
+                time.sleep(POLISH_RETRY_DELAY)
+        else:
+            print("  Skipping item: all attempts failed")
+            continue
 
         unparsed_sentence = None
         for block in result["messages"][-1].content_blocks:
