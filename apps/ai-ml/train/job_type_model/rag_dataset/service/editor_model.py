@@ -4,7 +4,42 @@ from langchain.agents.middleware import ModelFallbackMiddleware, ModelRetryMiddl
 
 load_dotenv(find_dotenv())
 
-models_fallback = ModelFallbackMiddleware(
+
+class LoggedModelFallbackMiddleware(ModelFallbackMiddleware):
+    def wrap_model_call(self, request, handler):
+        try:
+            return handler(request)
+        except Exception as e:
+            last_exception = e
+
+        for fallback_model in self.models:
+            print(f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}")
+            try:
+                return handler(request.override(model=fallback_model))
+            except Exception as e:
+                last_exception = e
+                continue
+
+        raise last_exception
+
+    async def awrap_model_call(self, request, handler):
+        try:
+            return await handler(request)
+        except Exception as e:
+            last_exception = e
+
+        for fallback_model in self.models:
+            print(f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}")
+            try:
+                return await handler(request.override(model=fallback_model))
+            except Exception as e:
+                last_exception = e
+                continue
+
+        raise last_exception
+
+
+models_fallback = LoggedModelFallbackMiddleware(
     "groq:meta-llama/llama-4-maverick-17b-128e-instruct",
     "groq:meta-llama/llama-4-scout-17b-16e-instruct",
     "groq:openai/gpt-oss-120b",
