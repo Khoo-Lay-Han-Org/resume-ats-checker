@@ -20,3 +20,6 @@ restore:
 
 restore-and-continue:
 	doppler run -- uv run restore_and_continue.py
+
+continue:
+	doppler run -- uv run continue.py
