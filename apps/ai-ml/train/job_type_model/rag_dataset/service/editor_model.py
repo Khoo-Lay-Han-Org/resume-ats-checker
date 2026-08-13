@@ -1,10 +1,27 @@
 from dotenv import load_dotenv, find_dotenv
 from langchain.agents import create_agent
+from langchain.agents.middleware import ModelFallbackMiddleware, ModelRetryMiddleware
 
 load_dotenv(find_dotenv())
 
+models_fallback = ModelFallbackMiddleware(
+    "groq:meta-llama/llama-4-maverick-17b-128e-instruct",
+    "groq:meta-llama/llama-4-scout-17b-16e-instruct",
+    "groq:openai/gpt-oss-120b",
+    "groq:qwen/qwen3-32b",
+    "groq:moonshotai/kimi-k2-instruct",
+    "groq:deepseek-r1-distill-llama-70b",
+    "groq:llama-3.1-8b-instant",
+)
+
+models_retry = ModelRetryMiddleware(
+    max_retries=7,
+    backoff_factor=1.0,
+)
+
 agent_label_ideator = create_agent(
     model="groq:llama-3.3-70b-versatile",
+    middleware=[models_fallback, models_retry],
     system_prompt="""
 You are a Search Query Ideation Agent. Your purpose is to generate diverse, targeted search keywords for web scraping and data collection.
 
@@ -42,6 +59,7 @@ No explanations, no questions, no extra text.
 
 agent_sentence_polisher = create_agent(
     model="groq:llama-3.3-70b-versatile",
+    middleware=[models_fallback, models_retry],
     system_prompt="""
 You are a professional writing assistant. Your purpose is to polish sentences while preserving their original meaning.
 
