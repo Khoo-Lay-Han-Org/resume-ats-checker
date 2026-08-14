@@ -74,8 +74,10 @@ def polish_extracted_sentence(queries):
         if polished_sentence:
             rate_limit_wording = "Rate limit reached"
             if rate_limit_wording in polished_sentence:
-                print("\n\n\nRate limit reached, model is resting for 10 minutes\n\n\n")
-                time.sleep(600)
+                print(
+                    "\n\n\nRate limit reached, model is resting for 250 minutes\n\n\n"
+                )
+                time.sleep(10800)
                 sys.exit(1)
             polished_sentences.append(polished_sentence)
 
