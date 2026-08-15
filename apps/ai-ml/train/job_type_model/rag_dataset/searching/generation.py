@@ -15,8 +15,8 @@ def generate_label_ideation(query):
             )
             break
         except Exception as e:
-            print(f"Groq need rest, waiting 5 minutes... ({e})")
-            time.sleep(300)
+            print(f"Groq need rest, waiting 10 minutes... ({e})")
+            time.sleep(600)
 
     unparsed_labels = None
     for block in result["messages"][-1].content_blocks:
@@ -75,9 +75,9 @@ def polish_extracted_sentence(queries):
             rate_limit_wording = "Rate limit reached"
             if rate_limit_wording in polished_sentence:
                 print(
-                    "\n\n\nRate limit reached, model is resting for 250 minutes\n\n\n"
+                    "\n\n\nRate limit reached, model is resting for 240 minutes\n\n\n"
                 )
-                time.sleep(10800)
+                time.sleep(14400)
                 sys.exit(1)
             polished_sentences.append(polished_sentence)
 
