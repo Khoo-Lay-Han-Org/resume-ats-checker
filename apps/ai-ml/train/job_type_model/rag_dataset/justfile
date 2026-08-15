@@ -13,13 +13,22 @@ delete-webscraper:
 	docker rm -f searxng-webscraper
 
 generate:
+	#!/usr/bin/env bash
+	echo -en "\nThis process is going to remove all stored data that you previously had, do you really wish to continue? (yes/no): "
+	read response
+	if [[ $response == no ]]; then
+		exit 0
+	fi
 	EXIT_CODE=-1; while true; do if [ $EXIT_CODE -eq -1 ]; then echo "Running generate.py"; doppler run -- uv run generate.py; EXIT_CODE=$?; elif [ $EXIT_CODE -eq 1 ]; then echo "Running continue.py"; doppler run -- uv run continue.py; EXIT_CODE=$?; elif [ $EXIT_CODE -eq 0 ]; then echo "Success"; break; else echo "Unknown error"; break; fi; done
 
 restore:
+	#!/usr/bin/env bash
 	doppler run -- uv run restore.py
 
 restore-and-continue:
+	#!/usr/bin/env bash
 	EXIT_CODE=-1; while true; do if [ $EXIT_CODE -eq -1 ]; then doppler run -- uv run restore_and_continue.py; EXIT_CODE=$?; elif [ $EXIT_CODE -eq 1 ]; then doppler run -- uv run continue.py; EXIT_CODE=$?; elif [ $EXIT_CODE -eq 0 ]; then echo "Success"; break; else echo "Unknown error"; break; fi; done
 
 continue:
+	#!/usr/bin/env bash
 	EXIT_CODE=1; while true; do if [ $EXIT_CODE -eq 1 ]; then doppler run -- uv run continue.py; EXIT_CODE=$?; elif [ $EXIT_CODE -eq 0 ]; then echo "Success"; break; else echo "Unknown error"; break; fi; done
