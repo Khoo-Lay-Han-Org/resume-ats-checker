@@ -13,27 +13,49 @@ def generate_label_ideation(query):
             result = agent_label_ideator.invoke(
                 {"messages": [{"role": "user", "content": query}]}
             )
-            break
+            print("Result")
+            print(result)
         except Exception as e:
             print(f"Groq need rest, waiting 10 minutes... ({e})")
             time.sleep(600)
+            continue
 
-    unparsed_labels = None
-    for block in result["messages"][-1].content_blocks:
-        if block.get("type") == "text":
-            unparsed_labels = block["text"]
-            break
+        unparsed_labels = None
+        for block in result["messages"][-1].content_blocks:
+            if block.get("type") == "text":
+                unparsed_labels = block["text"]
+                break
 
-    if unparsed_labels is None:
-        unparsed_labels = result["messages"][-1].content_blocks[-1].get("text", "")
+        if unparsed_labels is None:
+            unparsed_labels = result["messages"][-1].content_blocks[-1].get("text", "")
 
-    ideated_labels = json.loads(unparsed_labels)
+        polished_labels = unparsed_labels.strip()
+        if polished_labels:
+            rate_limit_wording = "Rate limit reached"
+            if rate_limit_wording in polished_labels:
+                print(
+                    "\n\n\nRate limit reached, model is resting for 240 minutes\n\n\n"
+                )
+                time.sleep(14400)
+                continue
 
-    search_labels = []
-    for item in ideated_labels:
-        search_labels.append(item)
+            not_found_wording = "does not exist"
+            if not_found_wording in polished_labels:
+                print("\n\n\nNot found. Skipped.\n\n\n")
+                continue
 
-    return search_labels
+            model_not_found_wording = "model_not_found"
+            if not_found_wording in polished_labels:
+                print("\n\n\nModel not found. Skipped.\n\n\n")
+                continue
+
+        ideated_labels = json.loads(polished_labels)
+
+        search_labels = []
+        for item in ideated_labels:
+            search_labels.append(item)
+
+        return search_labels
 
 
 def polish_extracted_sentence(queries):
@@ -78,7 +100,6 @@ def polish_extracted_sentence(queries):
                     "\n\n\nRate limit reached, model is resting for 240 minutes\n\n\n"
                 )
                 time.sleep(14400)
-                sys.exit(1)
 
             not_found_wording = "does not exist"
             if not_found_wording in polished_sentence:
