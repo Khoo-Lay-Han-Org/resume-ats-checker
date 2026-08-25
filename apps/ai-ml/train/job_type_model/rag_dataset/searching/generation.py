@@ -16,9 +16,9 @@ def generate_label_ideation(query):
     current_model_num = 1
 
     system_prompt = AGENT_SYSTEM_PROMPT[1]
-    model = AVAILABLE_MODELS[current_model_num]
 
     while True:
+        model = AVAILABLE_MODELS[current_model_num]
         agent = build_agent_model(model, system_prompt)
 
         try:
@@ -85,17 +85,18 @@ def polish_extracted_sentence(queries):
     current_model_num = 1
 
     system_prompt = AGENT_SYSTEM_PROMPT[2]
-    model = AVAILABLE_MODELS[current_model_num]
 
     polished_sentences = []
     total = len(queries)
 
     for index, query in enumerate(queries, start=1):
+        model = AVAILABLE_MODELS[current_model_num]
         agent = build_agent_model(model, system_prompt)
 
         print(f"Polishing {index}/{total}...")
 
         for attempt in range(MAX_POLISH_ATTEMPTS):
+            model = AVAILABLE_MODELS[current_model_num]
             agent = build_agent_model(model, system_prompt)
             try:
                 result = agent.invoke(
