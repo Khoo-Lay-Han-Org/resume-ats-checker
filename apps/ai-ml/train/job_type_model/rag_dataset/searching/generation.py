@@ -4,18 +4,32 @@ import time
 from ..config.generation import *
 import subprocess
 
-from ..service.editor_model import agent_label_ideator, agent_sentence_polisher
+from ..service.editor_model import (
+    AVAILABLE_MODELS,
+    AGENT_SYSTEM_PROMPT,
+    build_agent_model,
+)
 
 
 def generate_label_ideation(query):
-    agent = agent_label_ideator
+    max_model_num = len(AVAILABLE_MODELS)
+    current_model_num = 1
+
+    system_prompt = AGENT_SYSTEM_PROMPT[1]
+    model = AVAILABLE_MODELS[current_model_num]
+
     while True:
+        agent = build_agent_model(model, system_prompt)
+
         try:
             result = agent.invoke({"messages": [{"role": "user", "content": query}]})
             print("Result")
             print(result)
         except Exception as e:
             print(f"Groq need rest, waiting 10 minutes... ({e})")
+            current_model_num = (
+                current_model_num + 1 if current_model_num < max_model_num else 1
+            )
             time.sleep(600)
             continue
 
@@ -35,17 +49,26 @@ def generate_label_ideation(query):
                 print(
                     "\n\n\nRate limit reached, model is resting for 240 minutes\n\n\n"
                 )
+                current_model_num = (
+                    current_model_num + 1 if current_model_num < max_model_num else 1
+                )
                 time.sleep(14400)
                 continue
 
             not_found_wording = "does not exist"
             if not_found_wording in polished_labels:
                 print("\n\n\nNot found. Skipped.\n\n\n")
+                current_model_num = (
+                    current_model_num + 1 if current_model_num < max_model_num else 1
+                )
                 continue
 
             model_not_found_wording = "model_not_found"
             if not_found_wording in polished_labels:
                 print("\n\n\nModel not found. Skipped.\n\n\n")
+                current_model_num = (
+                    current_model_num + 1 if current_model_num < max_model_num else 1
+                )
                 continue
 
         ideated_labels = json.loads(polished_labels)
@@ -58,14 +81,22 @@ def generate_label_ideation(query):
 
 
 def polish_extracted_sentence(queries):
+    max_model_num = len(AVAILABLE_MODELS)
+    current_model_num = 1
+
+    system_prompt = AGENT_SYSTEM_PROMPT[2]
+    model = AVAILABLE_MODELS[current_model_num]
+
     polished_sentences = []
     total = len(queries)
-    agent = agent_sentence_polisher
 
     for index, query in enumerate(queries, start=1):
+        agent = build_agent_model(model, system_prompt)
+
         print(f"Polishing {index}/{total}...")
 
         for attempt in range(MAX_POLISH_ATTEMPTS):
+            agent = build_agent_model(model, system_prompt)
             try:
                 result = agent.invoke(
                     {"messages": [{"role": "user", "content": query}]}
@@ -75,6 +106,9 @@ def polish_extracted_sentence(queries):
             except Exception as e:
                 print(
                     f"  Groq error (attempt {attempt + 1}/{MAX_POLISH_ATTEMPTS}): {e}"
+                )
+                current_model_num = (
+                    current_model_num + 1 if current_model_num < max_model_num else 1
                 )
                 time.sleep(POLISH_RETRY_DELAY)
         else:

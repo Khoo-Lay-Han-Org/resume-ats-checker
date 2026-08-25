@@ -5,45 +5,7 @@ from langchain.agents.middleware import ModelFallbackMiddleware, ModelRetryMiddl
 load_dotenv(find_dotenv())
 
 
-class LoggedModelFallbackMiddleware(ModelFallbackMiddleware):
-    def wrap_model_call(self, request, handler):
-        try:
-            return handler(request)
-        except Exception as e:
-            last_exception = e
-
-        for fallback_model in self.models:
-            print(
-                f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}"
-            )
-            try:
-                return handler(request.override(model=fallback_model))
-            except Exception as e:
-                last_exception = e
-                continue
-
-        raise last_exception
-
-    async def awrap_model_call(self, request, handler):
-        try:
-            return await handler(request)
-        except Exception as e:
-            last_exception = e
-
-        for fallback_model in self.models:
-            print(
-                f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}"
-            )
-            try:
-                return await handler(request.override(model=fallback_model))
-            except Exception as e:
-                last_exception = e
-                continue
-
-        raise last_exception
-
-
-models_fallback = LoggedModelFallbackMiddleware(
+AVAILABLE_MODELS = [
     "groq:meta-llama/llama-4-maverick-17b-128e-instruct",
     "groq:meta-llama/llama-4-scout-17b-16e-instruct",
     "groq:openai/gpt-oss-120b",
@@ -51,18 +13,11 @@ models_fallback = LoggedModelFallbackMiddleware(
     "groq:moonshotai/kimi-k2-instruct",
     "groq:deepseek-r1-distill-llama-70b",
     "groq:llama-3.1-8b-instant",
-)
+]
 
-models_retry = ModelRetryMiddleware(
-    max_retries=7,
-    backoff_factor=1.0,
-    on_failure="error",
-)
-
-agent_label_ideator = create_agent(
-    model="groq:llama-3.3-70b-versatile",
-    middleware=[models_retry],
-    system_prompt="""
+AGENT_SYSTEM_PROMPT = [
+    ## For Labels Ideator
+    """
 You are a Search Query Ideation Agent. Your purpose is to generate diverse, targeted search keywords for web scraping and data collection.
 
 Your task is to:
@@ -95,12 +50,8 @@ Now generate expanded keywords for the following topic.
 Output MUST be valid JSON array only.
 No explanations, no questions, no extra text.
     """,
-)
-
-agent_sentence_polisher = create_agent(
-    model="groq:llama-3.3-70b-versatile",
-    middleware=[models_retry],
-    system_prompt="""
+    ## For Sentence Polisher
+    """
 You are a professional writing assistant. Your purpose is to polish sentences while preserving their original meaning.
 
 Your task is to:
@@ -124,4 +75,8 @@ Output: "This excellent product performs well."
 
 Now polish the following sentence:
     """,
-)
+]
+
+
+def build_agent_model(model, system_prompt):
+    return create_agent(model=model, system_prompt=system_prompt)
