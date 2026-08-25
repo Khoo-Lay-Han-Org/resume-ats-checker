@@ -79,6 +79,17 @@ def polish_extracted_sentence(queries):
                 )
                 time.sleep(14400)
                 sys.exit(1)
+
+            not_found_wording = "does not exist"
+            if not_found_wording in polished_sentence:
+                print("\n\n\nNot found. Skipped.\n\n\n")
+                continue
+
+            model_not_found_wording = "model_not_found"
+            if not_found_wording in polished_sentence:
+                print("\n\n\nModel not found. Skipped.\n\n\n")
+                continue
+
             polished_sentences.append(polished_sentence)
 
     return polished_sentences
