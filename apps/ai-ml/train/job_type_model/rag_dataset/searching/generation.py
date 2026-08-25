@@ -8,11 +8,10 @@ from ..service.editor_model import agent_label_ideator, agent_sentence_polisher
 
 
 def generate_label_ideation(query):
+    agent = agent_label_ideator
     while True:
         try:
-            result = agent_label_ideator.invoke(
-                {"messages": [{"role": "user", "content": query}]}
-            )
+            result = agent.invoke({"messages": [{"role": "user", "content": query}]})
             print("Result")
             print(result)
         except Exception as e:
@@ -61,13 +60,14 @@ def generate_label_ideation(query):
 def polish_extracted_sentence(queries):
     polished_sentences = []
     total = len(queries)
+    agent = agent_sentence_polisher
 
     for index, query in enumerate(queries, start=1):
         print(f"Polishing {index}/{total}...")
 
         for attempt in range(MAX_POLISH_ATTEMPTS):
             try:
-                result = agent_sentence_polisher.invoke(
+                result = agent.invoke(
                     {"messages": [{"role": "user", "content": query}]}
                 )
                 print(result)
