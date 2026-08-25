@@ -13,7 +13,9 @@ class LoggedModelFallbackMiddleware(ModelFallbackMiddleware):
             last_exception = e
 
         for fallback_model in self.models:
-            print(f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}")
+            print(
+                f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}"
+            )
             try:
                 return handler(request.override(model=fallback_model))
             except Exception as e:
@@ -29,7 +31,9 @@ class LoggedModelFallbackMiddleware(ModelFallbackMiddleware):
             last_exception = e
 
         for fallback_model in self.models:
-            print(f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}")
+            print(
+                f"Switching model to {getattr(fallback_model, 'model_name', fallback_model)}"
+            )
             try:
                 return await handler(request.override(model=fallback_model))
             except Exception as e:
@@ -52,11 +56,12 @@ models_fallback = LoggedModelFallbackMiddleware(
 models_retry = ModelRetryMiddleware(
     max_retries=7,
     backoff_factor=1.0,
+    on_failure="error",
 )
 
 agent_label_ideator = create_agent(
     model="groq:llama-3.3-70b-versatile",
-    middleware=[models_fallback, models_retry],
+    middleware=[models_retry],
     system_prompt="""
 You are a Search Query Ideation Agent. Your purpose is to generate diverse, targeted search keywords for web scraping and data collection.
 
@@ -94,7 +99,7 @@ No explanations, no questions, no extra text.
 
 agent_sentence_polisher = create_agent(
     model="groq:llama-3.3-70b-versatile",
-    middleware=[models_fallback, models_retry],
+    middleware=[models_retry],
     system_prompt="""
 You are a professional writing assistant. Your purpose is to polish sentences while preserving their original meaning.
 
