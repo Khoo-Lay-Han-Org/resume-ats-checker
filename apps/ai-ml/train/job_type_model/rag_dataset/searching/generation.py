@@ -115,7 +115,9 @@ def polish_extracted_sentence(queries):
                     f"  Groq error (attempt {attempt + 1}/{MAX_POLISH_ATTEMPTS}): {e}"
                 )
                 current_model_num = (
-                    current_model_num + 1 if current_model_num < max_model_num else 1
+                    current_model_num + 1
+                    if current_model_num < max_model_num - 1
+                    else 0
                 )
                 time.sleep(POLISH_RETRY_DELAY)
         else:
