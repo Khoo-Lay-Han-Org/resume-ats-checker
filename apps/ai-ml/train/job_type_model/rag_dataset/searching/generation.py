@@ -28,7 +28,7 @@ def generate_label_ideation(query):
         except Exception as e:
             print(f"Groq need rest, waiting 10 minutes... ({e})")
             current_model_num = (
-                current_model_num + 1 if current_model_num < max_model_num else 0
+                current_model_num + 1 if current_model_num < max_model_num - 1 else 0
             )
             time.sleep(600)
             continue
@@ -51,7 +51,7 @@ def generate_label_ideation(query):
         if rate_limit_wording in polished_labels:
             print("\n\n\nRate limit reached, model is resting for 240 minutes\n\n\n")
             current_model_num = (
-                current_model_num + 1 if current_model_num < max_model_num else 0
+                current_model_num + 1 if current_model_num < max_model_num - 1 else 0
             )
             time.sleep(14400)
             continue
@@ -60,7 +60,7 @@ def generate_label_ideation(query):
         if not_found_wording in polished_labels:
             print("\n\n\nNot found. Skipped.\n\n\n")
             current_model_num = (
-                current_model_num + 1 if current_model_num < max_model_num else 0
+                current_model_num + 1 if current_model_num < max_model_num - 1 else 0
             )
             continue
 
@@ -68,7 +68,7 @@ def generate_label_ideation(query):
         if model_not_found_wording in polished_labels:
             print("\n\n\nModel not found. Skipped.\n\n\n")
             current_model_num = (
-                current_model_num + 1 if current_model_num < max_model_num else 0
+                current_model_num + 1 if current_model_num < max_model_num - 1 else 0
             )
             continue
 
