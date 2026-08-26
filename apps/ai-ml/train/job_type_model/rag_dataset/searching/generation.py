@@ -96,32 +96,25 @@ def polish_extracted_sentence(queries):
     total = len(queries)
 
     for index, query in enumerate(queries, start=1):
-        model = AVAILABLE_MODELS[current_model_num]
-        agent = build_agent_model(model, system_prompt)
-
         print(f"Polishing {index}/{total}...")
 
-        for attempt in range(MAX_POLISH_ATTEMPTS):
-            model = AVAILABLE_MODELS[current_model_num]
+        result = None
+        for model_idx in range(max_model_num):
+            model = AVAILABLE_MODELS[(current_model_num + model_idx) % max_model_num]
             agent = build_agent_model(model, system_prompt)
             try:
                 result = agent.invoke(
                     {"messages": [{"role": "user", "content": query}]}
                 )
                 print(result)
+                current_model_num = (current_model_num + model_idx) % max_model_num
                 break
             except Exception as e:
-                print(
-                    f"  Groq error (attempt {attempt + 1}/{MAX_POLISH_ATTEMPTS}): {e}"
-                )
-                current_model_num = (
-                    current_model_num + 1
-                    if current_model_num < max_model_num - 1
-                    else 0
-                )
-                time.sleep(POLISH_RETRY_DELAY)
+                print(f"  Groq error with {model}: {e}")
+                continue
         else:
-            print("  Skipping item: all attempts failed")
+            print("  All models failed. Resting for 4 hours...")
+            time.sleep(14400)
             continue
 
         unparsed_sentence = None
