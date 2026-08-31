@@ -7,14 +7,14 @@ import (
 	"os/exec"
 )
 
-func callPython(modelName string, input any) ([]byte, error) {
-	inputJSON, err := json.Marshal(input)
+func CallPython(model_name string, input any) ([]byte, error) {
+	input_json, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal input: %w", err)
 	}
 
-	cmd := exec.Command(".venv/bin/python3", "-m", "ai.predict", modelName)
-	cmd.Stdin = bytes.NewReader(inputJSON)
+	cmd := exec.Command(".venv/bin/python3", "-m", "ai.predict", model_name)
+	cmd.Stdin = bytes.NewReader(input_json)
 
 	stderr := new(bytes.Buffer)
 	cmd.Stderr = stderr
@@ -29,7 +29,7 @@ func callPython(modelName string, input any) ([]byte, error) {
 
 func JobTypeModelPredict(text string) (string, error) {
 	input := map[string]string{"text": text}
-	result, err := callPython("job-type-model-predict", input)
+	result, err := CallPython("job-type-model-predict", input)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +44,7 @@ func JobTypeModelPredict(text string) (string, error) {
 
 func ResumeSectionModelPredict(text string) (map[string][]string, error) {
 	input := map[string]string{"text": text}
-	result, err := callPython("resume-sections-model-predict", input)
+	result, err := CallPython("resume-sections-model-predict", input)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ type ToneDetectionResponse struct {
 
 func ToneDetectionModelPredict(phrase string) (*ToneDetectionResponse, error) {
 	input := map[string]string{"phrase": phrase}
-	result, err := callPython("tone-detection-model-predict", input)
+	result, err := CallPython("tone-detection-model-predict", input)
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +80,12 @@ type TranslationResponse struct {
 	Prediction string `json:"prediction"`
 }
 
-func TranslationModelPredict(text string, tgtLang string) (*TranslationResponse, error) {
-	if tgtLang == "" {
-		tgtLang = "eng_Latn"
+func TranslationModelPredict(text string, tgt_lang string) (*TranslationResponse, error) {
+	if tgt_lang == "" {
+		tgt_lang = "eng_Latn"
 	}
-	input := map[string]string{"text": text, "tgt_lang": tgtLang}
-	result, err := callPython("translation-model-predict", input)
+	input := map[string]string{"text": text, "tgt_lang": tgt_lang}
+	result, err := CallPython("translation-model-predict", input)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func TranslationModelPredict(text string, tgtLang string) (*TranslationResponse,
 
 func SkillsKeywordPredict(text string) ([]map[string]any, error) {
 	input := map[string]string{"text": text}
-	result, err := callPython("skills-keyword-predict", input)
+	result, err := CallPython("skills-keyword-predict", input)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func SkillsKeywordPredict(text string) ([]map[string]any, error) {
 
 func TextSimilarityPredict(text1, text2 string) (float64, error) {
 	input := map[string]string{"text1": text1, "text2": text2}
-	result, err := callPython("text-similarity-predict", input)
+	result, err := CallPython("text-similarity-predict", input)
 	if err != nil {
 		return 0, err
 	}

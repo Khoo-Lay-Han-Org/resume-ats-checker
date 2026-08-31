@@ -17,7 +17,7 @@ func TestAdminPostRoutes_RequireAuth(t *testing.T) {
 
 	for _, ep := range postEndpoints {
 		t.Run(ep, func(t *testing.T) {
-			resp, err := makePostRequest(ep, map[string]string{})
+			resp, err := MakePostRequest(ep, map[string]string{})
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -40,7 +40,7 @@ func TestAdminGetRoutes_RequireAuth(t *testing.T) {
 
 	for _, ep := range getEndpoints {
 		t.Run(ep, func(t *testing.T) {
-			resp, err := makeRequest(http.MethodGet, ep, nil)
+			resp, err := MakeRequest(http.MethodGet, ep, nil)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -52,7 +52,7 @@ func TestAdminGetRoutes_RequireAuth(t *testing.T) {
 }
 
 func TestBanClient_RequiresAuth(t *testing.T) {
-	resp, err := makePostRequest("/ban_client", map[string]string{
+	resp, err := MakePostRequest("/ban_client", map[string]string{
 		"public_user_id": "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 	})
 	if err != nil {
@@ -64,7 +64,7 @@ func TestBanClient_RequiresAuth(t *testing.T) {
 }
 
 func TestRemoveIndividualSession_RequiresAuth(t *testing.T) {
-	resp, err := makePostRequest("/remove_individual_session", map[string]string{
+	resp, err := MakePostRequest("/remove_individual_session", map[string]string{
 		"public_user_id": "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 	})
 	if err != nil {
@@ -76,7 +76,7 @@ func TestRemoveIndividualSession_RequiresAuth(t *testing.T) {
 }
 
 func TestRemoveAllSession_RequiresAuth(t *testing.T) {
-	resp, err := makePostRequest("/remove_all_session", map[string]string{
+	resp, err := MakePostRequest("/remove_all_session", map[string]string{
 		"public_user_id": "aaf33fc6-e1a1-4c95-946c-436dd68a7fbd",
 	})
 	if err != nil {
@@ -88,7 +88,7 @@ func TestRemoveAllSession_RequiresAuth(t *testing.T) {
 }
 
 func TestClientCommReply_RequiresAuth(t *testing.T) {
-	resp, err := makePostRequest("/client_comm_reply_log", map[string]string{
+	resp, err := MakePostRequest("/client_comm_reply_log", map[string]string{
 		"public_id": "abc123",
 		"message":   "Thank you",
 	})

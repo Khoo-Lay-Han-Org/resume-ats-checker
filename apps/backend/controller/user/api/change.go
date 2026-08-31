@@ -140,7 +140,7 @@ func ChangeDisplayname() echo.HandlerFunc {
 
 func PrepareChangeEmail() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		factor, ok := supportedTwoFactorType(c)
+		factor, ok := otp.SupportedTwoFactorType(c)
 		if !ok {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
 		}
@@ -193,7 +193,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			if user.PhoneNumber == "" {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "No phone number on file."})
 			}
@@ -204,7 +204,7 @@ func PrepareChangeEmail() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
-		setTwoFactorCookie(c, factor)
+		otp.SetTwoFactorCookie(c, factor)
 
 		return nil
 	}
@@ -219,7 +219,7 @@ func ChangeEmail() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		factor, err := twoFactorFromCookie(c)
+		factor, err := otp.TwoFactorFromCookie(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve 2FA type."})
 		}
@@ -235,7 +235,7 @@ func ChangeEmail() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
 		} else {
 			err = otp.CheckEmailOTP(user.Email, request.OTP)
@@ -284,7 +284,7 @@ func ChangeEmail() echo.HandlerFunc {
 
 func PrepareChangePhoneNumber() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		factor, ok := supportedTwoFactorType(c)
+		factor, ok := otp.SupportedTwoFactorType(c)
 		if !ok {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
 		}
@@ -337,7 +337,7 @@ func PrepareChangePhoneNumber() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			if user.PhoneNumber == "" {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "No phone number on file."})
 			}
@@ -348,7 +348,7 @@ func PrepareChangePhoneNumber() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
-		setTwoFactorCookie(c, factor)
+		otp.SetTwoFactorCookie(c, factor)
 
 		return nil
 	}
@@ -363,7 +363,7 @@ func ChangePhoneNumber() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		factor, err := twoFactorFromCookie(c)
+		factor, err := otp.TwoFactorFromCookie(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve 2FA type."})
 		}
@@ -379,7 +379,7 @@ func ChangePhoneNumber() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
 		} else {
 			err = otp.CheckEmailOTP(user.Email, request.OTP)
@@ -429,7 +429,7 @@ func ChangePhoneNumber() echo.HandlerFunc {
 
 func PrepareChangePassword() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		factor, ok := supportedTwoFactorType(c)
+		factor, ok := otp.SupportedTwoFactorType(c)
 		if !ok {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
 		}
@@ -483,7 +483,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Connection to in-memory data stores failed."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			if user.PhoneNumber == "" {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "No phone number on file."})
 			}
@@ -494,7 +494,7 @@ func PrepareChangePassword() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
-		setTwoFactorCookie(c, factor)
+		otp.SetTwoFactorCookie(c, factor)
 
 		return nil
 	}
@@ -509,7 +509,7 @@ func ChangePassword() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		factor, err := twoFactorFromCookie(c)
+		factor, err := otp.TwoFactorFromCookie(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve 2FA type."})
 		}
@@ -525,7 +525,7 @@ func ChangePassword() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
 		} else {
 			err = otp.CheckEmailOTP(user.Email, request.OTP)

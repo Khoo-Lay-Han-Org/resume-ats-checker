@@ -18,11 +18,11 @@ import (
 
 func PrepareRegistration() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		factor, ok := supportedTwoFactorType(c)
+		factor, ok := otp.SupportedTwoFactorType(c)
 		if !ok {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
 		}
-		if factor != two_factor_email {
+		if factor != otp.Two_factor_email {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Registration only supports email 2FA."})
 		}
 
@@ -69,7 +69,7 @@ func PrepareRegistration() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
-		setTwoFactorCookie(c, two_factor_email)
+		otp.SetTwoFactorCookie(c, otp.Two_factor_email)
 		c.SetCookie(&http.Cookie{
 			Name:     "email_for_otp",
 			Value:    validated_request.Email,
@@ -220,7 +220,7 @@ func RegisterAdmin() echo.HandlerFunc {
 
 func PrepareLogin() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		factor, ok := supportedTwoFactorType(c)
+		factor, ok := otp.SupportedTwoFactorType(c)
 		if !ok {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
 		}
@@ -245,7 +245,7 @@ func PrepareLogin() echo.HandlerFunc {
 			return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Invalid password."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			if user.PhoneNumber == "" {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "No phone number on file."})
 			}
@@ -253,7 +253,7 @@ func PrepareLogin() echo.HandlerFunc {
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 			}
-			setTwoFactorCookie(c, two_factor_sms)
+			otp.SetTwoFactorCookie(c, otp.Two_factor_sms)
 			c.SetCookie(&http.Cookie{
 				Name:     "email_for_otp",
 				Value:    validated_request.Email,
@@ -271,7 +271,7 @@ func PrepareLogin() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
 
-		setTwoFactorCookie(c, two_factor_email)
+		otp.SetTwoFactorCookie(c, otp.Two_factor_email)
 		c.SetCookie(&http.Cookie{
 			Name:     "email_for_otp",
 			Value:    validated_request.Email,
@@ -294,7 +294,7 @@ func Login() echo.HandlerFunc {
 		}
 		email := cookie.Value
 
-		factor, err := twoFactorFromCookie(c)
+		factor, err := otp.TwoFactorFromCookie(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve 2FA type."})
 		}
@@ -310,7 +310,7 @@ func Login() echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, echo.Map{"message": "Failed to retrieve user."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
 		} else {
 			err = otp.CheckEmailOTP(email, request.OTP)

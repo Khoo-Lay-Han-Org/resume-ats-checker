@@ -19,7 +19,7 @@ func TestSettingRoutes_RequireAuth(t *testing.T) {
 
 	for _, ep := range endpoints {
 		t.Run(ep, func(t *testing.T) {
-			resp, err := makePostRequest(ep, map[string]string{})
+			resp, err := MakePostRequest(ep, map[string]string{})
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -59,7 +59,7 @@ func TestChangeUsername_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/change-username", tt.body)
+			resp, err := MakePostRequest("/change-username", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -99,7 +99,7 @@ func TestChangeDisplayname_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/change-displayname", tt.body)
+			resp, err := MakePostRequest("/change-displayname", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -139,7 +139,7 @@ func TestChangeEmail_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-change-email", tt.body)
+			resp, err := MakePostRequest("/prepare-change-email", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -186,7 +186,7 @@ func TestChangePassword_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-change-password", tt.body)
+			resp, err := MakePostRequest("/prepare-change-password", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -217,7 +217,7 @@ func TestDeleteAccount_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-delete-account", tt.body)
+			resp, err := MakePostRequest("/prepare-delete-account", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}

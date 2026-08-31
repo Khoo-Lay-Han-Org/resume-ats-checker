@@ -13,7 +13,7 @@ func TestClientSupportRoutes_RequireAuth(t *testing.T) {
 
 	for _, ep := range endpoints {
 		t.Run(ep, func(t *testing.T) {
-			resp, err := makePostRequest(ep, map[string]string{})
+			resp, err := MakePostRequest(ep, map[string]string{})
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -61,7 +61,7 @@ func TestClientCommunicate_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/client_comm_to_admin", tt.body)
+			resp, err := MakePostRequest("/client_comm_to_admin", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -109,7 +109,7 @@ func TestClientReport_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/client_report_other_client", tt.body)
+			resp, err := MakePostRequest("/client_report_other_client", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}

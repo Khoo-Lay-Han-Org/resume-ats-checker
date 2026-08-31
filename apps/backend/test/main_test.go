@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func skipIfNoInfra(t *testing.T) {
+func SkipIfNoInfra(t *testing.T) {
 	t.Helper()
 	if !infraAvailable {
 		t.Skip("Skipping: Valkey or PostgreSQL not available")
@@ -52,7 +52,7 @@ type testResponse struct {
 	body       map[string]any
 }
 
-func makeRequest(method, path string, body any, cookies ...*http.Cookie) (*testResponse, error) {
+func MakeRequest(method, path string, body any, cookies ...*http.Cookie) (*testResponse, error) {
 	var reqBody []byte
 	var err error
 	if body != nil {
@@ -79,10 +79,10 @@ func makeRequest(method, path string, body any, cookies ...*http.Cookie) (*testR
 	return &testResponse{statusCode: w.Code, body: respBody}, nil
 }
 
-func makePostRequest(path string, body any, cookies ...*http.Cookie) (*testResponse, error) {
-	return makeRequest(http.MethodPost, path, body, cookies...)
+func MakePostRequest(path string, body any, cookies ...*http.Cookie) (*testResponse, error) {
+	return MakeRequest(http.MethodPost, path, body, cookies...)
 }
 
-func epochMs() int64 {
+func EpochMs() int64 {
 	return time.Now().UnixMilli()
 }

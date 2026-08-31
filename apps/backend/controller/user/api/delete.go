@@ -19,7 +19,7 @@ import (
 
 func PrepareDeleteAccount() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		factor, ok := supportedTwoFactorType(c)
+		factor, ok := otp.SupportedTwoFactorType(c)
 		if !ok {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Unsupported 2FA type."})
 		}
@@ -36,7 +36,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to get user data."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			if user.PhoneNumber == "" {
 				return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "No phone number on file."})
 			}
@@ -47,7 +47,7 @@ func PrepareDeleteAccount() echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to send OTP."})
 		}
-		setTwoFactorCookie(c, factor)
+		otp.SetTwoFactorCookie(c, factor)
 
 		return nil
 	}
@@ -62,7 +62,7 @@ func DeleteAccount() echo.HandlerFunc {
 
 		public_user_id := retrieved_public_user_id.(string)
 
-		factor, err := twoFactorFromCookie(c)
+		factor, err := otp.TwoFactorFromCookie(c)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": "Failed to retrieve 2FA type."})
 		}
@@ -78,7 +78,7 @@ func DeleteAccount() echo.HandlerFunc {
 			return c.JSON(http.StatusUnprocessableEntity, echo.Map{"message": "Failed to process request."})
 		}
 
-		if factor == two_factor_sms {
+		if factor == otp.Two_factor_sms {
 			err = otp.CheckSMSOTP(user.PhoneNumber, request.OTP)
 		} else {
 			err = otp.CheckEmailOTP(user.Email, request.OTP)

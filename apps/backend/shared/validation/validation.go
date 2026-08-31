@@ -20,7 +20,7 @@ var transformer = func() *mold.Transformer {
 
 var validate = func() *validator.Validate {
 	v := validator.New()
-	if err := v.RegisterValidation("emailmx", validateEmailMX); err != nil {
+	if err := v.RegisterValidation("emailmx", ValidateEmailMX); err != nil {
 		panic(fmt.Sprintf("failed to register emailmx validation: %v", err))
 	}
 	return v
@@ -50,7 +50,7 @@ func TransformAndValidate(request any) (any, error) {
 	return polished.Elem().Interface(), nil
 }
 
-func validateEmailMX(fl validator.FieldLevel) bool {
+func ValidateEmailMX(fl validator.FieldLevel) bool {
 	email := fl.Field().String()
 	parts := strings.Split(email, "@")
 	if len(parts) != 2 {

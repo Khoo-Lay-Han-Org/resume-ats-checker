@@ -31,7 +31,7 @@ func FindUserByPublicId(publicId string) (*sqlc.User, error) {
 	return &user, nil
 }
 
-func resolveUserId(public_user_id string) (int32, error) {
+func ResolveUserId(public_user_id string) (int32, error) {
 	ctx := context.Background()
 	data, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(public_user_id+":user_data").Build()).ToString()
 	if err != nil {

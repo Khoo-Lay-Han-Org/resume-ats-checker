@@ -12,7 +12,7 @@ import (
 )
 
 func SyncIndividualShowCaseRecordDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func SyncIndividualShowCaseRecordDatabase(public_user_id string) error {
 }
 
 func SyncIndividualUserDataDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -128,7 +128,7 @@ func SyncIndividualUserDataDatabase(public_user_id string) error {
 }
 
 func SyncIndividualSessionDataDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -165,7 +165,7 @@ func SyncIndividualSessionDataDatabase(public_user_id string) error {
 }
 
 func SyncIndividualResumeDataDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -199,7 +199,7 @@ func SyncIndividualResumeDataDatabase(public_user_id string) error {
 }
 
 func SyncIndividualPortfolioDataDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -233,7 +233,7 @@ func SyncIndividualPortfolioDataDatabase(public_user_id string) error {
 }
 
 func SyncIndividualJWTDataDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -268,7 +268,7 @@ func SyncIndividualJWTDataDatabase(public_user_id string) error {
 }
 
 func SyncIndividualClientAuditLogDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -306,7 +306,7 @@ func SyncIndividualClientAuditLogDatabase(public_user_id string) error {
 }
 
 func SyncIndividualAdminAuditLogDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -344,7 +344,7 @@ func SyncIndividualAdminAuditLogDatabase(public_user_id string) error {
 }
 
 func SyncIndividualClientReportLogDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -381,7 +381,7 @@ func SyncIndividualClientReportLogDatabase(public_user_id string) error {
 }
 
 func SyncIndividualErrorLogDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -419,7 +419,7 @@ func SyncIndividualErrorLogDatabase(public_user_id string) error {
 }
 
 func SyncIndividualClientSupportMessagingDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}
@@ -457,7 +457,7 @@ func SyncIndividualClientSupportMessagingDatabase(public_user_id string) error {
 }
 
 func SyncIndividualATSDataDatabase(public_user_id string) error {
-	private_id, err := resolveUserId(public_user_id)
+	private_id, err := ResolveUserId(public_user_id)
 	if err != nil {
 		return fmt.Errorf("failed to resolve user ID: %w", err)
 	}

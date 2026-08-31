@@ -200,8 +200,8 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signi
 			"detail":      resume.Detail,
 		}
 		serialised, _ := json.Marshal(resumeData)
-		storeInValkey(psid+":resume_data", serialised)
-		storeInValkey(user.PublicID.String()+":resume_data", serialised)
+		StoreInValkey(psid+":resume_data", serialised)
+		StoreInValkey(user.PublicID.String()+":resume_data", serialised)
 	}
 
 	portfolio, err := Queries.FindPortfolioByUserId(context.Background(), privateId)
@@ -212,15 +212,15 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signi
 			"detail":      portfolio.Detail,
 		}
 		serialised, _ := json.Marshal(portfolioData)
-		storeInValkey(psid+":portfolio_data", serialised)
-		storeInValkey(user.PublicID.String()+":portfolio_data", serialised)
+		StoreInValkey(psid+":portfolio_data", serialised)
+		StoreInValkey(user.PublicID.String()+":portfolio_data", serialised)
 	}
 
 	ats, err := Queries.FindAtsByUserId(context.Background(), privateId)
 	if err == nil {
 		serialised, _ := json.Marshal(ats)
-		storeInValkey(psid+":ats_data", serialised)
-		storeInValkey(user.PublicID.String()+":ats_data", serialised)
+		StoreInValkey(psid+":ats_data", serialised)
+		StoreInValkey(user.PublicID.String()+":ats_data", serialised)
 	}
 
 	if err := SyncIndividualUserSessionMapping(user.PublicID.String(), psid); err != nil {
@@ -257,7 +257,7 @@ func SyncIndividualLoginDataToSessionStore(psid string, sessionKey string, signi
 	return nil
 }
 
-func storeInValkey(key string, data []byte) {
+func StoreInValkey(key string, data []byte) {
 	ctx := context.Background()
 	_ = service.Valkey.Do(
 		ctx,
@@ -315,7 +315,7 @@ func SyncIndividualClientAuditLogSessionStore(public_user_id string, logs []sqlc
 	if err != nil {
 		return fmt.Errorf("failed to serialise client audit log data: %w", err)
 	}
-	return storeInValkeyWithTTL(public_user_id+":client_audit_log_data", serialised)
+	return StoreInValkeyWithTTL(public_user_id+":client_audit_log_data", serialised)
 }
 
 func SyncIndividualAdminAuditLogSessionStore(public_user_id string, logs []sqlc.AdminAuditLog) error {
@@ -323,7 +323,7 @@ func SyncIndividualAdminAuditLogSessionStore(public_user_id string, logs []sqlc.
 	if err != nil {
 		return fmt.Errorf("failed to serialise admin audit log data: %w", err)
 	}
-	return storeInValkeyWithTTL(public_user_id+":admin_audit_log_data", serialised)
+	return StoreInValkeyWithTTL(public_user_id+":admin_audit_log_data", serialised)
 }
 
 func SyncIndividualClientReportLogSessionStore(public_user_id string, logs []sqlc.ClientReportLog) error {
@@ -331,7 +331,7 @@ func SyncIndividualClientReportLogSessionStore(public_user_id string, logs []sql
 	if err != nil {
 		return fmt.Errorf("failed to serialise client report log data: %w", err)
 	}
-	return storeInValkeyWithTTL(public_user_id+":client_report_log_data", serialised)
+	return StoreInValkeyWithTTL(public_user_id+":client_report_log_data", serialised)
 }
 
 func SyncIndividualErrorLogSessionStore(public_user_id string, logs []sqlc.ErrorLog) error {
@@ -339,7 +339,7 @@ func SyncIndividualErrorLogSessionStore(public_user_id string, logs []sqlc.Error
 	if err != nil {
 		return fmt.Errorf("failed to serialise error log data: %w", err)
 	}
-	return storeInValkeyWithTTL(public_user_id+":error_log_data", serialised)
+	return StoreInValkeyWithTTL(public_user_id+":error_log_data", serialised)
 }
 
 func SyncIndividualClientSupportMessagingSessionStore(public_user_id string, messages []sqlc.ClientSupportMessaging) error {
@@ -347,10 +347,10 @@ func SyncIndividualClientSupportMessagingSessionStore(public_user_id string, mes
 	if err != nil {
 		return fmt.Errorf("failed to serialise support message data: %w", err)
 	}
-	return storeInValkeyWithTTL(public_user_id+":client_support_messages", serialised)
+	return StoreInValkeyWithTTL(public_user_id+":client_support_messages", serialised)
 }
 
-func storeInValkeyWithTTL(key string, data []byte) error {
+func StoreInValkeyWithTTL(key string, data []byte) error {
 	ctx := context.Background()
 	return service.Valkey.Do(
 		ctx,

@@ -32,14 +32,14 @@ func GenerateOTP() (string, string, error) {
 }
 
 func CheckEmailOTP(email, otp string) error {
-	return checkStoredOTP(email+"otp-email", otp)
+	return CheckStoredOTP(email+"otp-email", otp)
 }
 
 func CheckSMSOTP(phone_number, otp string) error {
-	return checkStoredOTP(phone_number+"otp-sms", otp)
+	return CheckStoredOTP(phone_number+"otp-sms", otp)
 }
 
-func checkStoredOTP(key, otp string) error {
+func CheckStoredOTP(key, otp string) error {
 	ctx := context.Background()
 	value, err := service.Valkey.Do(ctx, service.Valkey.B().Get().Key(key).Build()).ToString()
 	if err != nil {

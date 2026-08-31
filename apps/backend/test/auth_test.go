@@ -60,7 +60,7 @@ func TestPrepareRegistration_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-registeration/email", tt.body)
+			resp, err := MakePostRequest("/prepare-registeration/email", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -96,7 +96,7 @@ func TestRegisterFlow_RequiresCookie(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest(tt.path, tt.body)
+			resp, err := MakePostRequest(tt.path, tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -137,7 +137,7 @@ func TestPrepareLogin_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := makePostRequest("/prepare-login/email", tt.body)
+			resp, err := MakePostRequest("/prepare-login/email", tt.body)
 			if err != nil {
 				t.Fatalf("request failed: %v", err)
 			}
@@ -149,7 +149,7 @@ func TestPrepareLogin_Validation(t *testing.T) {
 }
 
 func TestLoginFlow_RequiresCookie(t *testing.T) {
-	resp, err := makePostRequest("/login", "not-json")
+	resp, err := MakePostRequest("/login", "not-json")
 	if err != nil {
 		t.Fatalf("request failed: %v", err)
 	}
@@ -159,12 +159,12 @@ func TestLoginFlow_RequiresCookie(t *testing.T) {
 }
 
 func TestAuthSuccessFlow(t *testing.T) {
-	skipIfNoInfra(t)
+	SkipIfNoInfra(t)
 
-	email := fmt.Sprintf("testuser_%d@example.com", epochMs())
-	username := fmt.Sprintf("testuser%d", epochMs())
+	email := fmt.Sprintf("testuser_%d@example.com", EpochMs())
+	username := fmt.Sprintf("testuser%d", EpochMs())
 
-	resp, err := makePostRequest("/prepare-registeration/email", map[string]string{
+	resp, err := MakePostRequest("/prepare-registeration/email", map[string]string{
 		"username":    username,
 		"displayname": "Test User",
 		"email":       email,
@@ -179,13 +179,13 @@ func TestAuthSuccessFlow(t *testing.T) {
 }
 
 func TestDuplicateRegister(t *testing.T) {
-	skipIfNoInfra(t)
+	SkipIfNoInfra(t)
 
-	email := fmt.Sprintf("dupe_%d@example.com", epochMs())
-	username := fmt.Sprintf("dupe%d", epochMs())
+	email := fmt.Sprintf("dupe_%d@example.com", EpochMs())
+	username := fmt.Sprintf("dupe%d", EpochMs())
 
 	for i := 0; i < 2; i++ {
-		resp, err := makePostRequest("/prepare-registeration/email", map[string]string{
+		resp, err := MakePostRequest("/prepare-registeration/email", map[string]string{
 			"username":    username,
 			"displayname": "Test User",
 			"email":       email,

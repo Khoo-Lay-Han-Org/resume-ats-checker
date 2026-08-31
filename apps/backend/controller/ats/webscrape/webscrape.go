@@ -21,23 +21,23 @@ var userAgents = []string{
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
 }
 
-func randomUA() string {
+func RandomUA() string {
 	return userAgents[rand.Intn(len(userAgents))]
 }
 
-func randomDelay(minMs, maxMs int) {
+func RandomDelay(minMs, maxMs int) {
 	d := time.Duration(rand.Intn(maxMs-minMs+1)+minMs) * time.Millisecond
 	time.Sleep(d)
 }
 
-func humanType(el *rod.Element, text string) {
+func HumanType(el *rod.Element, text string) {
 	for _, ch := range text {
 		el.MustInput(string(ch))
-		randomDelay(40, 120)
+		RandomDelay(40, 120)
 	}
 }
 
-func stealthHarden(page *rod.Page) {
+func StealthHarden(page *rod.Page) {
 	page.MustEval(`
 		Object.defineProperty(navigator, 'webdriver', { get: () => false });
 		Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
@@ -46,7 +46,7 @@ func stealthHarden(page *rod.Page) {
 	`)
 }
 
-func setCommonHeaders(page *rod.Page) {
+func SetCommonHeaders(page *rod.Page) {
 	page.SetExtraHeaders([]string{
 		"Accept-Language", "en-US,en;q=0.9",
 		"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -77,25 +77,25 @@ func JobDescWebScrape(company, jobTitle string) string {
 	defer browser.MustClose()
 
 	page := browser.MustPage()
-	setCommonHeaders(page)
-	stealthHarden(page)
+	SetCommonHeaders(page)
+	StealthHarden(page)
 
-	randomDelay(1000, 3000)
+	RandomDelay(1000, 3000)
 
 	page.MustNavigate("https://www.google.com")
 	page.MustWaitLoad()
 
-	randomDelay(500, 1500)
+	RandomDelay(500, 1500)
 
 	searchBox := page.MustElement("textarea[name='q']")
-	humanType(searchBox, searchString)
+	HumanType(searchBox, searchString)
 
-	randomDelay(200, 500)
+	RandomDelay(200, 500)
 
 	searchBox.MustKeyActions().Press(input.Enter)
 	page.MustWaitLoad()
 
-	randomDelay(2000, 4000)
+	RandomDelay(2000, 4000)
 
 	results := page.MustElements("div.g")
 
@@ -123,11 +123,11 @@ func JobDescWebScrape(company, jobTitle string) string {
 	var allText strings.Builder
 
 	for _, item := range links {
-		randomDelay(2000, 5000)
+		RandomDelay(2000, 5000)
 
 		directPage := browser.MustPage()
-		setCommonHeaders(directPage)
-		stealthHarden(directPage)
+		SetCommonHeaders(directPage)
+		StealthHarden(directPage)
 
 		directPage.SetExtraHeaders([]string{
 			"Referer", "https://www.google.com/",
@@ -136,12 +136,12 @@ func JobDescWebScrape(company, jobTitle string) string {
 		directPage.MustNavigate(item)
 		directPage.MustWaitLoad()
 
-		randomDelay(1000, 2000)
+		RandomDelay(1000, 2000)
 
 		directPage.MustEval(`window.scrollTo({ top: document.body.scrollHeight * 0.3, behavior: 'smooth' })`)
-		randomDelay(500, 1200)
+		RandomDelay(500, 1200)
 		directPage.MustEval(`window.scrollTo({ top: document.body.scrollHeight * 0.6, behavior: 'smooth' })`)
-		randomDelay(300, 800)
+		RandomDelay(300, 800)
 
 		bodyText := directPage.MustElement("body").MustText()
 		allText.WriteString(bodyText)
