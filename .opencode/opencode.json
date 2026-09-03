@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": { "*": "allow" },
+    "edit": {
+      "*": "ask",
+      "*.md": "allow",
+      ".opencode": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "git status *": "allow",
+      "git push *": "deny"
+    }
+  },
+  "instructions": [".opencode/backend/naming-convention.md", ".opencode/backend/structure.md", ".opencode/backend/code.md"]
+}
