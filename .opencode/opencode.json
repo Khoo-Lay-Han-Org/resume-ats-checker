@@ -13,5 +13,12 @@
       "git push *": "deny"
     }
   },
-  "instructions": [".opencode/backend/naming-convention.md", ".opencode/backend/structure.md", ".opencode/backend/code.md"]
+  "instructions": [
+    ".opencode/backend/naming-convention.md",
+    ".opencode/backend/structure.md",
+    ".opencode/backend/code.md",
+    ".opencode/ai-ml/naming-convention.md",
+    ".opencode/ai-ml/structure.md",
+    ".opencode/ai-ml/code.md"
+  ]
 }
