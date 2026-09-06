@@ -1,0 +1,24 @@
+{
+  "$schema": "https://kilo.ai/config.json",
+  "permission": {
+    "read": { "*": "allow" },
+    "edit": {
+      "*": "ask",
+      "*.md": "allow",
+      ".kilo": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "git status *": "allow",
+      "git push *": "deny"
+    }
+  },
+  "instructions": [
+    ".kilo/backend/naming-convention.md",
+    ".kilo/backend/structure.md",
+    ".kilo/backend/code.md",
+    ".kilo/ai-ml/naming-convention.md",
+    ".kilo/ai-ml/structure.md",
+    ".kilo/ai-ml/code.md"
+  ]
+}
