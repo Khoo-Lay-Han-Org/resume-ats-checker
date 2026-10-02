@@ -3,22 +3,18 @@
   "permission": {
     "read": { "*": "allow" },
     "edit": {
-      "*": "ask",
-      "*.md": "allow",
-      ".kilo": "allow"
+      "*": "allow"
     },
     "bash": {
-      "*": "ask",
-      "git status *": "allow",
-      "git push *": "deny"
+      "*": "allow"
     }
   },
   "instructions": [
-    ".kilo/backend/naming-convention.md",
-    ".kilo/backend/structure.md",
-    ".kilo/backend/code.md",
-    ".kilo/ai-ml/naming-convention.md",
-    ".kilo/ai-ml/structure.md",
-    ".kilo/ai-ml/code.md"
+    ".kilo/rules/backend/variable.md",
+    ".kilo/rules/backend/structure.md",
+    ".kilo/rules/backend/best-practices.md",
+    ".kilo/rules/ai-ml/variable.md",
+    ".kilo/rules/ai-ml/structure.md",
+    ".kilo/rules/ai-ml/best-practices.md"
   ]
 }

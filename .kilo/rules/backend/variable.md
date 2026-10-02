@@ -1,4 +1,4 @@
-# Backend Naming Convention
+# Backend Variable & Naming Convention
 
 ## Please understand that this is for apps/backend/ ONLY
 
@@ -6,10 +6,11 @@
 
 1) Functions use PascalCase
 2) Struct use PascalCase
-3) Environmental variables use PascalCase
-4) Normal variable use snake_case
-5) Exported identifiers start with uppercase
-6) Unexported identifiers start with lowercase
+3) Types use PascalCase
+4) Environmental variables use PascalCase
+5) Normal variable use snake_case
+6) Exported identifiers start with uppercase
+7) Unexported identifiers start with lowercase
 
 ### Python Code (ai/ subdirectory)
 
