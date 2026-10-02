@@ -1,0 +1,20 @@
+{
+	"$schema": "https://opencode.ai/config.json",
+	"permission": {
+		"read": { "*": "allow" },
+		"edit": {
+			"*": "allow"
+		},
+		"bash": {
+			"*": "allow"
+		}
+	},
+	"instructions": [
+		".opencode/rules/backend/variable.md",
+		".opencode/rules/backend/structure.md",
+		".opencode/rules/backend/best-practices.md",
+		".opencode/rules/ai-ml/variable.md",
+		".opencode/rules/ai-ml/structure.md",
+		".opencode/rules/ai-ml/best-practices.md"
+	]
+}

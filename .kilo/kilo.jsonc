@@ -1,0 +1,20 @@
+{
+  "$schema": "https://kilo.ai/config.json",
+  "permission": {
+    "read": { "*": "allow" },
+    "edit": {
+      "*": "allow"
+    },
+    "bash": {
+      "*": "allow"
+    }
+  },
+  "instructions": [
+    ".kilo/rules/backend/variable.md",
+    ".kilo/rules/backend/structure.md",
+    ".kilo/rules/backend/best-practices.md",
+    ".kilo/rules/ai-ml/variable.md",
+    ".kilo/rules/ai-ml/structure.md",
+    ".kilo/rules/ai-ml/best-practices.md"
+  ]
+}
